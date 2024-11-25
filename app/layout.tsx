@@ -1,6 +1,10 @@
+// app/layout.tsx
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
+import { PublicLayout } from '@/components/layouts/public-layout';
 import './globals.css';
+import { AdminLayout } from '@/components/layouts/admin-layout';
+import { ModalProvider } from '@/providers/modal-provider';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -19,9 +23,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  userType,
 }: Readonly<{
   children: React.ReactNode;
+  userType: 'admin' | 'non-admin';
 }>) {
+  const Layout = userType === 'admin' ? AdminLayout : PublicLayout;
+
   return (
     <html
       lang='en'
@@ -30,7 +38,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ModalProvider>
+          <Layout>{children}</Layout>
+        </ModalProvider>
       </body>
     </html>
   );
