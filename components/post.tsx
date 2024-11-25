@@ -7,6 +7,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 import { PostType } from '@/types/post';
+import cc from 'classcat';
 
 export const Post = ({ post }: PostType) => {
   const {
@@ -70,24 +71,34 @@ export const Post = ({ post }: PostType) => {
         </p>
 
         {/* Embedded Images */}
-        {embed?.images && embed?.images?.length > 0 && (
-          <figure className='mt-3'>
-            <img
-              src={embed.images[0].thumb}
-              alt={
-                embed.images[0].alt || `Image posted by ${author.displayName}`
-              }
-              className='w-full rounded-md object-cover'
-              style={{
-                aspectRatio: `${embed.images[0].aspectRatio.width} / ${embed.images[0].aspectRatio.height}`,
-                maxHeight: '300px',
-              }}
-            />
-            <figcaption className='sr-only'>
-              Image posted by {author.displayName}
-            </figcaption>
-          </figure>
-        )}
+        {Array.isArray(embed?.images) &&
+          embed.images.length > 0 &&
+          embed.images[0]?.thumb && (
+            <figure className='mt-3'>
+              <img
+                src={embed.images[0]?.thumb}
+                alt={
+                  embed.images[0]?.alt ||
+                  `Image posted by ${author?.displayName || 'unknown author'}`
+                }
+                className={cc([
+                  'w-full',
+                  'rounded-md',
+                  'object-cover',
+                  'aspect-square',
+                  // embed.images[0]?.aspectRatio
+                  //   ? `aspect-[${embed.images[0]?.aspectRatio.width}/${embed.images[0]?.aspectRatio.height}]`
+                  //   : 'aspect-square', // Default to square if aspect ratio is missing
+                  'max-h-72', // Tailwind class for maxHeight: '300px'
+                  //   {`aspect-[${embed.images[0]?.aspectRatio.width}/${embed.images[0]?.aspectRatio.height}]`: embed.images[0]?.aspectRatio,
+                  // "aspect-square": !embed.images[0]?.aspectRatio}
+                ])}
+              />
+              <figcaption className='sr-only'>
+                {`Image posted by ${author?.displayName || 'unknown author'}`}
+              </figcaption>
+            </figure>
+          )}
       </section>
 
       {/* Post Metadata */}

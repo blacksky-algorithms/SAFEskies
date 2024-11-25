@@ -1,3 +1,3 @@
-export enum MODAL_IDS {
+export enum MODAL_INSTANCE_IDS {
   SIDE_DRAWER = 'SIDE_DRAWER',
 }
