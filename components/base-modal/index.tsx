@@ -67,11 +67,11 @@ export const BaseModal = ({
             leaveTo='opacity-0 scale-95'
           >
             <DialogPanel
-              className={`bg-gray-900 text-white p-6 rounded-lg shadow-lg relative overflow-y-auto ${sizeClasses[size]}`}
+              className={`bg-gray-900  p-6 rounded-lg shadow-lg relative overflow-y-auto ${sizeClasses[size]}`}
             >
               {/* Close Button */}
               <button
-                className='absolute top-4 right-4 bg-gray-700 text-white p-2 rounded-full hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                className='absolute top-4 right-4 bg-gray-700  p-2 rounded-full hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500'
                 onClick={() => closeModalInstance(id)}
                 aria-label='Close modal'
               >

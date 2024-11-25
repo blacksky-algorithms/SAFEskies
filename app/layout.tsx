@@ -3,7 +3,7 @@ import localFont from 'next/font/local';
 import { PublicLayout } from '@/components/layouts/public-layout';
 import './globals.css';
 
-import { ModalProvider } from '@/providers/modal-provider';
+import { Providers } from '@/providers';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -29,14 +29,14 @@ export default function RootLayout({
   return (
     <html
       lang='en'
-      className='container mx-auto bg-black min-w-screen overscroll-auto'
+      className='container mx-auto bg-black min-w-screen overscroll-auto text-white'
     >
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ModalProvider>
+        <Providers>
           <PublicLayout>{children}</PublicLayout>
-        </ModalProvider>
+        </Providers>
       </body>
     </html>
   );

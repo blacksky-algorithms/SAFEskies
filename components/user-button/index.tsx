@@ -9,7 +9,7 @@ export const UserButton = () => {
   const toggleModal = () => openModalInstance(MODAL_INSTANCE_IDS.SIDE_DRAWER);
   return (
     <button
-      className='flex items-center space-x-2 text-white hover:text-blue-500 transition'
+      className='flex items-center space-x-2  hover:text-blue-500 transition'
       onClick={toggleModal}
       aria-label='Open user menu'
     >

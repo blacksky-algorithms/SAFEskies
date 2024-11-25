@@ -52,10 +52,7 @@ export const FeedList = (props: FeedListProps) => {
       aria-labelledby={`feed-title-${feedName}`}
     >
       <header className='w-full text-center my-4'>
-        <h1
-          id={`feed-title-${feedName}`}
-          className='text-2xl font-bold text-white'
-        >
+        <h1 id={`feed-title-${feedName}`} className='text-2xl font-bold '>
           {feedName}
         </h1>
       </header>
