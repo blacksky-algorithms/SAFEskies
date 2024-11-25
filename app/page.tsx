@@ -1,7 +1,10 @@
+import Feed from '@/pages/feed';
+import { background } from '@/utils/todo';
+
 export default async function page() {
   return (
-    <div className='container mx-auto'>
-      <h1>Hello world</h1>
+    <div className={background}>
+      <Feed />
     </div>
   );
 }
