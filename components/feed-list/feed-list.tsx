@@ -47,9 +47,9 @@ export const FeedList = (props: FeedListProps) => {
   }, []);
 
   return (
-    <div>
+    <div className='flex w-full justify-center flex-col items-center'>
       <h1>{feedName}</h1>
-      <ul>
+      <ul className='p-4 max-w-xs lg:max-w-lg'>
         {posts.map(({ post }) => {
           return (
             <li key={post.cid}>

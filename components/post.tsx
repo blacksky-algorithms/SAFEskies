@@ -27,7 +27,7 @@ export const Post = ({ post }: PostType) => {
 
   return (
     <article
-      className='bg-white border border-gray-300 rounded-md shadow-sm p-4 mb-4 max-w-screen-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl mx-auto'
+      className='bg-white border border-gray-300 rounded-md shadow-sm p-4 mb-4  mx-auto'
       role='article'
       aria-labelledby={`post-title-${post.cid}`}
     >
@@ -45,11 +45,7 @@ export const Post = ({ post }: PostType) => {
           >
             {author.displayName}
           </p>
-          <p className='text-sm text-gray-500'>
-            <a href={`https://${author.handle}`} className='hover:underline'>
-              @{author.handle}
-            </a>
-          </p>
+          <p className='text-sm text-gray-500'>@{author.handle}</p>
         </div>
       </header>
 
@@ -85,13 +81,8 @@ export const Post = ({ post }: PostType) => {
                   'w-full',
                   'rounded-md',
                   'object-cover',
-                  'aspect-square',
-                  // embed.images[0]?.aspectRatio
-                  //   ? `aspect-[${embed.images[0]?.aspectRatio.width}/${embed.images[0]?.aspectRatio.height}]`
-                  //   : 'aspect-square', // Default to square if aspect ratio is missing
-                  'max-h-72', // Tailwind class for maxHeight: '300px'
-                  //   {`aspect-[${embed.images[0]?.aspectRatio.width}/${embed.images[0]?.aspectRatio.height}]`: embed.images[0]?.aspectRatio,
-                  // "aspect-square": !embed.images[0]?.aspectRatio}
+                  'aspect-auto',
+                  'max-h-72',
                 ])}
               />
               <figcaption className='sr-only'>
