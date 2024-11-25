@@ -27,7 +27,7 @@ export const Post = ({ post }: PostType) => {
 
   return (
     <article
-      className='bg-white border border-gray-300 rounded-md shadow-sm p-4 mb-4  mx-auto'
+      className='bg-white border border-gray-300 rounded-md shadow-sm p-4 mb-4 mx-auto w-full'
       role='article'
       aria-labelledby={`post-title-${post.cid}`}
     >

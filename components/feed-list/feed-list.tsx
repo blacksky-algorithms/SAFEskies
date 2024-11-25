@@ -35,7 +35,7 @@ export const FeedList = (props: FeedListProps) => {
             },
           }
         );
-        const { feed, cursor: nextPage } = data;
+        const { feed } = data;
 
         setPosts(feed as unknown as PostType[]);
       } catch (error) {
@@ -47,17 +47,27 @@ export const FeedList = (props: FeedListProps) => {
   }, []);
 
   return (
-    <div className='flex w-full justify-center flex-col items-center'>
-      <h1>{feedName}</h1>
-      <ul className='p-4 max-w-xs lg:max-w-lg'>
-        {posts.map(({ post }) => {
-          return (
-            <li key={post.cid}>
-              <Post post={post} />
-            </li>
-          );
-        })}
+    <section
+      className='flex w-full flex-col items-center'
+      aria-labelledby={`feed-title-${feedName}`}
+    >
+      <header className='w-full text-center my-4'>
+        <h1
+          id={`feed-title-${feedName}`}
+          className='text-2xl font-bold text-white'
+        >
+          {feedName}
+        </h1>
+      </header>
+
+      {/* Feed Posts */}
+      <ul className='' role='list'>
+        {posts.map(({ post }) => (
+          <li key={post.cid} className='mb-4'>
+            <Post post={post} />
+          </li>
+        ))}
       </ul>
-    </div>
+    </section>
   );
 };
