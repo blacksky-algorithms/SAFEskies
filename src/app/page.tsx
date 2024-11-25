@@ -1,101 +1,55 @@
-import Image from "next/image";
+import Login from '~/components/login';
+import { agent } from '../lib/api';
 
-export default function Home() {
+const bsky = {
+  uri: 'at://did:plc:w4xbfzo7kqfes5zb7r6qv3rw/app.bsky.feed.generator/blacksky',
+  cid: 'bafyreih7aavwqt2nfmduec53zpd6ddifng63p2fifeyasunylhy3ymj67u',
+  did: 'did:web:bsky.rudyfraser.com',
+  creator: {
+    did: 'did:plc:w4xbfzo7kqfes5zb7r6qv3rw',
+    handle: 'rudyfraser.com',
+    displayName: 'Rudy wants revolution.',
+    avatar:
+      'https://cdn.bsky.app/img/avatar/plain/did:plc:w4xbfzo7kqfes5zb7r6qv3rw/bafkreih6z7pjeuq4bgjechhjpo7zmekkm4cmckgv5whuyg6mdt2gwug55y@jpeg',
+    associated: {
+      chat: {
+        allowIncoming: 'all',
+      },
+    },
+    labels: [],
+    createdAt: '2023-05-01T03:43:42.434Z',
+    description:
+      'Founder, @blacksky.app\nBuilding community networks and technologies blackskyweb.xyz + https://wethepeople.nyc + https://papertree.earth + https://pactcollective.xyz\nmove fast and break chains;\n\nLinks: https://linkat.blue/rudyfraser.com 🔗',
+    indexedAt: '2024-11-16T21:25:55.735Z',
+  },
+  displayName: 'Blacksky',
+  description:
+    'An algorithm showcasing posts by Black users on the network. Use #AddToBlackSky to add yourself. Use #BlackSky to add a single post.\n//\nUm algoritmo que mostra postagens de usuários negros na rede. Use #AddToBlackSky para adicionar você mesmo. Use #BlackSky para adicionar uma única postagem.',
+  avatar:
+    'https://cdn.bsky.app/img/avatar/plain/did:plc:w4xbfzo7kqfes5zb7r6qv3rw/bafkreic5aanarf57ojmmfop6tm7jr3574sx3cwiqlbdtcknko7qahouhh4@jpeg',
+  likeCount: 17919,
+  labels: [],
+  indexedAt: '2024-09-04T13:46:03.561Z',
+};
+
+export default async function page() {
+  const did = 'did:plc:w4xbfzo7kqfes5zb7r6qv3rw';
+  const feedName = 'blacksky';
+  // const feeds = await agent.app.bsky.unspecced.getPopularFeedGenerators({
+  //   limit: 10,
+  // });
+  const feed = await agent.app.bsky.feed.getFeed({
+    feed: `at://${did}/app.bsky.feed.generator/${feedName}`,
+  });
+  const test = await agent.app.bsky.feed
+    .getFeedGenerator({
+      feed: `at://${did}/app.bsky.feed.generator/${feedName}`,
+    })
+    .then((res) => console.log({ res }));
+  console.log({ feed, test });
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className='container mx-auto'>
+      <Login />
     </div>
   );
 }
