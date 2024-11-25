@@ -10,16 +10,17 @@ const Login = () => {
   const [handle, setHandle] = useState<string>('');
 
   const handleLogin = async () => {
-    try {
-      const client = await createOAuthClient();
-      const res = await client.signIn(handle, {
-        state: 'login',
-      });
-      console.log({ res });
-    } catch (err) {
-      setError('Login failed. Please try again.');
-      console.error(err);
-    }
+    console.log({ handle });
+    // try {
+    //   const client = await createOAuthClient();
+    //   const res = await client.signIn(handle, {
+    //     state: 'login',
+    //   });
+    //   console.log({ res });
+    // } catch (err) {
+    //   setError('Login failed. Please try again.');
+    //   console.error(err);
+    // }
   };
 
   return (
