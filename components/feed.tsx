@@ -1,7 +1,7 @@
 'use client';
 
 import { FeedList } from '@/components/feed-list/feed-list';
-import { useFeed } from '@/repos/feed-repo';
+import { usePaginatedFeed } from '@/repos/feed-repo';
 
 interface FeedProps {
   did: string;
@@ -13,22 +13,27 @@ const Feed = (props: FeedProps) => {
     did = 'did:plc:qzkrgc4ahglknwb7ymee4a6w',
     feedName = 'aaafstml2groe',
   } = props;
-  const { data, error, isValidating } = useFeed({
-    did,
-    feedName,
-  });
 
-  if (isValidating) return <div>isValidating...</div>;
+  const { feed, error, isFetching, hasNextPage, fetchNextPage } =
+    usePaginatedFeed({
+      did,
+      feedName,
+      limit: 10,
+    });
+  console.log({ feed, error, isFetching, hasNextPage, fetchNextPage });
   if (error) return <div>Error: {error.message}</div>;
-  if (!data?.feed) return <div>No feed</div>;
+  if (!feed) return <div>No feed</div>;
 
   return (
     <div>
       <FeedList
-        feed={data.feed}
+        feed={feed}
         feedName='Kendrick Test Feed < aaafstml2groe >'
         getNext={() => console.log('Get Next')}
       />
+      {hasNextPage && !isFetching && (
+        <button onClick={fetchNextPage}>Load More</button>
+      )}
     </div>
   );
 };
