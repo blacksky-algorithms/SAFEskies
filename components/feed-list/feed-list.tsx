@@ -18,12 +18,6 @@ export const FeedList = (props: FeedListProps) => {
       className='flex w-full flex-col items-center relative'
       aria-labelledby={`feed-title-${feedName}`}
     >
-      <button
-        className='absolute top-96 bg-white right-0 p-2 text-blue-500'
-        onClick={getNext}
-      >
-        Get Next
-      </button>
       <header className='w-full text-center my-4'>
         <h1 id={`feed-title-${feedName}`} className='text-2xl font-bold '>
           {feedName}
