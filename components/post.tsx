@@ -9,7 +9,7 @@ import {
 import { PostType } from '@/types/post';
 import cc from 'classcat';
 
-export const Post = ({ post }: PostType) => {
+export const Post = ({ post }: FeedListData) => {
   const {
     author,
     record,
