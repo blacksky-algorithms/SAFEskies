@@ -15,7 +15,7 @@ export const FeedList = (props: FeedListProps) => {
 
   return (
     <section
-      className='flex w-full flex-col items-center relative'
+      className='flex w-full flex-col items-center relative px-4 '
       aria-labelledby={`feed-title-${feedName}`}
     >
       <header className='w-full text-center my-4'>
@@ -25,10 +25,10 @@ export const FeedList = (props: FeedListProps) => {
       </header>
 
       {/* Feed Posts */}
-      <ul className='max-w-xs lg:max-w-md' role='list'>
-        {feed.map(({ post }) => (
-          <li key={post.cid} className='mb-4'>
-            <Post post={post} />
+      <ul className='max-w-lg w-full' role='list'>
+        {feed.map((feedPost) => (
+          <li key={feedPost.post.cid} className='mb-4'>
+            <Post post={feedPost.post} />
           </li>
         ))}
       </ul>

@@ -5,11 +5,31 @@ import {
   HeartIcon,
   LinkIcon,
 } from '@heroicons/react/24/outline';
-
-import { PostType } from '@/types/post';
 import cc from 'classcat';
+import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
-export const Post = ({ post }: FeedListData) => {
+// Define the structure of the record
+interface PostRecord {
+  $type: string;
+  createdAt: string;
+  text: string;
+  facets?: {
+    features: {
+      $type: string;
+      tag?: string;
+    }[];
+  }[];
+}
+
+// Define the structure of the external embed
+interface ExternalEmbed {
+  uri: string;
+  thumb?: string;
+  title: string;
+  description?: string;
+}
+
+export const Post = ({ post }: { post: PostView }) => {
   const {
     author,
     record,
@@ -20,10 +40,43 @@ export const Post = ({ post }: FeedListData) => {
     quoteCount,
   } = post;
 
+  // Assert that `record` is of type `PostRecord`
+  const postRecord = record as PostRecord;
+
+  // Assert that `embed.external` is of type `ExternalEmbed`
+  const externalEmbed = embed?.external as ExternalEmbed | undefined;
+
   // Extract hashtags dynamically
-  const hashtags = record.facets
-    ?.map((facet) => facet.features.map((feature) => `#${feature.tag}`))
-    .flat();
+  const hashtags = postRecord.facets?.flatMap((facet) =>
+    facet.features.map((feature) => `#${feature.tag}`)
+  );
+
+  // Render embedded external links (GIFs or URLs)
+  const renderExternalEmbed = () => {
+    if (externalEmbed) {
+      const { uri, thumb, title, description } = externalEmbed;
+      return (
+        <div className='mt-4 border border-gray-300 rounded-md overflow-hidden'>
+          <a href={uri} target='_blank' rel='noopener noreferrer'>
+            {thumb && (
+              <img
+                src={thumb}
+                alt={description || 'External content'}
+                className='w-full h-auto object-cover'
+              />
+            )}
+            <div className='p-2'>
+              <p className='font-bold text-gray-800'>{title}</p>
+              {description && (
+                <p className='text-sm text-gray-500'>{description}</p>
+              )}
+            </div>
+          </a>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <article
@@ -33,17 +86,19 @@ export const Post = ({ post }: FeedListData) => {
     >
       {/* Author Information */}
       <header className='flex items-center mb-3'>
-        <img
-          src={author.avatar}
-          alt={`Avatar of ${author.displayName}`}
-          className='w-12 h-12 rounded-full mr-3'
-        />
+        {author.avatar && (
+          <img
+            src={author.avatar}
+            alt={`Avatar of ${author.displayName || author.handle}`}
+            className='w-12 h-12 rounded-full mr-3'
+          />
+        )}
         <div>
           <p
             id={`post-title-${post.cid}`}
             className='text-base font-semibold text-gray-900'
           >
-            {author.displayName}
+            {author.displayName || author.handle}
           </p>
           <p className='text-sm text-gray-500'>@{author.handle}</p>
         </div>
@@ -51,9 +106,8 @@ export const Post = ({ post }: FeedListData) => {
 
       {/* Post Content */}
       <section>
-        {/* Hashtags */}
         <p className='text-gray-700 break-words'>
-          {record.text.split(' ').map((word, index) =>
+          {postRecord.text.split(' ').map((word, index) =>
             hashtags?.includes(word) ? (
               <span key={index} className='text-blue-500 break-words'>
                 {word}
@@ -65,37 +119,13 @@ export const Post = ({ post }: FeedListData) => {
             )
           )}
         </p>
-
-        {/* Embedded Images */}
-        {Array.isArray(embed?.images) &&
-          embed.images.length > 0 &&
-          embed.images[0]?.thumb && (
-            <figure className='mt-3'>
-              <img
-                src={embed.images[0]?.thumb}
-                alt={
-                  embed.images[0]?.alt ||
-                  `Image posted by ${author?.displayName || 'unknown author'}`
-                }
-                className={cc([
-                  'w-full',
-                  'rounded-md',
-                  'object-cover',
-                  'aspect-auto',
-                  'max-h-72',
-                ])}
-              />
-              <figcaption className='sr-only'>
-                {`Image posted by ${author?.displayName || 'unknown author'}`}
-              </figcaption>
-            </figure>
-          )}
+        {renderExternalEmbed()}
       </section>
 
       {/* Post Metadata */}
       <footer className='flex justify-between items-center mt-4 text-sm text-gray-500'>
         <span>
-          Posted on: {new Date(record.createdAt).toLocaleDateString()}
+          Posted on: {new Date(postRecord.createdAt).toLocaleDateString()}
         </span>
         <div className='flex items-center space-x-4'>
           <span
