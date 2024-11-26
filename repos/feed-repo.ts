@@ -9,7 +9,7 @@ export interface FeedParams {
 }
 
 export interface FeedResponse {
-  feed: any[]; // Replace `any` with proper type for feed items
+  feed: any[];
 }
 
 // Fetcher function
@@ -22,7 +22,7 @@ const fetchFeed = async ({
     feed: `at://${did}/app.bsky.feed.generator/${feedName}`,
     limit,
   });
-  console.log(data);
+
   return { feed: data.feed };
 };
 
