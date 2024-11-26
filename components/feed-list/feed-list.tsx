@@ -7,10 +7,11 @@ import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs'
 interface FeedListProps {
   feedName: string;
   feed: FeedViewPost[];
+  getNext: () => void;
 }
 
 export const FeedList = (props: FeedListProps) => {
-  const { feed, feedName } = props;
+  const { feed, feedName, getNext } = props;
 
   return (
     <section
@@ -19,9 +20,9 @@ export const FeedList = (props: FeedListProps) => {
     >
       <button
         className='absolute top-96 bg-white right-0 p-2 text-blue-500'
-        onClick={() => console.log('Clicked See More')}
+        onClick={getNext}
       >
-        See More
+        Get Next
       </button>
       <header className='w-full text-center my-4'>
         <h1 id={`feed-title-${feedName}`} className='text-2xl font-bold '>
