@@ -1,39 +1,33 @@
-import useSWRInfinite from 'swr/infinite';
 import { AtprotoAgent } from './atproto-agent';
 
-// Types
 export interface FeedParams {
   did: string;
   feedName: string;
   limit?: number;
   cursor?: string;
+  signal?: AbortSignal; // Allow signal for cancellation
 }
 
 export interface FeedResponse {
   feed: any[];
-  cursor?: string; // Add cursor for pagination
+  cursor?: string;
 }
 
-// Fetcher function
 export const fetchFeed = async ({
   did,
   feedName,
-  limit = 10,
+  limit = 50,
   cursor,
+  signal,
 }: FeedParams): Promise<FeedResponse> => {
-  try {
-    console.log('Fetching Feed:', { did, feedName, limit, cursor });
-
-    const { data } = await AtprotoAgent.app.bsky.feed.getFeed({
+  const { data } = await AtprotoAgent.app.bsky.feed.getFeed(
+    {
       feed: `at://${did}/app.bsky.feed.generator/${feedName}`,
       limit,
       cursor,
-    });
+    },
+    { signal } // Pass signal to the request options
+  );
 
-    console.log('Fetched Feed Data:', data);
-    return { feed: data.feed, cursor: data.cursor };
-  } catch (error) {
-    console.error('Error in fetchFeed:', error);
-    throw error;
-  }
+  return { feed: data.feed, cursor: data.cursor };
 };

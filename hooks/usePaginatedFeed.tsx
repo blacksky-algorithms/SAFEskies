@@ -1,21 +1,37 @@
 import { FeedParams, fetchFeed } from '@/repos/feed-repo';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+
+interface FeedState {
+  feed: any[];
+  cursor?: string;
+  isFetching: boolean;
+  hasNextPage: boolean;
+  error: Error | null;
+}
 
 export const usePaginatedFeed = ({
   did,
   feedName,
   limit = 50,
-}: Omit<FeedParams, 'cursor'>) => {
-  const [feed, setFeed] = useState<any[]>([]);
-  const [cursor, setCursor] = useState<string | undefined>(undefined);
-  const [isFetching, setIsFetching] = useState(false);
-  const [hasNextPage, setHasNextPage] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+}: Omit<FeedParams, 'cursor' | 'signal'>) => {
+  const [state, setState] = useState<FeedState>({
+    feed: [],
+    cursor: undefined,
+    isFetching: false,
+    hasNextPage: true,
+    error: null,
+  });
 
-  const fetchNextPage = async () => {
+  const updateState = (partialState: Partial<FeedState>) => {
+    setState((prevState) => ({ ...prevState, ...partialState }));
+  };
+
+  const fetchNextPage = useCallback(async () => {
+    const { hasNextPage, isFetching, cursor, feed } = state;
     if (!hasNextPage || isFetching) return;
 
-    setIsFetching(true);
+    updateState({ isFetching: true });
+
     try {
       const { feed: newFeed, cursor: newCursor } = await fetchFeed({
         did,
@@ -24,27 +40,28 @@ export const usePaginatedFeed = ({
         cursor,
       });
 
-      console.log('Fetched Next Page:', { newFeed, newCursor });
+      const uniqueFeed = Array.from(
+        new Map(
+          [...feed, ...newFeed].map((item) => [item.post.cid, item])
+        ).values()
+      );
 
-      setFeed((prevFeed) => {
-        const mergedFeed = [...prevFeed, ...newFeed];
-        const uniqueFeed = Array.from(
-          new Map(mergedFeed.map((item) => [item.post.cid, item])).values()
-        );
-        return uniqueFeed;
+      updateState({
+        feed: uniqueFeed,
+        cursor: newCursor,
+        hasNextPage: !!newCursor,
+        error: null,
       });
-      setCursor(newCursor);
-      setHasNextPage(!!newCursor);
-    } catch (err) {
-      console.error('Error fetching next page:', err);
-      setError(err as Error);
+    } catch (error) {
+      updateState({ error: error as Error });
     } finally {
-      setIsFetching(false);
+      updateState({ isFetching: false });
     }
-  };
+  }, [state, did, feedName, limit]);
 
-  const refreshFeed = async () => {
-    setIsFetching(true);
+  const refreshFeed = useCallback(async () => {
+    updateState({ isFetching: true, error: null });
+
     try {
       const { feed: freshFeed, cursor: newCursor } = await fetchFeed({
         did,
@@ -52,55 +69,77 @@ export const usePaginatedFeed = ({
         limit,
       });
 
-      console.log('Refreshed Feed:', { freshFeed, newCursor });
+      const uniqueFeed = Array.from(
+        new Map(freshFeed.map((item) => [item.post.cid, item])).values()
+      );
 
-      setFeed(freshFeed);
-      setCursor(newCursor);
-      setHasNextPage(!!newCursor);
-    } catch (err) {
-      console.error('Error refreshing feed:', err);
-      setError(err as Error);
+      updateState({
+        feed: uniqueFeed,
+        cursor: newCursor,
+        hasNextPage: !!newCursor,
+        error: null,
+      });
+    } catch (error) {
+      updateState({ error: error as Error });
     } finally {
-      setIsFetching(false);
+      updateState({ isFetching: false });
     }
-  };
+  }, [did, feedName, limit]);
 
   useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+
     const initializeFeed = async () => {
-      setIsFetching(true);
+      updateState({
+        feed: [],
+        cursor: undefined,
+        isFetching: true,
+        hasNextPage: true,
+        error: null,
+      });
+
       try {
         const { feed: initialFeed, cursor: initialCursor } = await fetchFeed({
           did,
           feedName,
           limit,
+          signal,
         });
 
-        console.log('Initialized Feed:', { initialFeed, initialCursor });
-
-        setFeed(
-          Array.from(
-            new Map(initialFeed.map((item) => [item.post.cid, item])).values()
-          )
+        const uniqueFeed = Array.from(
+          new Map(initialFeed.map((item) => [item.post.cid, item])).values()
         );
-        setCursor(initialCursor);
-        setHasNextPage(!!initialCursor);
-      } catch (err) {
-        console.error('Error initializing feed:', err);
-        setError(err as Error);
+
+        updateState({
+          feed: uniqueFeed,
+          cursor: initialCursor,
+          isFetching: false,
+          hasNextPage: !!initialCursor,
+          error: null,
+        });
+      } catch (error) {
+        if (signal.aborted) return; // Ignore abort errors
+        updateState({ error: error as Error });
       } finally {
-        setIsFetching(false);
+        updateState({ isFetching: false });
       }
     };
 
     initializeFeed();
+
+    return () => controller.abort();
   }, [did, feedName, limit]);
 
-  return {
-    feed,
-    error,
-    isFetching,
-    hasNextPage,
-    fetchNextPage,
-    refreshFeed,
-  };
+  return useMemo(
+    () => ({
+      feed: state.feed,
+      error: state.error,
+      isFetching: state.isFetching,
+      hasNextPage: state.hasNextPage,
+      fetchNextPage,
+      refreshFeed,
+    }),
+    [state, fetchNextPage, refreshFeed]
+  );
 };
