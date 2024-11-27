@@ -77,7 +77,7 @@ const Feed = (props: FeedProps) => {
       className='overflow-y-auto h-screen'
     >
       {isRefreshing && <div className='refresh-indicator'>Refreshing...</div>}
-      <FeedList feed={feed} feedName={feedName} getNext={fetchNextPage} />
+      <FeedList feed={feed} feedName={feedName} />
     </div>
   );
 };

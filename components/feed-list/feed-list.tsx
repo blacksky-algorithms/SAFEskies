@@ -7,11 +7,10 @@ import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs'
 interface FeedListProps {
   feedName: string;
   feed: FeedViewPost[];
-  getNext: () => void;
 }
 
 export const FeedList = (props: FeedListProps) => {
-  const { feed, feedName, getNext } = props;
+  const { feed, feedName } = props;
 
   return (
     <section

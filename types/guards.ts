@@ -4,9 +4,9 @@ import {
   ImageEmbed,
   ExternalEmbed,
   VideoEmbed,
+  RecordWithMediaEmbed,
 } from '@/types/post';
 
-// Type Guards
 export const isExternalEmbed = (
   embed: EmbedType
 ): embed is {
@@ -52,5 +52,21 @@ export const isVideoEmbed = (
   return (
     embed.$type === 'app.bsky.embed.video' ||
     embed.$type === 'app.bsky.embed.video#view'
+  );
+};
+
+export const isRecordWithMediaEmbed = (
+  embed: EmbedType
+): embed is {
+  $type:
+    | 'app.bsky.embed.recordWithMedia'
+    | 'app.bsky.embed.recordWithMedia#view';
+  recordWithMedia: RecordWithMediaEmbed;
+} => {
+  return (
+    (embed.$type === 'app.bsky.embed.recordWithMedia' ||
+      embed.$type === 'app.bsky.embed.recordWithMedia#view') &&
+    'record' in embed.recordWithMedia &&
+    'media' in embed.recordWithMedia
   );
 };

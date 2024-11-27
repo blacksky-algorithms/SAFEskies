@@ -9,11 +9,11 @@ const createJestConfig = nextJest({
 /** @type {import('jest').Config} */
 const config = {
   // Add more setup options before each test is run
-  setupFilesAfterEnv: ['<rootDir>/setupTests.ts'],
+  setupFilesAfterEnv: ['./setupTests.ts'],
 
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/$1',
+    '^@/(.*)$': './$1',
     '@react-hook/media-query': '@react-hook/media-query/dist/cjs', // search-bar.test.tsx needs this to pass as it's using the useMediaQuery hook
   },
 };

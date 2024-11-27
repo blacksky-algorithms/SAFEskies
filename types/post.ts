@@ -35,13 +35,18 @@ export interface RecordEmbed {
 }
 
 export interface VideoEmbed {
-  playlist: string; // URL for the video playlist (e.g., HLS .m3u8)
-  thumbnail: string; // Thumbnail URL for the video
+  playlist: string;
+  thumbnail: string;
   aspectRatio: {
     height: number;
     width: number;
   };
-  mimeType?: string; // Optional mimeType for the video
+  mimeType?: string;
+}
+
+export interface RecordWithMediaEmbed {
+  record: RecordEmbed;
+  media: EmbedType; // Can be an image, video, or other embed type
 }
 
 export type EmbedType =
@@ -52,7 +57,15 @@ export type EmbedType =
   | { $type: 'app.bsky.embed.images'; images: ImageEmbed[] }
   | { $type: 'app.bsky.embed.images#view'; images: ImageEmbed[] }
   | { $type: 'app.bsky.embed.video'; video: VideoEmbed }
-  | { $type: 'app.bsky.embed.video#view'; video: VideoEmbed };
+  | { $type: 'app.bsky.embed.video#view'; video: VideoEmbed }
+  | {
+      $type: 'app.bsky.embed.recordWithMedia';
+      recordWithMedia: RecordWithMediaEmbed;
+    }
+  | {
+      $type: 'app.bsky.embed.recordWithMedia#view';
+      recordWithMedia: RecordWithMediaEmbed;
+    };
 
 export interface ImageEmbed {
   thumb: string;
