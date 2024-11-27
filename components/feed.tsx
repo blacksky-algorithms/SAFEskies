@@ -53,8 +53,11 @@ const Feed = (props: FeedProps) => {
 
   console.log('Feed State:', { feed, error, isFetching, hasNextPage });
 
+  if (isFetching && feed.length === 0)
+    return <div className='flex items-center justify-center'>Loading...</div>;
   if (error) return <div>Error: {JSON.stringify(error)}</div>;
-  if (!feed || feed.length === 0) return <div>No feed</div>;
+  if (!feed || feed.length === 0)
+    return <div className='flex items-center justify-center'>It's dry</div>;
 
   return (
     <div

@@ -213,14 +213,16 @@ export const VideoEmbedComponent = ({ embed }: { embed: VideoEmbed }) => {
 
   return (
     <div className='mt-4 border border-gray-300 rounded-md overflow-hidden'>
-      <video
-        controls
-        poster={thumbnail}
-        className='w-full max-w-full h-auto rounded-md'
-      >
-        <source src={playlist} type='application/x-mpegURL' />
-        Your browser does not support the video tag.
-      </video>
+      <div className='aspect-w-16 aspect-h-9'>
+        <video
+          controls
+          poster={thumbnail}
+          className='w-full h-full object-contain rounded-md'
+        >
+          <source src={playlist} type='application/x-mpegURL' />
+          Your browser does not support the video tag.
+        </video>
+      </div>
     </div>
   );
 };
@@ -240,7 +242,7 @@ export const ImagesEmbedComponent = ({ embed }: { embed: ImageEmbed[] }) => {
           <img
             src={image.thumb}
             alt={image.alt || 'Embedded image'}
-            className='w-full h-auto rounded-md object-cover'
+            className='w-full h-auto max-h-64 sm:max-h-80 lg:max-h-none rounded-md object-cover'
           />
         </a>
       ))}
