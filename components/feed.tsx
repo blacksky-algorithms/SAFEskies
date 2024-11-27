@@ -21,23 +21,23 @@ const Feed = (props: FeedProps) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleScroll = () => {
-    if (!containerRef.current) return;
-    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-
-    if (
-      scrollHeight - scrollTop <= clientHeight * 1.5 &&
-      hasNextPage &&
-      !isFetching
-    ) {
-      console.log('Triggering fetchNextPage');
-      fetchNextPage();
-    }
-  };
-
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+      const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+
+      if (
+        scrollHeight - scrollTop <= clientHeight * 1.5 &&
+        hasNextPage &&
+        !isFetching
+      ) {
+        console.log('Triggering fetchNextPage');
+        fetchNextPage();
+      }
+    };
 
     container.addEventListener('scroll', handleScroll);
     return () => container.removeEventListener('scroll', handleScroll);
@@ -56,8 +56,10 @@ const Feed = (props: FeedProps) => {
   if (isFetching && feed.length === 0)
     return <div className='flex items-center justify-center'>Loading...</div>;
   if (error) return <div>Error: {JSON.stringify(error)}</div>;
-  if (!feed || feed.length === 0)
-    return <div className='flex items-center justify-center'>It's dry</div>;
+  if (!feed || (feed.length === 0 && !isFetching) || !hasNextPage)
+    return (
+      <div className='flex items-center justify-center'>It&apos;s dry</div>
+    );
 
   return (
     <div
