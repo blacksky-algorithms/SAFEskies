@@ -24,9 +24,9 @@ export const FeedList = (props: FeedListProps) => {
       </header>
 
       {/* Feed Posts */}
-      <ul className='w-full bg-pink-500' role='list'>
+      <ul className='w-full' role='list'>
         {feed.map((feedPost) => (
-          <li key={feedPost.post.cid} className='mb-4'>
+          <li key={feedPost.post.cid} className='mb-4 max-w-xs'>
             <Post post={feedPost.post} />
           </li>
         ))}

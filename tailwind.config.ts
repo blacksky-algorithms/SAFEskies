@@ -12,6 +12,10 @@ export default {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
       },
+      height: {
+        'post-media-single': '400px',
+        'post-media-multi': '200px',
+      },
     },
   },
   plugins: [require('@tailwindcss/aspect-ratio')],

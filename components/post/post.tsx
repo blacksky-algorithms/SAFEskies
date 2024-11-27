@@ -20,6 +20,7 @@ import {
   isRecordEmbed,
   isVideoEmbed,
 } from '@/types/guards';
+import cc from 'classcat';
 
 // Main Post Component
 export const Post = ({ post }: { post: PostView }) => {
@@ -41,7 +42,9 @@ export const Post = ({ post }: { post: PostView }) => {
 
   return (
     <article
-      className='bg-white border border-gray-300 rounded-md shadow-sm p-4 mb-4 mx-auto w-full'
+      className={cc([
+        'bg-white border border-gray-300 rounded-md shadow-sm p-4 w-full max-w-full mx-auto overflow-hidden',
+      ])}
       role='article'
       aria-labelledby={`post-title-${post.cid}`}
     >
@@ -208,16 +211,15 @@ export const ExternalEmbedComponent = ({ embed }: { embed: ExternalEmbed }) => {
 
 // Video Embed Component
 export const VideoEmbedComponent = ({ embed }: { embed: VideoEmbed }) => {
-  console.log('VideoEmbedComponent', embed);
   const { playlist, thumbnail } = embed;
 
   return (
     <div className='mt-4 border border-gray-300 rounded-md overflow-hidden'>
-      <div className='aspect-w-16 aspect-h-9'>
+      <div className='relative w-full max-w-full aspect-video'>
         <video
           controls
           poster={thumbnail}
-          className='w-full h-full object-contain rounded-md'
+          className='absolute inset-0 w-full h-full object-contain max-w-full rounded-md'
         >
           <source src={playlist} type='application/x-mpegURL' />
           Your browser does not support the video tag.
@@ -229,20 +231,36 @@ export const VideoEmbedComponent = ({ embed }: { embed: VideoEmbed }) => {
 
 // Image Embed Component
 export const ImagesEmbedComponent = ({ embed }: { embed: ImageEmbed[] }) => {
+  const imagesToRender = embed.slice(0, 4); // Limit to 4 images maximum
+
   return (
-    <div className='mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4'>
-      {embed.map((image, index) => (
+    <div
+      className={cc([
+        'mt-4 grid gap-2',
+        {
+          'grid-cols-1': imagesToRender.length === 1,
+          'grid-cols-2': imagesToRender.length > 1,
+        },
+      ])}
+    >
+      {imagesToRender.map((image, index) => (
         <a
           key={index}
           href={image.fullsize}
           target='_blank'
           rel='noopener noreferrer'
-          className='block'
+          className='block w-full'
         >
           <img
             src={image.thumb}
             alt={image.alt || 'Embedded image'}
-            className='w-full h-auto max-h-64 sm:max-h-80 lg:max-h-none rounded-md object-cover'
+            className={cc([
+              'rounded-md object-cover w-full',
+              {
+                'h-post-media-single': imagesToRender.length === 1,
+                'h-post-media-multi': imagesToRender.length > 1,
+              },
+            ])}
           />
         </a>
       ))}
