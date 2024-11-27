@@ -46,10 +46,10 @@ export const Post = ({ post }: { post: PostView }) => {
       aria-labelledby={`post-title-${post.cid}`}
     >
       <header className='flex items-center mb-3'>
-        {author.avatar && (
+        {author?.avatar && (
           <img
             src={author.avatar}
-            alt={`Avatar of ${author.displayName || author.handle}`}
+            alt={`Avatar of ${author?.displayName || author?.handle}`}
             className='w-12 h-12 rounded-full mr-3'
           />
         )}
@@ -58,9 +58,9 @@ export const Post = ({ post }: { post: PostView }) => {
             id={`post-title-${post.cid}`}
             className='text-base font-semibold text-gray-900'
           >
-            {author.displayName || author.handle}
+            {author?.displayName || author?.handle}
           </p>
-          <p className='text-sm text-gray-500'>@{author.handle}</p>
+          <p className='text-sm text-gray-500'>@{author?.handle}</p>
         </div>
       </header>
 
@@ -151,22 +151,22 @@ export const RecordEmbedComponent = ({ embed }: { embed: RecordEmbed }) => {
   return (
     <div className='mt-4 p-3 border border-gray-300 rounded-md bg-gray-100'>
       <header className='flex items-center mb-2'>
-        {author.avatar && (
+        {author?.avatar && (
           <img
             src={author.avatar}
-            alt={`Avatar of ${author.displayName || author.handle}`}
+            alt={`Avatar of ${author?.displayName || author?.handle}`}
             className='w-8 h-8 rounded-full mr-3'
           />
         )}
         <div>
           <p className='text-sm font-semibold text-gray-900'>
-            {author.displayName || author.handle}
+            {author?.displayName || author?.handle}
           </p>
-          <p className='text-xs text-gray-500'>@{author.handle}</p>
+          <p className='text-xs text-gray-500'>@{author?.handle}</p>
         </div>
       </header>
-      <p className='text-gray-700'>{value.text}</p>
-      {value.embed && <EmbedComponent embed={value.embed as EmbedType} />}
+      <p className='text-gray-700'>{value?.text}</p>
+      {value?.embed && <EmbedComponent embed={value.embed as EmbedType} />}
     </div>
   );
 };

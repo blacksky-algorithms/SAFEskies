@@ -12,7 +12,6 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-  userType: 'admin' | 'non-admin';
 }>) {
   /*TODO: FONTS*/
   return (
