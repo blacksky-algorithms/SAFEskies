@@ -10,10 +10,7 @@ interface FeedProps {
 }
 
 const Feed = (props: FeedProps) => {
-  const {
-    did = 'did:plc:qzkrgc4ahglknwb7ymee4a6w',
-    feedName = 'aaafstml2groe',
-  } = props;
+  const { did, feedName } = props;
   const { feed, error, isFetching, hasNextPage, fetchNextPage, refreshFeed } =
     usePaginatedFeed({
       did,

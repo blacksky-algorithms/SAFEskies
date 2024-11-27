@@ -213,7 +213,11 @@ export const VideoEmbedComponent = ({ embed }: { embed: VideoEmbed }) => {
 
   return (
     <div className='mt-4 border border-gray-300 rounded-md overflow-hidden'>
-      <video controls poster={thumbnail} className='w-full h-auto rounded-md'>
+      <video
+        controls
+        poster={thumbnail}
+        className='w-full max-w-full h-auto rounded-md'
+      >
         <source src={playlist} type='application/x-mpegURL' />
         Your browser does not support the video tag.
       </video>
