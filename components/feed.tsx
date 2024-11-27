@@ -76,7 +76,7 @@ const Feed = (props: FeedProps) => {
         if (deltaY > 50 && containerRef.current?.scrollTop === 0)
           handlePullToRefresh();
       }}
-      className='overflow-y-auto h-screen'
+      className='overflow-y-auto h-screen flex flex-col items-center'
     >
       {isRefreshing && <div className='refresh-indicator'>Refreshing...</div>}
       <FeedList feed={feed} feedName={feedName} />
