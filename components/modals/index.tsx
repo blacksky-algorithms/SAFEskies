@@ -1,7 +1,7 @@
 'use client';
 
-import { useModal } from '@/providers/modal-provider';
-import { BaseModalProps } from '@/types/modal-types';
+import { useModal } from '@/contexts/modal-context';
+import { ModalProps } from '@/types/modal-types';
 import {
   Dialog,
   DialogBackdrop,
@@ -13,12 +13,7 @@ import {
 import { Fragment, useEffect } from 'react';
 import { IconButton } from '@/components/button/icon-button';
 
-export const BaseModal = ({
-  id,
-  title,
-  children,
-  size = 'medium',
-}: BaseModalProps) => {
+export const Modal = ({ id, title, children, size = 'medium' }: ModalProps) => {
   const { isOpen, closeModalInstance, registerModal, unregisterModal } =
     useModal();
 

@@ -1,15 +1,14 @@
-import { PublicSideDrawerContent } from '@/components/public-side-drawer-content';
 import { Modal } from '@/components/modals';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 
-export const SideDrawer = () => {
+export const GenericErrorModal = () => {
   return (
     <Modal
-      id={MODAL_INSTANCE_IDS.SIDE_DRAWER}
+      id={MODAL_INSTANCE_IDS.GENERIC_ERROR}
       title='Panel Content'
       size='full'
     >
-      <PublicSideDrawerContent />
+      <p>Something went wrong!</p>
     </Modal>
   );
 };

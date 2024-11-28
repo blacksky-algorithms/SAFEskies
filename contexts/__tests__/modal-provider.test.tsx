@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, act, waitFor } from '@/setupTests';
-import { useModal } from '@/providers/modal-provider';
-import { BaseModal } from '@/components/base-modal';
+import { useModal } from '@/contexts/modal-context';
+import { Modal } from '@/components/modals';
 
 const TestComponent = () => {
   const { openModalInstance, closeModalInstance } = useModal();
@@ -42,7 +42,7 @@ const TestComponent = () => {
   );
 };
 
-describe('ModalProvider and BaseModal Integration', () => {
+describe('ModalProvider and Modal Integration', () => {
   let originalWarn: typeof console.warn;
 
   beforeAll(() => {
@@ -58,9 +58,9 @@ describe('ModalProvider and BaseModal Integration', () => {
   it('should open a registered modal', async () => {
     const { getByText } = render(
       <>
-        <BaseModal id='test-modal' title='Test Modal'>
+        <Modal id='test-modal' title='Test Modal'>
           <p>Modal is open</p>
-        </BaseModal>
+        </Modal>
         <TestComponent />
       </>
     );
@@ -77,9 +77,9 @@ describe('ModalProvider and BaseModal Integration', () => {
   it('should close an open modal', async () => {
     const { getByText } = render(
       <>
-        <BaseModal id='test-modal' title='Test Modal'>
+        <Modal id='test-modal' title='Test Modal'>
           <p>Modal is open</p>
-        </BaseModal>
+        </Modal>
         <TestComponent />
       </>
     );
@@ -104,12 +104,12 @@ describe('ModalProvider and BaseModal Integration', () => {
   it('should handle stacking modals correctly', async () => {
     const { getByText } = render(
       <>
-        <BaseModal id='modal-1' title='Modal 1'>
+        <Modal id='modal-1' title='Modal 1'>
           <p>Modal 1 is open</p>
-        </BaseModal>
-        <BaseModal id='modal-2' title='Modal 2'>
+        </Modal>
+        <Modal id='modal-2' title='Modal 2'>
           <p>Modal 2 is open</p>
-        </BaseModal>
+        </Modal>
         <TestComponent />
       </>
     );
@@ -136,18 +136,18 @@ describe('ModalProvider and BaseModal Integration', () => {
   it('should respect max stacked modal limit', async () => {
     const { getByText } = render(
       <>
-        <BaseModal id='modal-1' title='Modal 1'>
+        <Modal id='modal-1' title='Modal 1'>
           <p>Modal 1 is open</p>
-        </BaseModal>
-        <BaseModal id='modal-2' title='Modal 2'>
+        </Modal>
+        <Modal id='modal-2' title='Modal 2'>
           <p>Modal 2 is open</p>
-        </BaseModal>
-        <BaseModal id='modal-3' title='Modal 3'>
+        </Modal>
+        <Modal id='modal-3' title='Modal 3'>
           <p>Modal 3 is open</p>
-        </BaseModal>
-        <BaseModal id='modal-4' title='Modal 4'>
+        </Modal>
+        <Modal id='modal-4' title='Modal 4'>
           <p>Modal 4 is open</p>
-        </BaseModal>
+        </Modal>
         <TestComponent />
       </>
     );
@@ -179,12 +179,12 @@ describe('ModalProvider and BaseModal Integration', () => {
   it('should close one modal without affecting others in stack', async () => {
     const { getByText } = render(
       <>
-        <BaseModal id='modal-1' title='Modal 1'>
+        <Modal id='modal-1' title='Modal 1'>
           <p>Modal 1 is open</p>
-        </BaseModal>
-        <BaseModal id='modal-2' title='Modal 2'>
+        </Modal>
+        <Modal id='modal-2' title='Modal 2'>
           <p>Modal 2 is open</p>
-        </BaseModal>
+        </Modal>
         <TestComponent />
       </>
     );
@@ -216,12 +216,12 @@ describe('ModalProvider and BaseModal Integration', () => {
   it('should not stack a non-stackable modal', async () => {
     const { getByText } = render(
       <>
-        <BaseModal id='modal-1' title='Modal 1'>
+        <Modal id='modal-1' title='Modal 1'>
           <p>Modal 1 is open</p>
-        </BaseModal>
-        <BaseModal id='test-modal' title='Modal (No Stack)'>
+        </Modal>
+        <Modal id='test-modal' title='Modal (No Stack)'>
           <p>Modal (No Stack) is open</p>
-        </BaseModal>
+        </Modal>
         <TestComponent />
       </>
     );
@@ -259,15 +259,15 @@ describe('ModalProvider and BaseModal Integration', () => {
   it('should respect non-stackable modal behavior in a stack list', async () => {
     const { getByText } = render(
       <>
-        <BaseModal id='modal-1' title='Modal 1'>
+        <Modal id='modal-1' title='Modal 1'>
           <p>Modal 1 is open</p>
-        </BaseModal>
-        <BaseModal id='modal-2' title='Modal 2'>
+        </Modal>
+        <Modal id='modal-2' title='Modal 2'>
           <p>Modal 2 is open</p>
-        </BaseModal>
-        <BaseModal id='test-modal' title='Modal (No Stack)'>
+        </Modal>
+        <Modal id='test-modal' title='Modal (No Stack)'>
           <p>Modal (No Stack) is open</p>
-        </BaseModal>
+        </Modal>
 
         <TestComponent />
       </>

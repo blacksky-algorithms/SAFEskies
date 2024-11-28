@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 
-export type BaseModalProps = {
+export type ModalProps = {
   id: string;
   title?: string;
   size?: 'small' | 'medium' | 'large' | 'full';

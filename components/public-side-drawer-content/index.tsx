@@ -1,7 +1,7 @@
 'use client';
 
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
-import { useModal } from '@/providers/modal-provider';
+import { useModal } from '@/contexts/modal-context';
 import Link from 'next/link';
 import React from 'react';
 

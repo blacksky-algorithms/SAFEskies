@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 import { render as rtlRender } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { Providers } from '@/providers';
+import { Providers } from '@/contexts';
 import { ReactNode, AwaitedReactNode, JSX } from 'react';
 expect.extend(toHaveNoViolations);
 

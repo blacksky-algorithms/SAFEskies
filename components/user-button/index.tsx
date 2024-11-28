@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useModal } from '@/providers/modal-provider';
+import { useModal } from '@/contexts/modal-context';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { Button } from '@/components/button';
 
