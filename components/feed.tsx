@@ -23,46 +23,44 @@ const Feed = ({ did, feedName }: FeedProps) => {
   const { openModalInstance } = useModal();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  console.log({
-    feed,
-    error,
-    isFetching,
-    hasNextPage,
-    fetchNextPage,
-    refreshFeed,
-    openModalInstance,
-    isRefreshing,
-    containerRef,
-  });
+
   // Handle error modal opening when an error occurs
   useEffect(() => {
     if (error) {
-      console.log({ error });
-      debugger;
       openModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR, true);
     }
   }, [error, openModalInstance]);
 
-  // Infinite scroll for loading more items
+  // Debounced scroll handler
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
+    let timeoutId: NodeJS.Timeout | null = null;
+
     const handleScroll = () => {
       if (!containerRef.current) return;
+
       const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
 
-      if (
-        scrollHeight - scrollTop <= clientHeight * 1.5 &&
-        hasNextPage &&
-        !isFetching
-      ) {
-        fetchNextPage();
-      }
+      if (timeoutId) clearTimeout(timeoutId);
+
+      timeoutId = setTimeout(() => {
+        if (
+          scrollHeight - scrollTop <= clientHeight * 1.5 &&
+          hasNextPage &&
+          !isFetching
+        ) {
+          fetchNextPage();
+        }
+      }, 100);
     };
 
     container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      container.removeEventListener('scroll', handleScroll);
+    };
   }, [hasNextPage, isFetching, fetchNextPage]);
 
   // Pull-to-refresh functionality
@@ -96,6 +94,7 @@ const Feed = ({ did, feedName }: FeedProps) => {
         }}
         className='overflow-y-auto h-screen flex flex-col items-center'
       >
+        {isRefreshing && <div className='refresh-indicator'>Refreshing...</div>}
         <FeedList feed={feed} feedName={feedName} />
       </div>
 

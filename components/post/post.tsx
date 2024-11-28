@@ -120,7 +120,6 @@ export const Post = ({ post }: { post: PostView }) => {
 
 // Embed Component
 export const EmbedComponent = ({ embed }: { embed: EmbedType }) => {
-  console.log('EmbedComponent', { embed });
   if (!embed) return null;
 
   if (isExternalEmbed(embed)) {
