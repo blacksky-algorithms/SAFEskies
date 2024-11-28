@@ -3,14 +3,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FeedList } from '@/components/feed-list/feed-list';
 import { usePaginatedFeed } from '@/hooks/usePaginatedFeed';
+import { MODAL_INSTANCE_IDS } from '@/enums/modals';
+import { useModal } from '@/contexts/modal-context';
 
 interface FeedProps {
   did: string;
   feedName: string;
 }
 
-const Feed = (props: FeedProps) => {
-  const { did, feedName } = props;
+const Feed = ({ did, feedName }: FeedProps) => {
   const { feed, error, isFetching, hasNextPage, fetchNextPage, refreshFeed } =
     usePaginatedFeed({
       did,
@@ -18,7 +19,9 @@ const Feed = (props: FeedProps) => {
       limit: 10,
     });
 
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { openModalInstance } = useModal();
+  const [hasErrorModalOpened, setHasErrorModalOpened] = useState(false); // Prevent repeated modal opening
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,22 +47,26 @@ const Feed = (props: FeedProps) => {
   }, [hasNextPage, isFetching]);
 
   const handlePullToRefresh = async () => {
-    if (isRefreshing) return;
-    setIsRefreshing(true);
+    if (isFetching) return;
     console.log('Pull to Refresh Triggered');
     await refreshFeed();
-    setIsRefreshing(false);
   };
 
-  console.log('Feed State:', { feed, error, isFetching, hasNextPage });
+  useEffect(() => {
+    if (error && !hasErrorModalOpened) {
+      openModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR, true);
+      setHasErrorModalOpened(true); // Mark as opened to prevent repeated calls
+    }
+  }, [error, hasErrorModalOpened, openModalInstance]);
 
   if (isFetching && feed.length === 0)
     return <div className='flex items-center justify-center'>Loading...</div>;
-  if (error) return <div>Error: {JSON.stringify(error)}</div>;
-  if (!feed || (feed.length === 0 && !isFetching) || !hasNextPage)
+
+  if (!feed || (feed.length === 0 && !isFetching)) {
     return (
       <div className='flex items-center justify-center'>It&apos;s dry</div>
     );
+  }
 
   return (
     <div
@@ -78,7 +85,6 @@ const Feed = (props: FeedProps) => {
       }}
       className='overflow-y-auto h-screen flex flex-col items-center'
     >
-      {isRefreshing && <div className='refresh-indicator'>Refreshing...</div>}
       <FeedList feed={feed} feedName={feedName} />
     </div>
   );

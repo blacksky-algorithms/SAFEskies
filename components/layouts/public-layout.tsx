@@ -3,6 +3,7 @@ import { SideDrawerContent } from '@/components/side-drawer-content';
 import { Footer } from '@/components/footer';
 import { SideDrawer } from '@/components/side-drawer';
 import { PropsWithChildren } from 'react';
+import { GenericErrorModal } from '@/components/modals/generic-error-modal';
 
 export const PublicLayout = ({ children }: PropsWithChildren) => {
   return (
@@ -15,6 +16,7 @@ export const PublicLayout = ({ children }: PropsWithChildren) => {
       <Footer />
       {/* Modals and Drawers */}
       <SideDrawer />
+      <GenericErrorModal />
     </div>
   );
 };
