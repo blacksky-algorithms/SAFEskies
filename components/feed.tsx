@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { FeedList } from '@/components/feed-list/feed-list';
 import { usePaginatedFeed } from '@/hooks/usePaginatedFeed';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
@@ -20,8 +20,6 @@ const Feed = ({ did, feedName }: FeedProps) => {
     });
 
   const { openModalInstance } = useModal();
-  const [hasErrorModalOpened, setHasErrorModalOpened] = useState(false); // Prevent repeated modal opening
-
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -37,7 +35,6 @@ const Feed = ({ did, feedName }: FeedProps) => {
         hasNextPage &&
         !isFetching
       ) {
-        console.log('Triggering fetchNextPage');
         fetchNextPage();
       }
     };
@@ -48,16 +45,14 @@ const Feed = ({ did, feedName }: FeedProps) => {
 
   const handlePullToRefresh = async () => {
     if (isFetching) return;
-    console.log('Pull to Refresh Triggered');
     await refreshFeed();
   };
 
   useEffect(() => {
-    if (error && !hasErrorModalOpened) {
+    if (error) {
       openModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR, true);
-      setHasErrorModalOpened(true); // Mark as opened to prevent repeated calls
     }
-  }, [error, hasErrorModalOpened, openModalInstance]);
+  }, [error, openModalInstance]);
 
   if (isFetching && feed.length === 0)
     return <div className='flex items-center justify-center'>Loading...</div>;

@@ -16,13 +16,12 @@ type ModalState = {
   unregisterModal: (id: string) => void;
 };
 
-// Centralized configuration
 const MODAL_CONFIG = {
   MAX_STACKED_MODALS: parseInt(
     process.env.NEXT_PUBLIC_MAX_STACKED_MODALS || '3',
     10
   ),
-  ENABLE_DEBUG: false /* Set to true to enable debug logs */,
+  ENABLE_DEBUG: false,
 };
 
 // Validate `MAX_STACKED_MODALS`
@@ -42,7 +41,7 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
   const [registeredModals, setRegisteredModals] = useState<Set<string>>(
     new Set()
   );
-  const [pendingOpens, setPendingOpens] = useState<Set<string>>(new Set());
+  const [openedModals, setOpenedModals] = useState<Set<string>>(new Set()); // Tracks which modals have been opened
 
   const isOpen = useCallback((id: string) => !!modals[id], [modals]);
 
@@ -54,8 +53,6 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
 
   const ensureModalIsRegistered = (id: string): boolean => {
     if (!registeredModals.has(id)) {
-      setPendingOpens((prev) => new Set(prev).add(id));
-      logDebug(`Modal "${id}" is pending registration.`, { id });
       return false;
     }
     return true;
@@ -64,6 +61,13 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
   const openModalInstance = useCallback(
     (id: string, allowStacking: boolean = false) => {
       if (!ensureModalIsRegistered(id)) return;
+
+      if (openedModals.has(id)) {
+        logDebug(`Modal "${id}" is already open or has been opened before.`, {
+          id,
+        });
+        return; // Prevent repeated opening of the same modal
+      }
 
       const openModalCount = Object.values(modals).filter(Boolean).length;
 
@@ -84,10 +88,11 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
         ...(allowStacking ? prev : {}),
         [id]: true,
       }));
+      setOpenedModals((prev) => new Set(prev).add(id)); // Track opened modal
 
       logDebug('Modal state after opening', modals);
     },
-    [modals]
+    [modals, registeredModals, openedModals]
   );
 
   const closeModalInstance = useCallback(
@@ -104,20 +109,10 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
     [registeredModals]
   );
 
-  const registerModal = useCallback(
-    (id: string) => {
-      setRegisteredModals((prev) => {
-        const updated = new Set(prev).add(id);
-        if (pendingOpens.has(id)) {
-          pendingOpens.delete(id);
-          setModals((prevModals) => ({ ...prevModals, [id]: true }));
-        }
-        logDebug('Registered modals', updated);
-        return updated;
-      });
-    },
-    [pendingOpens]
-  );
+  const registerModal = useCallback((id: string) => {
+    setRegisteredModals((prev) => new Set(prev).add(id));
+    logDebug('Registered modals', registeredModals);
+  }, []);
 
   const unregisterModal = useCallback((id: string) => {
     setRegisteredModals((prev) => {
@@ -130,6 +125,13 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
       const { [id]: _, ...rest } = prev;
       return rest;
     });
+
+    setOpenedModals((prev) => {
+      const updated = new Set(prev);
+      updated.delete(id);
+      return updated;
+    });
+
     logDebug('Unregistered modals', registeredModals);
   }, []);
 
