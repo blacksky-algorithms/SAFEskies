@@ -66,16 +66,31 @@ const Feed = ({ did, feedName }: FeedProps) => {
   // Pull-to-refresh functionality
   const handlePullToRefresh = async () => {
     if (isRefreshing) return;
+
     setIsRefreshing(true);
-    await refreshFeed();
-    setIsRefreshing(false);
+    try {
+      await refreshFeed();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   // Function to refetch feed when error modal is closed
   const handleErrorModalClose = () => {
     refreshFeed();
   };
-
+  console.log({
+    hasNextPage,
+    isFetching,
+    feed,
+    error,
+    isRefreshing,
+    containerRef,
+    openModalInstance,
+    refreshFeed,
+    handlePullToRefresh,
+    handleErrorModalClose,
+  });
   return (
     <>
       <div

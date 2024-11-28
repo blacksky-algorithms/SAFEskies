@@ -1,5 +1,5 @@
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { FeedParams, fetchFeed } from '@/repos/feed-repo';
-import { useState, useEffect, useCallback, useMemo } from 'react';
 
 interface FeedState {
   feed: any[];
@@ -22,13 +22,26 @@ export const usePaginatedFeed = ({
     error: null,
   });
 
+  const controllerRef = useRef<AbortController | null>(null);
+
   const updateState = (partialState: Partial<FeedState>) => {
     setState((prevState) => ({ ...prevState, ...partialState }));
+  };
+
+  // Abort any ongoing fetch
+  const abortOngoingRequest = () => {
+    if (controllerRef.current) {
+      controllerRef.current.abort();
+    }
+    controllerRef.current = new AbortController();
   };
 
   const fetchNextPage = useCallback(async () => {
     const { hasNextPage, isFetching, cursor, feed } = state;
     if (!hasNextPage || isFetching) return;
+
+    abortOngoingRequest();
+    const signal = controllerRef.current?.signal;
 
     updateState({ isFetching: true });
 
@@ -38,6 +51,7 @@ export const usePaginatedFeed = ({
         feedName,
         limit,
         cursor,
+        signal,
       });
 
       const uniqueFeed = Array.from(
@@ -53,13 +67,20 @@ export const usePaginatedFeed = ({
         error: null,
       });
     } catch (error) {
-      updateState({ error: error as Error });
+      if ((error as Error).name !== 'AbortError') {
+        updateState({ error: error as Error });
+      }
     } finally {
-      updateState({ isFetching: false });
+      if (!signal?.aborted) {
+        updateState({ isFetching: false });
+      }
     }
   }, [state, did, feedName, limit]);
 
   const refreshFeed = useCallback(async () => {
+    abortOngoingRequest();
+    const signal = controllerRef.current?.signal;
+
     updateState({ isFetching: true, error: null });
 
     try {
@@ -67,6 +88,7 @@ export const usePaginatedFeed = ({
         did,
         feedName,
         limit,
+        signal,
       });
 
       const uniqueFeed = Array.from(
@@ -80,15 +102,19 @@ export const usePaginatedFeed = ({
         error: null,
       });
     } catch (error) {
-      updateState({ error: error as Error });
+      if ((error as Error).name !== 'AbortError') {
+        updateState({ error: error as Error });
+      }
     } finally {
-      updateState({ isFetching: false });
+      if (!signal?.aborted) {
+        updateState({ isFetching: false });
+      }
     }
   }, [did, feedName, limit]);
 
   useEffect(() => {
     const controller = new AbortController();
-    const { signal } = controller;
+    controllerRef.current = controller;
 
     const initializeFeed = async () => {
       updateState({
@@ -104,7 +130,7 @@ export const usePaginatedFeed = ({
           did,
           feedName,
           limit,
-          signal,
+          signal: controller.signal,
         });
 
         const uniqueFeed = Array.from(
@@ -114,21 +140,23 @@ export const usePaginatedFeed = ({
         updateState({
           feed: uniqueFeed,
           cursor: initialCursor,
-          isFetching: false,
           hasNextPage: !!initialCursor,
           error: null,
         });
       } catch (error) {
-        if (signal.aborted) return; // Ignore abort errors
-        updateState({ error: error as Error });
+        if ((error as Error).name !== 'AbortError') {
+          updateState({ error: error as Error });
+        }
       } finally {
-        updateState({ isFetching: false });
+        if (!controller.signal.aborted) {
+          updateState({ isFetching: false });
+        }
       }
     };
 
     initializeFeed();
 
-    return () => controller.abort();
+    return () => controller.abort(); // Abort on unmount
   }, [did, feedName, limit]);
 
   return useMemo(

@@ -12,7 +12,6 @@ export const GenericErrorModal = ({
   onClose,
   children,
 }: GenericErrorModalProps) => {
-  console.log('GenericErrorModal mounted');
   return (
     <Modal
       id={MODAL_INSTANCE_IDS.GENERIC_ERROR}
