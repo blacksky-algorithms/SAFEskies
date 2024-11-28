@@ -13,8 +13,8 @@ export default {
         foreground: 'var(--foreground)',
       },
       height: {
-        'post-media-single': '400px',
-        'post-media-multi': '200px',
+        'theme-post-media-single': '400px',
+        'theme-post-media-multi': '200px',
       },
     },
   },
