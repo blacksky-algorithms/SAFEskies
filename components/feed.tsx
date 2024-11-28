@@ -26,7 +26,7 @@ const Feed = ({ did, feedName }: FeedProps) => {
 
   // Handle error modal opening when an error occurs
   useEffect(() => {
-    if (error) {
+    if (error && error.name !== 'AbortError') {
       openModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR, true);
     }
   }, [error, openModalInstance]);
@@ -53,7 +53,7 @@ const Feed = ({ did, feedName }: FeedProps) => {
         ) {
           fetchNextPage();
         }
-      }, 100);
+      }, 150);
     };
 
     container.addEventListener('scroll', handleScroll);
@@ -79,18 +79,7 @@ const Feed = ({ did, feedName }: FeedProps) => {
   const handleErrorModalClose = () => {
     refreshFeed();
   };
-  console.log({
-    hasNextPage,
-    isFetching,
-    feed,
-    error,
-    isRefreshing,
-    containerRef,
-    openModalInstance,
-    refreshFeed,
-    handlePullToRefresh,
-    handleErrorModalClose,
-  });
+
   return (
     <>
       <div
