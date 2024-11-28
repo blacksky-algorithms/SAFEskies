@@ -9,8 +9,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: 'var(--background)',
-        foreground: 'var(--foreground)',
+        'theme-background': 'var(--background)',
+        'theme-foreground': 'var(--foreground)',
       },
       height: {
         'theme-post-media-single': '400px',

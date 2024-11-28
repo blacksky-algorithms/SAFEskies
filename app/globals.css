@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS Variables */
+:root {
+  --background: #1c1b1b;
+  --foreground: #e4e4e4;
+  --visited: #a0a0a0;
+}
+
 /* CSS Reset */
 *,
 *::before,
@@ -19,11 +26,18 @@ body {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background); /* Use the variable for background */
+  color: var(--foreground); /* Use the variable for text */
 }
 
+/* Link Styles */
 a {
-  color: inherit;
+  color: var(--foreground);
   text-decoration: none;
+}
+
+a:visited {
+  color: var(--visited); /* Use the variable for visited link color */
 }
 
 button,

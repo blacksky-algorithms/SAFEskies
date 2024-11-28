@@ -257,8 +257,8 @@ export const ImagesEmbedComponent = ({ embed }: { embed: ImageEmbed[] }) => {
             className={cc([
               'rounded-md object-cover w-full',
               {
-                'h-post-media-single': imagesToRender.length === 1,
-                'h-post-media-multi': imagesToRender.length > 1,
+                'h-theme-post-media-single': imagesToRender.length === 1,
+                'h-theme-post-media-multi': imagesToRender.length > 1,
               },
             ])}
           />

@@ -52,7 +52,7 @@ export const BaseModal = ({
           leaveFrom='opacity-100'
           leaveTo='opacity-0'
         >
-          <DialogBackdrop className='fixed inset-0 bg-black bg-opacity-80' />
+          <DialogBackdrop className='fixed inset-0  bg-opacity-80' />
         </TransitionChild>
 
         {/* Dialog Panel */}

@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <html
       lang='en'
-      className='container mx-auto bg-black min-w-screen overscroll-auto text-white'
+      className='container mx-auto min-w-screen overscroll-auto text-white'
     >
       <body>
         <Providers>
