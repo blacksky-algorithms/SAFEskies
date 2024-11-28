@@ -12,8 +12,16 @@ import {
 } from '@headlessui/react';
 import { Fragment, useEffect } from 'react';
 import { IconButton } from '@/components/button/icon-button';
+import cc from 'classcat';
 
-export const Modal = ({ id, title, children, size = 'medium' }: ModalProps) => {
+export const Modal = ({
+  id,
+  title,
+  children,
+  size = 'medium',
+  className = '',
+  onClose = () => {},
+}: ModalProps) => {
   const { isOpen, closeModalInstance, registerModal, unregisterModal } =
     useModal();
 
@@ -29,6 +37,11 @@ export const Modal = ({ id, title, children, size = 'medium' }: ModalProps) => {
     medium: 'max-w-md',
     large: 'max-w-2xl',
     full: 'w-full h-full',
+  };
+
+  const handleClose = () => {
+    onClose();
+    closeModalInstance(id);
   };
 
   return (
@@ -63,12 +76,16 @@ export const Modal = ({ id, title, children, size = 'medium' }: ModalProps) => {
             leaveTo='opacity-0 scale-95'
           >
             <DialogPanel
-              className={`bg-gray-900  p-6 rounded-lg shadow-lg relative overflow-y-auto ${sizeClasses[size]}`}
+              className={cc([
+                'bg-gray-900 p-6 rounded-lg shadow-lg relative overflow-y-auto',
+                sizeClasses[size],
+                className,
+              ])}
             >
               {/* Close Button */}
               <IconButton
                 className='absolute top-4 right-4 p-2 '
-                onClick={() => closeModalInstance(id)}
+                onClick={handleClose}
                 aria-label='Close modal'
                 icon='XMarkIcon'
               />

@@ -131,23 +131,6 @@ export const usePaginatedFeed = ({
     return () => controller.abort();
   }, [did, feedName, limit]);
 
-  return {
-    feed: [],
-    error: {
-      error: 'UpstreamFailure',
-      headers: {
-        'content-length': '56',
-        'content-type': 'application/json; charset=utf-8',
-      },
-      success: false,
-      status: 502,
-    },
-    isFetching: false,
-    hasNextPage: false,
-    fetchNextPage: () => {},
-    refreshFeed: () => {},
-  };
-
   return useMemo(
     () => ({
       feed: state.feed,

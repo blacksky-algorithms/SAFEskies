@@ -1,10 +1,28 @@
+'use client';
+
 import { Modal } from '@/components/modals';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 
-export const GenericErrorModal = () => {
+interface GenericErrorModalProps {
+  onClose?: () => void;
+  children?: React.ReactNode;
+}
+
+export const GenericErrorModal = ({
+  onClose,
+  children,
+}: GenericErrorModalProps) => {
+  console.log('GenericErrorModal mounted');
   return (
-    <Modal id={MODAL_INSTANCE_IDS.GENERIC_ERROR} title='Oh no!' size='medium'>
-      <p>Something went wrong!</p>
+    <Modal
+      id={MODAL_INSTANCE_IDS.GENERIC_ERROR}
+      title='Oh no!'
+      size='medium'
+      onClose={onClose}
+      className='flex flex-col items-center gap-y-4'
+    >
+      <p className='text-center'>Something went wrong!</p>
+      {children}
     </Modal>
   );
 };

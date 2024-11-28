@@ -16,7 +16,6 @@ export const PublicLayout = ({ children }: PropsWithChildren) => {
       <Footer />
       {/* Modals and Drawers */}
       <SideDrawer />
-      <GenericErrorModal />
     </div>
   );
 };
