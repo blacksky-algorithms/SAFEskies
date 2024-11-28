@@ -7,6 +7,19 @@
   --background: #1c1b1b;
   --foreground: #e4e4e4;
   --visited: #a0a0a0;
+  /* Button Colors */
+  --btn-primary: #0db9d7; /* Teal */
+  --btn-primary-hover: #0ca4c3;
+  --btn-secondary: #585858; /* Muted Gray */
+  --btn-secondary-hover: #4a4a4a;
+  --btn-error: #f56565; /* Red */
+  --btn-error-hover: #e05353;
+  --btn-info: #4299e1; /* Blue */
+  --btn-info-hover: #3182ce;
+  --btn-success: #48bb78; /* Green */
+  --btn-success-hover: #38a169;
+  --btn-text: #e5e5e5; /* Light shade to match foreground theme */
+  --btn-text-hover: #ffffff; /* White */
 }
 
 /* CSS Reset */
@@ -40,7 +53,62 @@ a:visited {
   color: var(--visited); /* Use the variable for visited link color */
 }
 
-button,
+/* Button Base Styles */
+button {
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Button Variants */
+button.primary {
+  background-color: var(--btn-primary);
+  color: var(--foreground);
+}
+
+button.primary:hover {
+  background-color: var(--btn-primary-hover);
+}
+
+button.secondary {
+  background-color: var(--btn-secondary);
+  color: var(--foreground);
+}
+
+button.secondary:hover {
+  background-color: var(--btn-secondary-hover);
+}
+
+button.error {
+  background-color: var(--btn-error);
+  color: var(--foreground);
+}
+
+button.error:hover {
+  background-color: var(--btn-error-hover);
+}
+
+button.info {
+  background-color: var(--btn-info);
+  color: var(--foreground);
+}
+
+button.info:hover {
+  background-color: var(--btn-info-hover);
+}
+
+button.success {
+  background-color: var(--btn-success);
+  color: var(--foreground);
+}
+
+button.success:hover {
+  background-color: var(--btn-success-hover);
+}
+
 input,
 textarea,
 select {

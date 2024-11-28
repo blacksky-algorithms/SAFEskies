@@ -11,6 +11,7 @@ import {
   TransitionChild,
 } from '@headlessui/react';
 import { Fragment, useEffect } from 'react';
+import { IconButton } from '@/components/button/icon-button';
 
 export const BaseModal = ({
   id,
@@ -70,14 +71,12 @@ export const BaseModal = ({
               className={`bg-gray-900  p-6 rounded-lg shadow-lg relative overflow-y-auto ${sizeClasses[size]}`}
             >
               {/* Close Button */}
-              <button
-                className='absolute top-4 right-4 bg-gray-700  p-2 rounded-full hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500'
+              <IconButton
+                className='absolute top-4 right-4 p-2 '
                 onClick={() => closeModalInstance(id)}
                 aria-label='Close modal'
-              >
-                ✕
-              </button>
-
+                icon='XMarkIcon'
+              />
               {/* Title (Optional) */}
               {title && (
                 <DialogTitle className='text-lg font-bold mb-4'>

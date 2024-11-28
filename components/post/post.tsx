@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  ChatBubbleLeftIcon,
-  ArrowPathRoundedSquareIcon,
-  HeartIcon,
-  LinkIcon,
-} from '@heroicons/react/24/outline';
+import { Icon } from '@/components/icon';
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import {
   EmbedType,
@@ -89,34 +84,34 @@ export const Post = ({ post }: { post: PostView }) => {
           Posted on: {new Date(postRecord.createdAt).toLocaleDateString()}
         </span>
         <div className='flex items-center space-x-4'>
-          <span
+          <div
             className='flex items-center space-x-1'
             aria-label={`${replyCount} replies`}
           >
-            <ChatBubbleLeftIcon className='h-5 w-5 text-gray-500' />
+            <Icon icon='ChatBubbleLeftIcon' className='h-5 w-5' />
             <span>{replyCount}</span>
-          </span>
-          <span
+          </div>
+          <div
             className='flex items-center space-x-1'
             aria-label={`${repostCount} reposts`}
           >
-            <ArrowPathRoundedSquareIcon className='h-5 w-5 text-gray-500' />
+            <Icon icon='ArrowPathRoundedSquareIcon' className='h-5 w-5' />
             <span>{repostCount}</span>
-          </span>
-          <span
+          </div>
+          <div
             className='flex items-center space-x-1'
             aria-label={`${likeCount} likes`}
           >
-            <HeartIcon className='h-5 w-5 text-gray-500' />
+            <Icon icon='HeartIcon' className='h-5 w-5' />
             <span>{likeCount}</span>
-          </span>
-          <span
+          </div>
+          <div
             className='flex items-center space-x-1'
             aria-label={`${quoteCount} quotes`}
           >
-            <LinkIcon className='h-5 w-5 text-gray-500' />
+            <Icon icon='LinkIcon' className='h-5 w-5' />
             <span>{quoteCount}</span>
-          </span>
+          </div>
         </div>
       </footer>
     </article>
@@ -257,8 +252,8 @@ export const ImagesEmbedComponent = ({ embed }: { embed: ImageEmbed[] }) => {
             className={cc([
               'rounded-md object-cover w-full',
               {
-                'h-theme-post-media-single': imagesToRender.length === 1,
-                'h-theme-post-media-multi': imagesToRender.length > 1,
+                'h-post-media-single': imagesToRender.length === 1,
+                'h-post-media-multi': imagesToRender.length > 1,
               },
             ])}
           />
