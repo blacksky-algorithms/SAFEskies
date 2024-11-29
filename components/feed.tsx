@@ -81,7 +81,15 @@ const Feed = ({ did, feedName }: FeedProps) => {
   };
 
   return (
-    <>
+    <section
+      className='flex w-full flex-col items-center relative tablet:max-w-md desktop:max-w-lg'
+      aria-labelledby={`feed-title-${feedName}`}
+    >
+      <header className='w-full text-center my-4'>
+        <h1 id={`feed-title-${feedName}`} className='text-2xl font-bold '>
+          {feedName}
+        </h1>
+      </header>
       <div
         ref={containerRef}
         onTouchStart={(e) =>
@@ -99,13 +107,13 @@ const Feed = ({ did, feedName }: FeedProps) => {
         className='overflow-y-auto h-screen flex flex-col items-center'
       >
         {isRefreshing && <div className='refresh-indicator'>Refreshing...</div>}
-        <FeedList feed={feed} feedName={feedName} />
+        <FeedList feed={feed} />
       </div>
 
       <GenericErrorModal onClose={handleErrorModalClose}>
         <p>{`${feedName} is unavailable`}</p>
       </GenericErrorModal>
-    </>
+    </section>
   );
 };
 
