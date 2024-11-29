@@ -21,7 +21,7 @@ const MODAL_CONFIG = {
     process.env.NEXT_PUBLIC_MAX_STACKED_MODALS || '3',
     10
   ),
-  ENABLE_DEBUG: false,
+  ENABLE_DEBUG: true,
 };
 
 // Validate `MAX_STACKED_MODALS`
@@ -44,19 +44,22 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
 
   const isOpen = useCallback((id: string) => !!modals[id], [modals]);
 
-  const logDebug = (message: string, data?: any) => {
+  const logDebug = (message: string, data?: unknown) => {
     if (MODAL_CONFIG.ENABLE_DEBUG) {
       console.debug(`[ModalContext] ${message}`, data);
     }
   };
 
-  const ensureModalIsRegistered = (id: string): boolean => {
-    if (!registeredModals.has(id)) {
-      logDebug(`Modal "${id}" is not registered.`);
-      return false;
-    }
-    return true;
-  };
+  const ensureModalIsRegistered = useCallback(
+    (id: string): boolean => {
+      if (!registeredModals.has(id)) {
+        logDebug(`Modal "${id}" is not registered.`);
+        return false;
+      }
+      return true;
+    },
+    [registeredModals]
+  );
 
   const openModalInstance = useCallback(
     (id: string, allowStacking = false) => {
@@ -93,15 +96,25 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
     [ensureModalIsRegistered]
   );
 
-  const closeModalInstance = useCallback((id: string) => {
-    if (!ensureModalIsRegistered(id)) {
-      console.warn(`Cannot close unregistered modal "${id}".`);
-      return;
-    }
+  const closeModalInstance = useCallback(
+    (id: string) => {
+      if (!ensureModalIsRegistered(id)) {
+        console.warn(`Cannot close unregistered modal "${id}".`);
+        return;
+      }
 
-    setModals((prev) => ({ ...prev, [id]: false }));
-    logDebug(`Closed modal "${id}".`);
-  }, []);
+      setModals((prev) => {
+        if (!prev[id]) {
+          console.warn(`Modal "${id}" is already closed.`);
+          return prev;
+        }
+
+        return { ...prev, [id]: false };
+      });
+      logDebug(`Closed modal "${id}".`);
+    },
+    [ensureModalIsRegistered]
+  );
 
   const registerModal = useCallback((id: string) => {
     setRegisteredModals((prev) => {
@@ -119,7 +132,9 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
     });
 
     setModals((prev) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [id]: _, ...rest } = prev;
+
       return rest;
     });
 

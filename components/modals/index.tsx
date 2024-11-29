@@ -46,11 +46,7 @@ export const Modal = ({
 
   return (
     <Transition show={isOpen(id)} as={Fragment}>
-      <Dialog
-        as='div'
-        className='fixed inset-0 z-50'
-        onClose={() => closeModalInstance(id)}
-      >
+      <Dialog as='div' className='fixed inset-0 z-50' onClose={handleClose}>
         {/* Backdrop */}
         <TransitionChild
           as={Fragment}
