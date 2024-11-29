@@ -54,7 +54,8 @@ export const Post = ({ post }: { post: PostView }) => {
       <header className='flex items-center mb-3'>
         {author?.avatar && (
           <img
-            src={author.avatar}
+            loading='lazy'
+            src={`${author.avatar}?w=48&h=48`} // Resize avatar
             alt={`Avatar of ${author?.displayName || author?.handle}`}
             className='w-12 h-12 rounded-full mr-3'
           />
@@ -124,6 +125,7 @@ export const RecordEmbedComponent = ({ embed }: { embed: RecordEmbed }) => {
       <header className='flex items-center mb-2'>
         {author?.avatar && (
           <img
+            loading='lazy'
             src={author.avatar}
             alt={`Avatar of ${author?.displayName || author?.handle}`}
             className='w-8 h-8 rounded-full mr-3'
@@ -168,7 +170,10 @@ export const VideoEmbedComponent = ({ embed }: { embed: VideoEmbed }) => {
       <video
         controls
         poster={thumbnail}
-        className='w-full h-full object-cover rounded-md'
+        loop
+        muted
+        playsInline
+        className='w-full h-auto object-cover'
       >
         {mimeType && <source src={videoSource} type={mimeType} />}
         <source src={videoSource} type='video/mp4' />
@@ -199,16 +204,18 @@ export const ImagesEmbedComponent = ({ embed }: { embed: ImageEmbed[] }) => {
           href={image.fullsize}
           target='_blank'
           rel='noopener noreferrer'
-          className='block relative w-full hover:bg-theme-btn-primary-hover'
+          className='block relative'
         >
           <img
+            loading='lazy'
             src={image.thumb}
             alt={image.alt || ''}
-            className='object-cover w-full h-full rounded-md'
-            style={{
-              transitionDuration: '0ms',
-              transitionTimingFunction: 'linear',
-            }}
+            className={cc([
+              'object-cover rounded-md w-full',
+              imagesToRender.length === 1
+                ? 'h-auto'
+                : 'h-theme-post-image-multi',
+            ])}
           />
         </a>
       ))}
@@ -282,24 +289,35 @@ export const ExternalEmbedComponent = ({ embed }: { embed: ExternalEmbed }) => {
     return null;
   }
 
-  const isGif =
-    (typeof uri === 'string' && uri.toLowerCase().includes('.gif')) ||
-    (typeof thumb === 'string' && thumb.toLowerCase().includes('.gif'));
+  const isGif = uri.toLowerCase().endsWith('.gif');
 
   const renderMedia = () => {
     if (isGif) {
+      // Convert GIFs to WebM/MP4 for efficient rendering
+      const optimizedUri = uri.replace('.gif', '.webm'); // Assuming you host the optimized version
+
       return (
-        <img
-          src={uri}
-          alt={description || 'External GIF'}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
           className='w-full h-auto object-cover'
-        />
+        >
+          <source src={optimizedUri} type='video/webm' />
+          <source
+            src={optimizedUri.replace('.webm', '.mp4')}
+            type='video/mp4'
+          />
+          Your browser does not support the video tag.
+        </video>
       );
     }
 
     if (thumb) {
       return (
         <img
+          loading='lazy'
           src={thumb}
           alt={description || 'External content'}
           className='w-full h-auto object-cover'

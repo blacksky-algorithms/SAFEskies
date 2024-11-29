@@ -1,3 +1,4 @@
+import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AtprotoAgent } from './atproto-agent';
 
 export interface FeedParams {
@@ -9,7 +10,7 @@ export interface FeedParams {
 }
 
 export interface FeedResponse {
-  feed: any[];
+  feed: FeedViewPost[];
   cursor?: string;
 }
 
@@ -28,6 +29,6 @@ export const fetchFeed = async ({
     },
     { signal } // Pass signal to the request options
   );
-
+  console.log('fetchFeed firing: ', data);
   return { feed: data.feed, cursor: data.cursor };
 };

@@ -30,8 +30,11 @@ export default {
         'theme-btn-text-hover': 'var(--btn-text-hover)',
       },
       height: {
-        'theme-post-media-single': '400px',
-        'theme-post-media-multi': '200px',
+        'theme-post-image-multi': '200px',
+      },
+      width: {
+        'theme-post-image-multi': '200px',
+        'theme-post-image-single': '100%',
       },
     },
   },
