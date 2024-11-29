@@ -94,7 +94,7 @@ export const Feed = ({ did, feedName }: FeedProps) => {
 
   return (
     <section
-      className='flex w-full flex-col items-center relative tablet:max-w-md desktop:max-w-lg'
+      className='flex w-full flex-col items-center relative max-w-screen desktop:max-w-lg mx-auto'
       aria-labelledby={`feed-title-${feedName}`}
     >
       <header className='w-full text-center my-4'>
