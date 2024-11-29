@@ -1,10 +1,8 @@
 import Feed from '@/components/feed';
-import { background } from '@/utils/todo';
 
 export default async function page() {
+  // TODO: remove hardcoded values
   return (
-    <div className={background}>
-      <Feed did='did:plc:qzkrgc4ahglknwb7ymee4a6w' feedName='aaafstml2groe' />
-    </div>
+    <Feed did='did:plc:qzkrgc4ahglknwb7ymee4a6w' feedName='aaafstml2groe' />
   );
 }

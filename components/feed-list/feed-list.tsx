@@ -23,7 +23,6 @@ export const FeedList = (props: FeedListProps) => {
         </h1>
       </header>
 
-      {/* Feed Posts */}
       <ul className='w-full flex flex-col items-center' role='list'>
         {feed.map((feedPost) => (
           <li
