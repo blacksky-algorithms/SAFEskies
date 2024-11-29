@@ -7,7 +7,7 @@ interface FeedState {
   cursor?: string;
   isFetching: boolean;
   hasNextPage: boolean;
-  error: Error | null;
+  error: string | null; // Updated to reflect the error type from `fetchFeed`
 }
 
 export const usePaginatedFeed = ({
@@ -37,27 +37,24 @@ export const usePaginatedFeed = ({
     controllerRef.current = new AbortController();
   };
 
-  const fetchNextPage = useCallback(async () => {
-    const { hasNextPage, isFetching, cursor, feed } = state;
-    if (!hasNextPage || isFetching) return;
+  // Process the fetch response
+  const handleFetchResponse = useCallback(
+    (response: Awaited<ReturnType<typeof fetchFeed>>) => {
+      if ('error' in response) {
+        // Check if error is actionable (not AbortError)
+        if (response.error !== 'AbortError') {
+          updateState({ error: response.error, isFetching: false });
+        } else {
+          updateState({ isFetching: false });
+        }
+        return;
+      }
 
-    abortOngoingRequest();
-    const signal = controllerRef.current?.signal;
-
-    updateState({ isFetching: true });
-
-    try {
-      const { feed: newFeed, cursor: newCursor } = await fetchFeed({
-        did,
-        feedName,
-        limit,
-        cursor,
-        signal,
-      });
+      const { feed: newFeed, cursor: newCursor } = response;
 
       const uniqueFeed = Array.from(
         new Map(
-          [...feed, ...newFeed].map((item) => [item.post.cid, item])
+          [...state.feed, ...newFeed].map((item) => [item.post.cid, item])
         ).values()
       );
 
@@ -65,17 +62,31 @@ export const usePaginatedFeed = ({
         feed: uniqueFeed,
         cursor: newCursor,
         hasNextPage: !!newCursor,
+        isFetching: false,
         error: null,
       });
-    } catch (error) {
-      if ((error as Error).name !== 'AbortError') {
-        updateState({ error: error as Error });
-      }
-    } finally {
-      if (!signal?.aborted) {
-        updateState({ isFetching: false });
-      }
-    }
+    },
+    [state.feed]
+  );
+
+  const fetchNextPage = useCallback(async () => {
+    const { hasNextPage, isFetching, cursor } = state;
+    if (!hasNextPage || isFetching) return;
+
+    abortOngoingRequest();
+    const signal = controllerRef.current?.signal;
+
+    updateState({ isFetching: true });
+
+    const response = await fetchFeed({
+      did,
+      feedName,
+      limit,
+      cursor,
+      signal,
+    });
+
+    handleFetchResponse(response);
   }, [state, did, feedName, limit]);
 
   const refreshFeed = useCallback(async () => {
@@ -84,33 +95,14 @@ export const usePaginatedFeed = ({
 
     updateState({ isFetching: true, error: null });
 
-    try {
-      const { feed: freshFeed, cursor: newCursor } = await fetchFeed({
-        did,
-        feedName,
-        limit,
-        signal,
-      });
+    const response = await fetchFeed({
+      did,
+      feedName,
+      limit,
+      signal,
+    });
 
-      const uniqueFeed = Array.from(
-        new Map(freshFeed.map((item) => [item.post.cid, item])).values()
-      );
-
-      updateState({
-        feed: uniqueFeed,
-        cursor: newCursor,
-        hasNextPage: !!newCursor,
-        error: null,
-      });
-    } catch (error) {
-      if ((error as Error).name !== 'AbortError') {
-        updateState({ error: error as Error });
-      }
-    } finally {
-      if (!signal?.aborted) {
-        updateState({ isFetching: false });
-      }
-    }
+    handleFetchResponse(response);
   }, [did, feedName, limit]);
 
   useEffect(() => {
@@ -126,33 +118,14 @@ export const usePaginatedFeed = ({
         error: null,
       });
 
-      try {
-        const { feed: initialFeed, cursor: initialCursor } = await fetchFeed({
-          did,
-          feedName,
-          limit,
-          signal: controller.signal,
-        });
+      const response = await fetchFeed({
+        did,
+        feedName,
+        limit,
+        signal: controller.signal,
+      });
 
-        const uniqueFeed = Array.from(
-          new Map(initialFeed.map((item) => [item.post.cid, item])).values()
-        );
-
-        updateState({
-          feed: uniqueFeed,
-          cursor: initialCursor,
-          hasNextPage: !!initialCursor,
-          error: null,
-        });
-      } catch (error) {
-        if ((error as Error).name !== 'AbortError') {
-          updateState({ error: error as Error });
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          updateState({ isFetching: false });
-        }
-      }
+      handleFetchResponse(response);
     };
 
     initializeFeed();

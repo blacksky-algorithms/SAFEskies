@@ -20,14 +20,23 @@ export const fetchFeed = async ({
   limit = 50,
   cursor,
   signal,
-}: FeedParams): Promise<FeedResponse> => {
-  const { data } = await AtprotoAgent.app.bsky.feed.getFeed(
-    {
-      feed: `at://${did}/app.bsky.feed.generator/${feedName}`,
-      limit,
-      cursor,
-    },
-    { signal } // Pass signal to the request options
-  );
-  return { feed: data.feed, cursor: data.cursor };
+}: FeedParams): Promise<FeedResponse | { error: Error['message'] }> => {
+  try {
+    const { data } = await AtprotoAgent.app.bsky.feed.getFeed(
+      {
+        feed: `at://${did}/app.bsky.feed.generator/${feedName}`,
+        limit,
+        cursor,
+      },
+      { signal }
+    );
+
+    return { feed: data.feed, cursor: data.cursor };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    } else {
+      return { error: 'Unknown error' };
+    }
+  }
 };
