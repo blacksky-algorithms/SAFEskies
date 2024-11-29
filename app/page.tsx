@@ -1,4 +1,4 @@
-import Feed from '@/components/feed';
+import { Feed } from '@/components/feed';
 
 export default async function page() {
   // TODO: remove hardcoded values

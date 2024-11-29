@@ -1,18 +1,43 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FeedList } from '@/components/feed-list/feed-list';
 import { usePaginatedFeed } from '@/hooks/usePaginatedFeed';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
 import { GenericErrorModal } from '@/components/modals/generic-error-modal';
+import { LiveRegion } from './live-region';
 
+// Reusable useIntersectionObserver Hook
+const useIntersectionObserver = (
+  callback: IntersectionObserverCallback,
+  options?: IntersectionObserverInit
+) => {
+  const targetRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const target = targetRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(callback, options);
+
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [callback, options]);
+
+  return targetRef;
+};
+
+// Main Feed Component
 interface FeedProps {
   did: string;
   feedName: string;
 }
 
-const Feed = ({ did, feedName }: FeedProps) => {
+export const Feed = ({ did, feedName }: FeedProps) => {
   const { feed, error, isFetching, hasNextPage, fetchNextPage, refreshFeed } =
     usePaginatedFeed({
       did,
@@ -27,41 +52,26 @@ const Feed = ({ did, feedName }: FeedProps) => {
   // Handle error modal opening when an error occurs
   useEffect(() => {
     if (error && error.name !== 'AbortError') {
+      console.error('TODO: debug generic error false positive', error);
       openModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR, true);
     }
   }, [error, openModalInstance]);
 
-  // Debounced scroll handler
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+  // IntersectionObserver for infinite scroll
+  const handleIntersection = useCallback(
+    ([entry]: IntersectionObserverEntry[]) => {
+      if (entry.isIntersecting && hasNextPage && !isFetching) {
+        fetchNextPage();
+      }
+    },
+    [fetchNextPage, hasNextPage, isFetching]
+  );
 
-    let timeoutId: NodeJS.Timeout | null = null;
-
-    const handleScroll = () => {
-      if (!containerRef.current) return;
-
-      const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-
-      if (timeoutId) clearTimeout(timeoutId);
-
-      timeoutId = setTimeout(() => {
-        if (
-          scrollHeight - scrollTop <= clientHeight * 1.5 &&
-          hasNextPage &&
-          !isFetching
-        ) {
-          fetchNextPage();
-        }
-      }, 150);
-    };
-
-    container.addEventListener('scroll', handleScroll);
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      container.removeEventListener('scroll', handleScroll);
-    };
-  }, [hasNextPage, isFetching, fetchNextPage]);
+  const sentinelRef = useIntersectionObserver(handleIntersection, {
+    root: containerRef.current,
+    rootMargin: '150px',
+    threshold: 0.1,
+  });
 
   // Pull-to-refresh functionality
   const handlePullToRefresh = async () => {
@@ -106,8 +116,9 @@ const Feed = ({ did, feedName }: FeedProps) => {
         }}
         className='overflow-y-auto h-screen flex flex-col items-center'
       >
-        {isRefreshing && <div className='refresh-indicator'>Refreshing...</div>}
+        <LiveRegion>{isRefreshing && <span>Refreshing...</span>}</LiveRegion>
         <FeedList feed={feed} />
+        <div ref={sentinelRef} className='h-10 w-full' />
       </div>
 
       <GenericErrorModal onClose={handleErrorModalClose}>
@@ -116,5 +127,3 @@ const Feed = ({ did, feedName }: FeedProps) => {
     </section>
   );
 };
-
-export default Feed;
