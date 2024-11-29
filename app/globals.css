@@ -8,18 +8,18 @@
   --foreground: #e4e4e4;
   --visited: #a0a0a0;
   /* Button Colors */
-  --btn-primary: #0db9d7; /* Teal */
+  --btn-primary: #0db9d7;
   --btn-primary-hover: #0ca4c3;
-  --btn-secondary: #585858; /* Muted Gray */
+  --btn-secondary: #585858;
   --btn-secondary-hover: #4a4a4a;
-  --btn-error: #f56565; /* Red */
+  --btn-error: #f56565;
   --btn-error-hover: #e05353;
-  --btn-info: #4299e1; /* Blue */
+  --btn-info: #4299e1;
   --btn-info-hover: #3182ce;
-  --btn-success: #48bb78; /* Green */
+  --btn-success: #48bb78;
   --btn-success-hover: #38a169;
-  --btn-text: #e5e5e5; /* Light shade to match foreground theme */
-  --btn-text-hover: #ffffff; /* White */
+  --btn-text: #e5e5e5;
+  --btn-text-hover: #ffffff;
 }
 
 /* CSS Reset */
@@ -39,8 +39,8 @@ body {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--background); /* Use the variable for background */
-  color: var(--foreground); /* Use the variable for text */
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 /* Link Styles */
@@ -50,7 +50,7 @@ a {
 }
 
 a:visited {
-  color: var(--visited); /* Use the variable for visited link color */
+  color: var(--visited);
 }
 
 /* Button Base Styles */

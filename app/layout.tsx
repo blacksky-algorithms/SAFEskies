@@ -3,6 +3,7 @@ import { PublicLayout } from '@/components/layouts/public-layout';
 import './globals.css';
 
 import { Providers } from '@/contexts';
+import { preferredLanguages } from '@/utils/todo';
 
 export const metadata: Metadata = {
   title: 'Feed Moderator',
@@ -13,12 +14,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  /*TODO: FONTS*/
   return (
-    <html
-      lang='en'
-      className='container mx-auto min-w-screen overscroll-auto text-white'
-    >
+    <html lang={preferredLanguages}>
       <body>
         <Providers>
           <PublicLayout>{children}</PublicLayout>
