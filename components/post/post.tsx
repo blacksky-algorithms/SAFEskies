@@ -47,7 +47,7 @@ export const Post = ({ post }: { post: PostView }) => {
   return (
     <article
       className={cc([
-        'bg-theme-background border border-theme-btn-secondary shadow-sm p-4 w-full mx-auto overflow-hidden',
+        'bg-theme-background border border-theme-btn-secondary shadow-sm p-4 w-full mx-auto max-w-screen',
       ])}
       aria-labelledby={`post-title-${post.cid}`}
     >
@@ -191,7 +191,7 @@ export const ImagesEmbedComponent = ({ embed }: { embed: ImageEmbed[] }) => {
   return (
     <div
       className={cc([
-        'mt-4 grid gap-2',
+        'mt-4 grid gap-2 ',
         {
           'grid-cols-1': imagesToRender.length === 1,
           'grid-cols-2': imagesToRender.length > 1,
@@ -204,17 +204,19 @@ export const ImagesEmbedComponent = ({ embed }: { embed: ImageEmbed[] }) => {
           href={image.fullsize}
           target='_blank'
           rel='noopener noreferrer'
-          className='block relative'
+          className='block relative overflow-hidden w-full ' // Ensure no overflow for single or multi
         >
           <img
             loading='lazy'
             src={image.thumb}
             alt={image.alt || ''}
             className={cc([
-              'object-cover rounded-md w-full',
-              imagesToRender.length === 1
-                ? 'h-auto'
-                : 'h-theme-post-image-multi',
+              'object-cover rounded-md',
+              {
+                'w-full h-auto': imagesToRender.length === 1,
+                'w-theme-post-image-multi h-theme-post-image-multi':
+                  imagesToRender.length > 1,
+              },
             ])}
           />
         </a>

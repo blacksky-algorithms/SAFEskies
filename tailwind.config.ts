@@ -8,6 +8,9 @@ export default {
   ],
   theme: {
     extend: {
+      maxWidth: {
+        screen: '100vw', // Match viewport width
+      },
       screens: {
         tablet: '640px',
         desktop: '1024px',
