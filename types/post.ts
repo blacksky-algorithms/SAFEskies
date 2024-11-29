@@ -35,13 +35,18 @@ export interface RecordEmbed {
 }
 
 export interface VideoEmbed {
-  playlist: string;
+  playlist?: string;
   thumbnail: string;
   aspectRatio: {
     height: number;
     width: number;
   };
   mimeType?: string;
+  video?: {
+    ref: {
+      $link: string;
+    };
+  };
 }
 
 export interface RecordWithMediaEmbed {

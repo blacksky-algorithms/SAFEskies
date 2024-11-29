@@ -15,6 +15,8 @@ import {
   isRecordEmbed,
   isVideoEmbed,
 } from '@/types/guards';
+
+import * as HeroIcons from '@heroicons/react/24/outline';
 import cc from 'classcat';
 
 // Main Post Component
@@ -84,66 +86,30 @@ export const Post = ({ post }: { post: PostView }) => {
           Posted on: {new Date(postRecord.createdAt).toLocaleDateString()}
         </span>
         <div className='flex items-center space-x-4'>
-          <div
-            className='flex items-center space-x-1'
-            aria-label={`${replyCount} replies`}
-          >
-            <Icon icon='ChatBubbleLeftIcon' className='h-5 w-5' />
-            <span>{replyCount}</span>
-          </div>
-          <div
-            className='flex items-center space-x-1'
-            aria-label={`${repostCount} reposts`}
-          >
-            <Icon icon='ArrowPathRoundedSquareIcon' className='h-5 w-5' />
-            <span>{repostCount}</span>
-          </div>
-          <div
-            className='flex items-center space-x-1'
-            aria-label={`${likeCount} likes`}
-          >
-            <Icon icon='HeartIcon' className='h-5 w-5' />
-            <span>{likeCount}</span>
-          </div>
-          <div
-            className='flex items-center space-x-1'
-            aria-label={`${quoteCount} quotes`}
-          >
-            <Icon icon='LinkIcon' className='h-5 w-5' />
-            <span>{quoteCount}</span>
-          </div>
+          <PostFooterIcon
+            icon='ChatBubbleLeftIcon'
+            count={replyCount}
+            label='replies'
+          />
+          <PostFooterIcon
+            icon='ArrowPathRoundedSquareIcon'
+            count={repostCount}
+            label='reposts'
+          />
+          <PostFooterIcon icon='HeartIcon' count={likeCount} label='likes' />
+          <PostFooterIcon icon='LinkIcon' count={quoteCount} label='quotes' />
         </div>
       </footer>
     </article>
   );
 };
 
-// Embed Component
-export const EmbedComponent = ({ embed }: { embed: EmbedType }) => {
-  if (!embed) return null;
-
-  if (isExternalEmbed(embed)) {
-    return <ExternalEmbedComponent embed={embed.external} />;
-  }
-
-  if (isRecordEmbed(embed)) {
-    return <RecordEmbedComponent embed={embed.record} />;
-  }
-
-  if (isImagesEmbed(embed)) {
-    return <ImagesEmbedComponent embed={embed.images} />;
-  }
-
-  if (isVideoEmbed(embed)) {
-    return <VideoEmbedComponent embed={embed.video ?? embed} />;
-  }
-
-  return null;
-};
-
+// Record Embed Component
 // Record Embed Component
 export const RecordEmbedComponent = ({ embed }: { embed: RecordEmbed }) => {
   const { author, value } = embed;
+
+  console.log('RecordEmbedComponent:', { embed });
 
   return (
     <div className='mt-4 p-3 border border-gray-300 rounded-md bg-gray-100'>
@@ -162,69 +128,52 @@ export const RecordEmbedComponent = ({ embed }: { embed: RecordEmbed }) => {
           <p className='text-xs text-gray-500'>@{author?.handle}</p>
         </div>
       </header>
+
       <p className='text-gray-700'>{value?.text}</p>
+
+      {/* Render nested embed if present */}
       {value?.embed && <EmbedComponent embed={value.embed as EmbedType} />}
-    </div>
-  );
-};
-
-// External Embed Component (GIF Support)
-export const ExternalEmbedComponent = ({ embed }: { embed: ExternalEmbed }) => {
-  const { uri, thumb, title, description } = embed;
-
-  const isGif = uri.toLowerCase().endsWith('.gif');
-
-  return (
-    <div className='mt-4 border border-gray-300 rounded-md overflow-hidden'>
-      <a href={uri} target='_blank' rel='noopener noreferrer'>
-        {isGif ? (
-          <img
-            src={uri}
-            alt={description || 'External GIF'}
-            className='w-full h-auto object-cover'
-          />
-        ) : (
-          thumb && (
-            <img
-              src={thumb}
-              alt={description || 'External content'}
-              className='w-full h-auto object-cover'
-            />
-          )
-        )}
-        <div className='p-2'>
-          <p className='font-bold text-gray-800'>{title}</p>
-          {description && (
-            <p className='text-sm text-gray-500'>{description}</p>
-          )}
-        </div>
-      </a>
     </div>
   );
 };
 
 // Video Embed Component
 export const VideoEmbedComponent = ({ embed }: { embed: VideoEmbed }) => {
-  const { playlist, thumbnail } = embed;
+  const { playlist, thumbnail, aspectRatio, mimeType } = embed;
+
+  const videoSource = playlist;
+
+  if (!videoSource) {
+    console.warn('No video source available for embed', embed);
+    return null;
+  }
 
   return (
-    <div className='mt-4 border border-gray-300 rounded-md overflow-hidden'>
-      <div className='relative w-full max-w-full aspect-video'>
-        <video
-          controls
-          poster={thumbnail}
-          className='absolute inset-0 w-full h-full object-contain max-w-full rounded-md'
-        >
-          <source src={playlist} type='application/x-mpegURL' />
-          Your browser does not support the video tag.
-        </video>
-      </div>
+    <div
+      className='mt-4 border border-gray-300 rounded-md overflow-hidden'
+      style={{
+        aspectRatio: aspectRatio
+          ? `${aspectRatio.width} / ${aspectRatio.height}`
+          : undefined,
+      }}
+    >
+      <video
+        controls
+        poster={thumbnail}
+        className='w-full h-full object-cover rounded-md'
+      >
+        <source src={videoSource} type='application/x-mpegURL' />
+        {mimeType && <source src={videoSource} type={mimeType} />}
+        Your browser does not support the video tag.
+      </video>
     </div>
   );
 };
 
 // Image Embed Component
 export const ImagesEmbedComponent = ({ embed }: { embed: ImageEmbed[] }) => {
+  console.log('ImagesEmbedComponent:', { embed });
+
   const imagesToRender = embed.slice(0, 4); // Limit to 4 images maximum
 
   return (
@@ -243,21 +192,115 @@ export const ImagesEmbedComponent = ({ embed }: { embed: ImageEmbed[] }) => {
           href={image.fullsize}
           target='_blank'
           rel='noopener noreferrer'
-          className='block w-full'
+          className='block relative w-full'
         >
           <img
             src={image.thumb}
-            alt={image.alt || 'Embedded image'}
-            className={cc([
-              'rounded-md object-cover w-full',
-              {
-                'h-post-media-single': imagesToRender.length === 1,
-                'h-post-media-multi': imagesToRender.length > 1,
-              },
-            ])}
+            alt={image.alt || ''}
+            className='object-cover w-full h-full rounded-md'
+            style={{
+              transitionDuration: '0ms',
+              transitionTimingFunction: 'linear',
+            }}
           />
         </a>
       ))}
     </div>
   );
 };
+
+// Embed Component
+// Embed Component
+export const EmbedComponent = ({ embed }: { embed: EmbedType }) => {
+  console.log('EmbedComponent:', { embed });
+
+  if (!embed) return null;
+
+  if (isExternalEmbed(embed)) {
+    return <ExternalEmbedComponent embed={embed.external} />;
+  }
+
+  if (isRecordEmbed(embed)) {
+    return <RecordEmbedComponent embed={embed.record} />;
+  }
+
+  if (isImagesEmbed(embed)) {
+    return <ImagesEmbedComponent embed={embed.images} />;
+  }
+
+  if (isVideoEmbed(embed)) {
+    return <VideoEmbedComponent embed={embed.video ?? embed} />;
+  }
+
+  console.warn('Unsupported embed type:', embed);
+  return null;
+};
+
+// External Embed Component
+export const ExternalEmbedComponent = ({ embed }: { embed: ExternalEmbed }) => {
+  const { uri, thumb, title, description } = embed;
+
+  if (!uri) {
+    console.warn('Missing URI in ExternalEmbed', embed);
+    return null;
+  }
+
+  const isGif =
+    uri.toLowerCase().includes('.gif') || embed.thumb?.includes('.gif');
+
+  const renderMedia = () => {
+    if (isGif) {
+      return (
+        <img
+          src={uri}
+          alt={description || 'External GIF'}
+          className='w-full h-auto object-cover'
+        />
+      );
+    }
+    if (thumb) {
+      return (
+        <img
+          src={thumb}
+          alt={description || 'External content'}
+          className='w-full h-auto object-cover'
+        />
+      );
+    }
+    return (
+      <div className='w-full h-auto bg-gray-200 flex items-center justify-center'>
+        <p className='text-sm text-gray-500'>No preview available</p>
+      </div>
+    );
+  };
+
+  return (
+    <div className='mt-4 border border-gray-300 rounded-md overflow-hidden'>
+      <a href={uri} target='_blank' rel='noopener noreferrer'>
+        {renderMedia()}
+        <div className='p-2'>
+          <p className='font-bold text-gray-800'>{title}</p>
+          {description && (
+            <p className='text-sm text-gray-500'>{description}</p>
+          )}
+        </div>
+      </a>
+    </div>
+  );
+};
+
+// Post Footer Icon Component
+const PostFooterIcon = ({
+  icon,
+  count,
+  label,
+}: {
+  icon: keyof typeof HeroIcons;
+  count: number;
+  label: string;
+}) => (
+  <div className='flex items-center space-x-1' aria-label={`${count} ${label}`}>
+    <Icon icon={icon} className='h-5 w-5' />
+    <span>{count}</span>
+  </div>
+);

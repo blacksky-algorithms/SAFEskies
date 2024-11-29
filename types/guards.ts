@@ -37,6 +37,7 @@ export const isImagesEmbed = (
   $type: 'app.bsky.embed.images' | 'app.bsky.embed.images#view';
   images: ImageEmbed[];
 } => {
+  console.log('isImagesEmbed', embed);
   return (
     embed.$type === 'app.bsky.embed.images' ||
     embed.$type === 'app.bsky.embed.images#view'
@@ -64,9 +65,7 @@ export const isRecordWithMediaEmbed = (
   recordWithMedia: RecordWithMediaEmbed;
 } => {
   return (
-    (embed.$type === 'app.bsky.embed.recordWithMedia' ||
-      embed.$type === 'app.bsky.embed.recordWithMedia#view') &&
-    'record' in embed.recordWithMedia &&
-    'media' in embed.recordWithMedia
+    embed.$type === 'app.bsky.embed.recordWithMedia' ||
+    embed.$type === 'app.bsky.embed.recordWithMedia#view'
   );
 };
