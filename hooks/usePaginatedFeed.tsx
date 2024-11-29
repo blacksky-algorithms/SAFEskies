@@ -38,36 +38,35 @@ export const usePaginatedFeed = ({
   };
 
   // Process the fetch response
-  const handleFetchResponse = useCallback(
-    (response: Awaited<ReturnType<typeof fetchFeed>>) => {
-      if ('error' in response) {
-        // Check if error is actionable (not AbortError)
-        if (response.error !== 'AbortError') {
-          updateState({ error: response.error, isFetching: false });
-        } else {
-          updateState({ isFetching: false });
-        }
-        return;
+  const handleFetchResponse = (
+    response: Awaited<ReturnType<typeof fetchFeed>>
+  ) => {
+    if ('error' in response) {
+      // Check if error is actionable (not AbortError)
+      if (response.error !== 'AbortError') {
+        updateState({ error: response.error, isFetching: false });
+      } else {
+        updateState({ isFetching: false });
       }
+      return;
+    }
 
-      const { feed: newFeed, cursor: newCursor } = response;
+    const { feed: newFeed, cursor: newCursor } = response;
 
-      const uniqueFeed = Array.from(
-        new Map(
-          [...state.feed, ...newFeed].map((item) => [item.post.cid, item])
-        ).values()
-      );
+    const uniqueFeed = Array.from(
+      new Map(
+        [...state.feed, ...newFeed].map((item) => [item.post.cid, item])
+      ).values()
+    );
 
-      updateState({
-        feed: uniqueFeed,
-        cursor: newCursor,
-        hasNextPage: !!newCursor,
-        isFetching: false,
-        error: null,
-      });
-    },
-    [state.feed]
-  );
+    updateState({
+      feed: uniqueFeed,
+      cursor: newCursor,
+      hasNextPage: !!newCursor,
+      isFetching: false,
+      error: null,
+    });
+  };
 
   const fetchNextPage = useCallback(async () => {
     const { hasNextPage, isFetching, cursor } = state;
@@ -87,6 +86,7 @@ export const usePaginatedFeed = ({
     });
 
     handleFetchResponse(response);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, did, feedName, limit]);
 
   const refreshFeed = useCallback(async () => {
@@ -103,7 +103,7 @@ export const usePaginatedFeed = ({
     });
 
     handleFetchResponse(response);
-  }, [did, feedName, limit]);
+  }, [did, feedName, handleFetchResponse, limit]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -130,7 +130,8 @@ export const usePaginatedFeed = ({
 
     initializeFeed();
 
-    return () => controller.abort(); // Abort on unmount
+    return () => controller.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [did, feedName, limit]);
 
   return useMemo(
