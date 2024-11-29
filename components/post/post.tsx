@@ -21,6 +21,8 @@ import {
 import * as HeroIcons from '@heroicons/react/24/outline';
 import cc from 'classcat';
 
+import { OptimizedImage } from '@/components/optimized-image';
+
 // Main Post Component
 export const Post = ({ post }: { post: PostView }) => {
   const {
@@ -53,11 +55,11 @@ export const Post = ({ post }: { post: PostView }) => {
     >
       <header className='flex items-center mb-3'>
         {author?.avatar && (
-          <img
-            loading='lazy'
-            src={`${author.avatar}?w=48&h=48`} // Resize avatar
+          <OptimizedImage
+            src={`${author.avatar}?w=12&h=12`}
             alt={`Avatar of ${author?.displayName || author?.handle}`}
             className='w-12 h-12 rounded-full mr-3'
+            lazy={true}
           />
         )}
         <div>
@@ -124,11 +126,11 @@ export const RecordEmbedComponent = ({ embed }: { embed: RecordEmbed }) => {
     <div className='mt-4 p-3 border border-theme-btn-secondary rounded-md bg-theme-background'>
       <header className='flex items-center mb-2'>
         {author?.avatar && (
-          <img
-            loading='lazy'
-            src={author.avatar}
+          <OptimizedImage
+            src={`${author.avatar}?w=8&h=8`}
             alt={`Avatar of ${author?.displayName || author?.handle}`}
             className='w-8 h-8 rounded-full mr-3'
+            lazy={true}
           />
         )}
         <div>
@@ -204,10 +206,9 @@ export const ImagesEmbedComponent = ({ embed }: { embed: ImageEmbed[] }) => {
           href={image.fullsize}
           target='_blank'
           rel='noopener noreferrer'
-          className='block relative overflow-hidden w-full ' // Ensure no overflow for single or multi
+          className='block relative overflow-hidden w-full '
         >
-          <img
-            loading='lazy'
+          <OptimizedImage
             src={image.thumb}
             alt={image.alt || ''}
             className={cc([
@@ -218,6 +219,7 @@ export const ImagesEmbedComponent = ({ embed }: { embed: ImageEmbed[] }) => {
                   imagesToRender.length > 1,
               },
             ])}
+            lazy
           />
         </a>
       ))}
@@ -318,11 +320,11 @@ export const ExternalEmbedComponent = ({ embed }: { embed: ExternalEmbed }) => {
 
     if (thumb) {
       return (
-        <img
-          loading='lazy'
+        <OptimizedImage
           src={thumb}
           alt={description || 'External content'}
           className='w-full h-auto object-cover'
+          lazy
         />
       );
     }

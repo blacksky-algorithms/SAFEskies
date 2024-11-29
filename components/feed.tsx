@@ -9,7 +9,7 @@ import { GenericErrorModal } from '@/components/modals/generic-error-modal';
 import { LiveRegion } from './live-region';
 
 // Reusable useIntersectionObserver Hook
-const useIntersectionObserver = (
+export const useIntersectionObserver = (
   callback: IntersectionObserverCallback,
   options?: IntersectionObserverInit
 ) => {
