@@ -29,6 +29,5 @@ export const fetchFeed = async ({
     },
     { signal } // Pass signal to the request options
   );
-  console.log('fetchFeed firing: ', data);
   return { feed: data.feed, cursor: data.cursor };
 };

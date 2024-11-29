@@ -40,7 +40,7 @@ export const usePaginatedFeed = ({
   const fetchNextPage = useCallback(async () => {
     const { hasNextPage, isFetching, cursor, feed } = state;
     if (!hasNextPage || isFetching) return;
-    console.log('fetchNextPage');
+
     abortOngoingRequest();
     const signal = controllerRef.current?.signal;
 
@@ -79,7 +79,6 @@ export const usePaginatedFeed = ({
   }, [state, did, feedName, limit]);
 
   const refreshFeed = useCallback(async () => {
-    console.log('refreshFeed');
     abortOngoingRequest();
     const signal = controllerRef.current?.signal;
 
