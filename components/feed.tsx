@@ -47,17 +47,19 @@ export const Feed = ({ did, feedName }: FeedProps) => {
 
   const { openModalInstance } = useModal();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [errorHandled, setErrorHandled] = useState(false); // Prevent repeat modal triggers
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Handle error modal opening when an error occurs
   useEffect(() => {
-    if (error && error.name !== 'AbortError') {
-      console.error('TODO: debug generic error false positive', error);
+    if (error && !errorHandled) {
       openModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR, true);
+      setErrorHandled(true);
+    } else if (!error) {
+      setErrorHandled(false);
     }
-  }, [error, openModalInstance]);
+  }, [error, errorHandled, openModalInstance]);
 
-  // IntersectionObserver for infinite scroll
   const handleIntersection = useCallback(
     ([entry]: IntersectionObserverEntry[]) => {
       if (entry.isIntersecting && hasNextPage && !isFetching) {
@@ -89,7 +91,7 @@ export const Feed = ({ did, feedName }: FeedProps) => {
   const handleErrorModalClose = () => {
     refreshFeed();
   };
-
+  console.log({ feed });
   return (
     <section
       className='flex w-full flex-col items-center relative tablet:max-w-md desktop:max-w-lg'
@@ -122,7 +124,7 @@ export const Feed = ({ did, feedName }: FeedProps) => {
       </div>
 
       <GenericErrorModal onClose={handleErrorModalClose}>
-        <p>{`${feedName} is unavailable`}</p>
+        <p>{error || `${feedName} is unavailable`}</p>
       </GenericErrorModal>
     </section>
   );

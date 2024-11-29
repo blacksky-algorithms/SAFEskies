@@ -56,10 +56,10 @@ export const Post = ({ post }: { post: PostView }) => {
       <header className='flex items-center mb-3'>
         {author?.avatar && (
           <OptimizedImage
-            src={`${author.avatar}?w=12&h=12`}
+            src={`${author.avatar}?w=48&h=48`}
             alt={`Avatar of ${author?.displayName || author?.handle}`}
             className='w-12 h-12 rounded-full mr-3'
-            lazy={true}
+            lazy={false}
           />
         )}
         <div>
@@ -285,68 +285,29 @@ export const EmbedComponent = ({ embed }: { embed: EmbedType }) => {
 };
 
 // External Embed Component
-export const ExternalEmbedComponent = ({ embed }: { embed: ExternalEmbed }) => {
-  const { uri, thumb, title, description } = embed;
+const ExternalEmbedComponent = ({ embed }: { embed: ExternalEmbed }) => {
+  const { uri, title, description } = embed;
 
   if (!uri) {
     console.warn('Missing URI in ExternalEmbed', embed);
     return null;
   }
 
-  const isGif = uri.toLowerCase().endsWith('.gif');
-
-  const renderMedia = () => {
-    if (isGif) {
-      // Convert GIFs to WebM/MP4 for efficient rendering
-      const optimizedUri = uri.replace('.gif', '.webm'); // Assuming you host the optimized version
-
-      return (
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className='w-full h-auto object-cover'
-        >
-          <source src={optimizedUri} type='video/webm' />
-          <source
-            src={optimizedUri.replace('.webm', '.mp4')}
-            type='video/mp4'
-          />
-          Your browser does not support the video tag.
-        </video>
-      );
-    }
-
-    if (thumb) {
-      return (
-        <OptimizedImage
-          src={thumb}
-          alt={description || 'External content'}
-          className='w-full h-auto object-cover'
-          lazy
-        />
-      );
-    }
-
-    return (
-      <div className='w-full h-auto bg-theme-btn-secondary flex items-center justify-center'>
-        <p className='text-sm text-theme-btn-text'>No preview available</p>
-      </div>
-    );
-  };
-
   return (
     <div className='mt-4 border border-theme-btn-secondary rounded-md overflow-hidden'>
-      <a href={uri} target='_blank' rel='noopener noreferrer'>
-        {renderMedia()}
-        <div className='p-2'>
-          <p className='font-bold text-theme-foreground'>{title}</p>
-          {description && (
-            <p className='text-sm text-theme-btn-text'>{description}</p>
-          )}
-        </div>
-      </a>
+      <OptimizedImage
+        src={uri}
+        alt={description || 'External content'}
+        className='w-full h-auto object-cover'
+        mimeType={uri.endsWith('.gif') ? 'image/gif' : undefined}
+        lazy
+      />
+      <div className='p-2'>
+        <p className='font-bold text-theme-foreground'>{title}</p>
+        {description && (
+          <p className='text-sm text-theme-btn-text'>{description}</p>
+        )}
+      </div>
     </div>
   );
 };
