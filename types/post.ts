@@ -54,6 +54,16 @@ export interface RecordWithMediaEmbed {
   media: EmbedType; // Can be an image, video, or other embed type
 }
 
+export interface ImageEmbed {
+  thumb: string;
+  fullsize: string;
+  alt: string;
+  aspectRatio: {
+    height: number;
+    width: number;
+  };
+}
+
 export type EmbedType =
   | { $type: 'app.bsky.embed.external'; external: ExternalEmbed }
   | { $type: 'app.bsky.embed.external#view'; external: ExternalEmbed }
@@ -71,13 +81,3 @@ export type EmbedType =
       $type: 'app.bsky.embed.recordWithMedia#view';
       recordWithMedia: RecordWithMediaEmbed;
     };
-
-export interface ImageEmbed {
-  thumb: string;
-  fullsize: string;
-  alt: string;
-  aspectRatio: {
-    height: number;
-    width: number;
-  };
-}

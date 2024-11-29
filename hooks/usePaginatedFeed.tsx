@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { FeedParams, fetchFeed } from '@/repos/feed-repo';
+import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 interface FeedState {
-  feed: any[];
+  feed: FeedViewPost[];
   cursor?: string;
   isFetching: boolean;
   hasNextPage: boolean;

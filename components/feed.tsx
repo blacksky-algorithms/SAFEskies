@@ -79,7 +79,7 @@ const Feed = ({ did, feedName }: FeedProps) => {
   const handleErrorModalClose = () => {
     refreshFeed();
   };
-  console.log({ feed });
+
   return (
     <>
       <div

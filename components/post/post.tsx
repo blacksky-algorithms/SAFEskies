@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React from 'react';
 import { Icon } from '@/components/icon';
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
@@ -13,6 +14,7 @@ import {
   isExternalEmbed,
   isImagesEmbed,
   isRecordEmbed,
+  isRecordWithMediaEmbed,
   isVideoEmbed,
 } from '@/types/guards';
 
@@ -32,6 +34,11 @@ export const Post = ({ post }: { post: PostView }) => {
   } = post;
 
   const postRecord = record as PostRecord;
+
+  if (!postRecord) {
+    console.warn('Missing post record:', post);
+    return null;
+  }
 
   const hashtags = postRecord.facets?.flatMap((facet) =>
     facet.features.map((feature) => `#${feature.tag}`)
@@ -105,11 +112,13 @@ export const Post = ({ post }: { post: PostView }) => {
 };
 
 // Record Embed Component
-// Record Embed Component
 export const RecordEmbedComponent = ({ embed }: { embed: RecordEmbed }) => {
   const { author, value } = embed;
 
-  console.log('RecordEmbedComponent:', { embed });
+  if (!value) {
+    console.warn('RecordEmbed has no value:', embed);
+    return null;
+  }
 
   return (
     <div className='mt-4 p-3 border border-gray-300 rounded-md bg-gray-100'>
@@ -131,7 +140,6 @@ export const RecordEmbedComponent = ({ embed }: { embed: RecordEmbed }) => {
 
       <p className='text-gray-700'>{value?.text}</p>
 
-      {/* Render nested embed if present */}
       {value?.embed && <EmbedComponent embed={value.embed as EmbedType} />}
     </div>
   );
@@ -139,12 +147,13 @@ export const RecordEmbedComponent = ({ embed }: { embed: RecordEmbed }) => {
 
 // Video Embed Component
 export const VideoEmbedComponent = ({ embed }: { embed: VideoEmbed }) => {
-  const { playlist, thumbnail, aspectRatio, mimeType } = embed;
+  const { playlist, thumbnail, aspectRatio, mimeType, video } = embed;
 
-  const videoSource = playlist;
+  // Video source priority: HLS (playlist), fallback to linked video
+  const videoSource = playlist || video?.ref?.$link;
 
   if (!videoSource) {
-    console.warn('No video source available for embed', embed);
+    console.warn('No video source available for embed:', embed);
     return null;
   }
 
@@ -162,8 +171,9 @@ export const VideoEmbedComponent = ({ embed }: { embed: VideoEmbed }) => {
         poster={thumbnail}
         className='w-full h-full object-cover rounded-md'
       >
-        <source src={videoSource} type='application/x-mpegURL' />
         {mimeType && <source src={videoSource} type={mimeType} />}
+        <source src={videoSource} type='video/mp4' />
+        <source src={videoSource} type='application/x-mpegURL' />
         Your browser does not support the video tag.
       </video>
     </div>
@@ -172,8 +182,6 @@ export const VideoEmbedComponent = ({ embed }: { embed: VideoEmbed }) => {
 
 // Image Embed Component
 export const ImagesEmbedComponent = ({ embed }: { embed: ImageEmbed[] }) => {
-  console.log('ImagesEmbedComponent:', { embed });
-
   const imagesToRender = embed.slice(0, 4); // Limit to 4 images maximum
 
   return (
@@ -210,11 +218,13 @@ export const ImagesEmbedComponent = ({ embed }: { embed: ImageEmbed[] }) => {
 };
 
 // Embed Component
-// Embed Component
 export const EmbedComponent = ({ embed }: { embed: EmbedType }) => {
   console.log('EmbedComponent:', { embed });
 
-  if (!embed) return null;
+  if (!embed) {
+    console.warn('Embed is null or undefined');
+    return null;
+  }
 
   if (isExternalEmbed(embed)) {
     return <ExternalEmbedComponent embed={embed.external} />;
@@ -232,8 +242,40 @@ export const EmbedComponent = ({ embed }: { embed: EmbedType }) => {
     return <VideoEmbedComponent embed={embed.video ?? embed} />;
   }
 
+  if (isRecordWithMediaEmbed(embed)) {
+    const { record, media } = embed.recordWithMedia || {};
+
+    if (!record && !media) {
+      console.warn('recordWithMedia has neither record nor media:', embed);
+      return (
+        <div className='mt-4 p-4 border border-gray-300 rounded-md bg-gray-100'>
+          <p className='text-sm text-gray-500'>
+            No embedded content available.
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className='mt-4'>
+        {record && (
+          <div className='mb-4'>
+            <RecordEmbedComponent embed={record} />
+          </div>
+        )}
+        {media && <EmbedComponent embed={media} />}
+      </div>
+    );
+  }
+
   console.warn('Unsupported embed type:', embed);
-  return null;
+  return (
+    <div className='mt-4 p-4 border border-gray-300 rounded-md bg-gray-100'>
+      <p className='text-sm text-gray-500'>
+        Unsupported embedded content type.
+      </p>
+    </div>
+  );
 };
 
 // External Embed Component
@@ -246,7 +288,8 @@ export const ExternalEmbedComponent = ({ embed }: { embed: ExternalEmbed }) => {
   }
 
   const isGif =
-    uri.toLowerCase().includes('.gif') || embed.thumb?.includes('.gif');
+    (typeof uri === 'string' && uri.toLowerCase().includes('.gif')) ||
+    (typeof thumb === 'string' && thumb.toLowerCase().includes('.gif'));
 
   const renderMedia = () => {
     if (isGif) {
@@ -258,6 +301,7 @@ export const ExternalEmbedComponent = ({ embed }: { embed: ExternalEmbed }) => {
         />
       );
     }
+
     if (thumb) {
       return (
         <img
@@ -267,6 +311,7 @@ export const ExternalEmbedComponent = ({ embed }: { embed: ExternalEmbed }) => {
         />
       );
     }
+
     return (
       <div className='w-full h-auto bg-gray-200 flex items-center justify-center'>
         <p className='text-sm text-gray-500'>No preview available</p>
@@ -290,7 +335,7 @@ export const ExternalEmbedComponent = ({ embed }: { embed: ExternalEmbed }) => {
 };
 
 // Post Footer Icon Component
-const PostFooterIcon = ({
+export const PostFooterIcon = ({
   icon,
   count,
   label,
