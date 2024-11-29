@@ -8,6 +8,10 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        tablet: '640px',
+        desktop: '1024px',
+      },
       colors: {
         'theme-background': 'var(--background)',
         'theme-foreground': 'var(--foreground)',

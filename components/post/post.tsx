@@ -47,9 +47,8 @@ export const Post = ({ post }: { post: PostView }) => {
   return (
     <article
       className={cc([
-        'bg-white border border-gray-300 rounded-md shadow-sm p-4 w-full max-w-full mx-auto overflow-hidden',
+        'bg-theme-background border border-theme-btn-secondary shadow-sm p-4 w-full mx-auto overflow-hidden',
       ])}
-      role='article'
       aria-labelledby={`post-title-${post.cid}`}
     >
       <header className='flex items-center mb-3'>
@@ -63,19 +62,19 @@ export const Post = ({ post }: { post: PostView }) => {
         <div>
           <p
             id={`post-title-${post.cid}`}
-            className='text-base font-semibold text-gray-900'
+            className='text-base font-semibold text-theme-foreground'
           >
             {author?.displayName || author?.handle}
           </p>
-          <p className='text-sm text-gray-500'>@{author?.handle}</p>
+          <p className='text-sm text-theme-visited'>@{author?.handle}</p>
         </div>
       </header>
 
       <section>
-        <p className='text-gray-700 break-words'>
+        <p className='text-theme-btn-text break-words'>
           {postRecord.text.split(' ').map((word, index) =>
             hashtags?.includes(word) ? (
-              <span key={index} className='text-blue-500 break-words'>
+              <span key={index} className='text-theme-btn-primary break-words'>
                 {word}
               </span>
             ) : (
@@ -88,7 +87,7 @@ export const Post = ({ post }: { post: PostView }) => {
         {embed && <EmbedComponent embed={embed as EmbedType} />}
       </section>
 
-      <footer className='flex justify-between items-center mt-4 text-sm text-gray-500'>
+      <footer className='flex justify-between items-center mt-4 text-sm text-theme-btn-text'>
         <span>
           Posted on: {new Date(postRecord.createdAt).toLocaleDateString()}
         </span>
@@ -121,7 +120,7 @@ export const RecordEmbedComponent = ({ embed }: { embed: RecordEmbed }) => {
   }
 
   return (
-    <div className='mt-4 p-3 border border-gray-300 rounded-md bg-gray-100'>
+    <div className='mt-4 p-3 border border-theme-btn-secondary rounded-md bg-theme-background'>
       <header className='flex items-center mb-2'>
         {author?.avatar && (
           <img
@@ -131,14 +130,14 @@ export const RecordEmbedComponent = ({ embed }: { embed: RecordEmbed }) => {
           />
         )}
         <div>
-          <p className='text-sm font-semibold text-gray-900'>
+          <p className='text-sm font-semibold text-theme-foreground'>
             {author?.displayName || author?.handle}
           </p>
-          <p className='text-xs text-gray-500'>@{author?.handle}</p>
+          <p className='text-xs text-theme-visited'>@{author?.handle}</p>
         </div>
       </header>
 
-      <p className='text-gray-700'>{value?.text}</p>
+      <p className='text-theme-btn-text'>{value?.text}</p>
 
       {value?.embed && <EmbedComponent embed={value.embed as EmbedType} />}
     </div>
@@ -159,7 +158,7 @@ export const VideoEmbedComponent = ({ embed }: { embed: VideoEmbed }) => {
 
   return (
     <div
-      className='mt-4 border border-gray-300 rounded-md overflow-hidden'
+      className='mt-4 border border-theme-btn-secondary rounded-md overflow-hidden'
       style={{
         aspectRatio: aspectRatio
           ? `${aspectRatio.width} / ${aspectRatio.height}`
@@ -200,7 +199,7 @@ export const ImagesEmbedComponent = ({ embed }: { embed: ImageEmbed[] }) => {
           href={image.fullsize}
           target='_blank'
           rel='noopener noreferrer'
-          className='block relative w-full'
+          className='block relative w-full hover:bg-theme-btn-primary-hover'
         >
           <img
             src={image.thumb}
@@ -219,8 +218,6 @@ export const ImagesEmbedComponent = ({ embed }: { embed: ImageEmbed[] }) => {
 
 // Embed Component
 export const EmbedComponent = ({ embed }: { embed: EmbedType }) => {
-  console.log('EmbedComponent:', { embed });
-
   if (!embed) {
     console.warn('Embed is null or undefined');
     return null;
@@ -246,10 +243,9 @@ export const EmbedComponent = ({ embed }: { embed: EmbedType }) => {
     const { record, media } = embed.recordWithMedia || {};
 
     if (!record && !media) {
-      console.warn('recordWithMedia has neither record nor media:', embed);
       return (
-        <div className='mt-4 p-4 border border-gray-300 rounded-md bg-gray-100'>
-          <p className='text-sm text-gray-500'>
+        <div className='mt-4 p-4 border border-theme-btn-secondary rounded-md bg-theme-background'>
+          <p className='text-sm text-theme-btn-text'>
             No embedded content available.
           </p>
         </div>
@@ -268,10 +264,9 @@ export const EmbedComponent = ({ embed }: { embed: EmbedType }) => {
     );
   }
 
-  console.warn('Unsupported embed type:', embed);
   return (
-    <div className='mt-4 p-4 border border-gray-300 rounded-md bg-gray-100'>
-      <p className='text-sm text-gray-500'>
+    <div className='mt-4 p-4 border border-theme-btn-secondary rounded-md bg-theme-background'>
+      <p className='text-sm text-theme-btn-text'>
         Unsupported embedded content type.
       </p>
     </div>
@@ -313,20 +308,20 @@ export const ExternalEmbedComponent = ({ embed }: { embed: ExternalEmbed }) => {
     }
 
     return (
-      <div className='w-full h-auto bg-gray-200 flex items-center justify-center'>
-        <p className='text-sm text-gray-500'>No preview available</p>
+      <div className='w-full h-auto bg-theme-btn-secondary flex items-center justify-center'>
+        <p className='text-sm text-theme-btn-text'>No preview available</p>
       </div>
     );
   };
 
   return (
-    <div className='mt-4 border border-gray-300 rounded-md overflow-hidden'>
+    <div className='mt-4 border border-theme-btn-secondary rounded-md overflow-hidden'>
       <a href={uri} target='_blank' rel='noopener noreferrer'>
         {renderMedia()}
         <div className='p-2'>
-          <p className='font-bold text-gray-800'>{title}</p>
+          <p className='font-bold text-theme-foreground'>{title}</p>
           {description && (
-            <p className='text-sm text-gray-500'>{description}</p>
+            <p className='text-sm text-theme-btn-text'>{description}</p>
           )}
         </div>
       </a>
@@ -345,7 +340,7 @@ export const PostFooterIcon = ({
   label: string;
 }) => (
   <div className='flex items-center space-x-1' aria-label={`${count} ${label}`}>
-    <Icon icon={icon} className='h-5 w-5' />
+    <Icon icon={icon} className='h-5 w-5 text-theme-btn-primary' />
     <span>{count}</span>
   </div>
 );
