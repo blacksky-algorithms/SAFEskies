@@ -43,6 +43,22 @@ export const PostContent = ({ post }: { post: PostView }) => {
         );
       }
 
+      if (feature.$type === 'app.bsky.richtext.facet#tag') {
+        elements.push(
+          <span key={`hashtag-${idx}`} className='text-blue-600'>
+            #{text.slice(byteStart, byteEnd)}
+          </span>
+        );
+      }
+
+      if (feature.$type === 'app.bsky.richtext.facet#mention') {
+        elements.push(
+          <span key={`mention-${idx}`} className='text-blue-600'>
+            @{text.slice(byteStart, byteEnd)}
+          </span>
+        );
+      }
+
       if (feature.$type === 'app.bsky.richtext.facet#link') {
         elements.push(
           <a
@@ -84,7 +100,8 @@ export const PostContent = ({ post }: { post: PostView }) => {
           </div>
         </div>
       )}
-      {textRecord.text && renderLinks(textRecord.text, textRecord.facets || [])}
+      {textRecord?.text &&
+        renderLinks(textRecord.text, textRecord.facets || [])}
       {embed && (
         <EmbedRenderer
           embed={
@@ -114,6 +131,8 @@ export const EmbedRenderer = ({
 }) => {
   switch (embed.$type) {
     case 'app.bsky.embed.images#view':
+    case 'app.bsky.embed.images':
+      console.log("switch case 'app.bsky.embed.images#view':", embed);
       return (
         <div className='mt-4 grid gap-2 grid-cols-2'>
           {(embed as AppBskyEmbedImages.View).images.map((image, index) => (
@@ -145,6 +164,7 @@ export const EmbedRenderer = ({
       );
 
     case 'app.bsky.embed.external#view':
+    case 'app.bsky.embed.external':
       //Todo: refine isGif check
       const isGif = (
         embed.external as AppBskyEmbedExternal.External
@@ -186,6 +206,12 @@ export const EmbedRenderer = ({
         </a>
       );
 
+    // case 'app.bsky.embed.external':
+    //   console.log('yererrppppppp: ', embed);
+    //   return (
+    //     <EmbedRecord embed={embed.external as AppBskyEmbedExternal.View} />
+    //   );
+
     case 'app.bsky.embed.record#view':
     case 'app.bsky.embed.recordWithMedia#view':
       return (
@@ -197,7 +223,11 @@ export const EmbedRenderer = ({
       );
 
     default:
-      return <div className='text-gray-500'>Unsupported Embed Type</div>;
+      return (
+        <div className='text-gray-500'>
+          Unsupported Embed Type {embed.$type || embed?.external?.$type}
+        </div>
+      );
   }
 };
 
@@ -256,7 +286,43 @@ const PostFooter = (postRecord: PostView) => {
     </footer>
   );
 };
+const renderImageEmbed = (embed: AppBskyEmbedImages.View) => {
+  if (!embed.images || embed.images.length === 0) {
+    return <div className='text-gray-500'>No images available</div>;
+  }
 
+  return (
+    <div className='mt-4 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'>
+      {embed.images.map((image, index) => {
+        const imageUrl = image.image?.ref?.$link;
+        const aspectRatio = image.aspectRatio
+          ? `${(image.aspectRatio.height / image.aspectRatio.width) * 100}%`
+          : '100%';
+
+        if (!imageUrl) {
+          console.warn(`Image URL missing for index ${index}`, image);
+          return null;
+        }
+
+        return (
+          <div
+            key={index}
+            className='relative w-full'
+            style={{
+              paddingBottom: aspectRatio,
+            }}
+          >
+            <OptimizedImage
+              src={imageUrl}
+              alt={image.alt || 'Image'}
+              className='absolute top-0 left-0 w-full h-full object-cover rounded-md'
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 export const EmbedRecord = ({
   embed,
 }: {
@@ -266,6 +332,7 @@ export const EmbedRecord = ({
     return <div>Unsupported Embedded Record</div>;
   }
 
+  console.log('EmbedRecord', { embed });
   const recordData =
     embed.$type === 'app.bsky.embed.recordWithMedia#view'
       ? (embed as AppBskyEmbedRecordWithMedia.View).record
@@ -275,30 +342,33 @@ export const EmbedRecord = ({
     return <div>Unsupported Record Type</div>;
   }
 
-  const { value } = recordData as { value: { text?: string } };
+  const { value } = recordData as { value: { text?: string; type: any } };
 
   // Handle media embeds if they exist
-  const mediaEmbed =
-    embed.$type === 'app.bsky.embed.recordWithMedia#view'
-      ? (embed as AppBskyEmbedRecordWithMedia.View).media
-      : null;
-  console.log(recordData);
+  const mediaEmbed = true;
+  console.log({ recordData, mediaEmbed });
+
   return (
     <div className='m-4'>
       {/* Render text or linked content */}
-      {value?.text && (
+      {value.$type === 'app.bsky.feed.post' && (
         <PostContent
           post={{
-            ...recordData,
-            record: value,
-            embed: undefined,
-            uri: recordData.uri as string,
-            cid: recordData.cid as string,
             author: recordData.author as ProfileViewBasic,
-            indexedAt: recordData.indexedAt as string,
+            record: { text: value.text, facets: value.facets },
+            embed: recordData.value.embed,
+            embeds: recordData.embeds,
+            // record: value,
+            // embed: embeds,
+            // uri: recordData.uri as string,
+            // cid: recordData.cid as string,
+            // author: recordData.author as ProfileViewBasic,
+            // indexedAt: recordData.indexedAt as string,
           }}
         />
       )}
+
+      {/* {value.$type === 'app.bsky.feed.post' && <div>RENDER POST HERE)</div>} */}
 
       {/* Render any additional embeds (e.g., media) */}
       {mediaEmbed && (
