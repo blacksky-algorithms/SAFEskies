@@ -9,10 +9,10 @@ import {
 } from '@atproto/api/dist/client';
 
 import { OptimizedImage } from '@/components/optimized-image';
-import * as HeroIcons from '@heroicons/react/24/outline';
-import { Icon } from '@/components/icon';
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { PostFooter } from './post-footer';
+import { Label } from '@atproto/api/dist/moderation/types';
 
 interface TextRecord {
   text: string;
@@ -29,7 +29,6 @@ export const PostContent = ({
 }) => {
   const { record, author, embed } = post;
   const textRecord = record as TextRecord;
-  console.log('PostContent:', post);
   const renderLinks = (
     text: string,
     facets: AppBskyRichtextFacet.Main[] = []
@@ -49,7 +48,7 @@ export const PostContent = ({
 
       if (feature.$type === 'app.bsky.richtext.facet#tag') {
         elements.push(
-          <span key={`hashtag-${idx}`} className='text-blue-600'>
+          <span key={`hashtag-${idx}`} className='text-theme-btn-primary'>
             #{text.slice(byteStart, byteEnd)}
           </span>
         );
@@ -57,7 +56,7 @@ export const PostContent = ({
 
       if (feature.$type === 'app.bsky.richtext.facet#mention') {
         elements.push(
-          <span key={`mention-${idx}`} className='text-blue-600'>
+          <span key={`mention-${idx}`} className='text-theme-btn-primary'>
             @{text.slice(byteStart, byteEnd)}
           </span>
         );
@@ -70,7 +69,7 @@ export const PostContent = ({
             href={(feature as AppBskyRichtextFacet.Link).uri || undefined}
             target='_blank'
             rel='noopener noreferrer'
-            className='text-blue-600 underline'
+            className='text-theme-btn-primary underline'
           >
             {text.slice(byteStart, byteEnd)}
           </a>
@@ -86,9 +85,7 @@ export const PostContent = ({
 
     return <p className='p-4'>{elements}</p>;
   };
-  if (embed) {
-    console.log('Embed:', embed);
-  }
+
   return (
     <div className={`post-content p-3 shadow ${isEmbedded ? 'border' : ''}`}>
       {author && (
@@ -143,8 +140,19 @@ export const EmbeddedPost = (
       | AppBskyEmbedRecord.View
       | AppBskyEmbedRecordWithMedia.View
   ) => {
-    console.log({ data });
-    const record = data.embed.record; // Extracting main record
+    const record = data.embed.record as {
+      author: any;
+      value: any;
+      embeds: any;
+      uri: string;
+      cid: string;
+      indexedAt: string;
+      replyCount: number;
+      repostCount: number;
+      likeCount: number;
+      quoteCount: number;
+      labels?: Label[];
+    };
 
     return {
       author: {
@@ -160,11 +168,11 @@ export const EmbeddedPost = (
         text: record.value.text,
         facets: record.value.facets,
         createdAt: record.value.createdAt,
-        embed: record.value.embed || null, // Support embedded media or nested content
+        embed: record.value.embed || null,
       },
-      embed: data.embed.record.embeds?.[0]?.media || null, // If there's an outer embed, include it
-      uri: record.uri,
+      embed: record.embeds?.[0]?.media || null,
       cid: record.cid,
+      uri: record.uri,
       indexedAt: record.indexedAt,
       replyCount: record.replyCount || 0,
       repostCount: record.repostCount || 0,
@@ -172,13 +180,11 @@ export const EmbeddedPost = (
       quoteCount: record.quoteCount || 0,
       langs: record.value.langs || [],
       labels: record.labels || [],
-    };
+    } satisfies PostView;
   };
 
-  // Usage Example
   const reshapedData = reshapeToPostContent(embed);
 
-  console.log('EmbeddedPost:', embed);
   return (
     <div className='p-3 shadow border'>
       <PostContent post={reshapedData} />
@@ -192,8 +198,7 @@ export const EmbedRecord = ({
 }: {
   embed: AppBskyEmbedRecord.View | AppBskyEmbedRecordWithMedia.View;
 }) => {
-  console.log('EmbedRecord:', embed);
-  if (!embed.record) {
+  if (!embed.record || !embed) {
     console.warn('NO RECORD FOUND:', { embed });
     return <div>Content unavailable</div>;
   }
@@ -201,12 +206,10 @@ export const EmbedRecord = ({
   const recordData = embed.record;
 
   // Handle nested embed and media cases
-  const { value } = recordData as {
-    value: TextRecord & { embed?: any };
-  };
+  const { value } = recordData;
 
   const media =
-    (embed as AppBskyEmbedRecordWithMedia.View).media ?? value.embed; // Prefer media, fallback to value.embed
+    (embed as AppBskyEmbedRecordWithMedia.View).media ?? value?.embed;
 
   if (!media) {
     console.warn('No media or nested embed found:', { embed });
@@ -232,18 +235,6 @@ export const EmbedRecord = ({
     </div>
   );
 };
-const renderImages = (images: AppBskyEmbedImages['images']) => (
-  <div className='mt-4 grid gap-2 grid-cols-2'>
-    {images.map((image, index) => (
-      <OptimizedImage
-        key={index}
-        src={image.ref?.$link || ''}
-        alt={image.alt || 'Image'}
-        className='rounded-md object-cover w-full'
-      />
-    ))}
-  </div>
-);
 
 // Embed Renderer Component
 export const EmbedRenderer = ({
@@ -260,7 +251,7 @@ export const EmbedRenderer = ({
     case 'app.bsky.embed.images#view':
       return (
         <div className='mt-4 grid gap-2 grid-cols-2'>
-          {embed.images.map((image, index) => (
+          {(embed as AppBskyEmbedImages.View).images.map((image, index) => (
             <OptimizedImage
               key={index}
               src={image.fullsize || image.thumb}
@@ -272,7 +263,6 @@ export const EmbedRenderer = ({
       );
 
     case 'app.bsky.embed.images':
-      console.log('app.bsky.embed.images', embed);
       return (
         <div className='mt-4 bg-pink-400'>
           <p>Unsupported content type: {embed.$type}</p>
@@ -287,16 +277,18 @@ export const EmbedRenderer = ({
             loop
             muted
             controls
-            poster={embed.thumbnail}
+            poster={embed.thumbnail as string | undefined}
             className='object-cover w-full rounded-md'
           >
-            <source src={embed.playlist} type='application/x-mpegURL' />
+            <source
+              src={embed.playlist as string | undefined}
+              type='application/x-mpegURL'
+            />
           </video>
         </div>
       );
 
     case 'app.bsky.embed.video':
-      console.log('app.bsky.embed.video', embed);
       return (
         <div className='mt-4 bg-pink-400'>
           <p>Unsupported content type: {embed.$type}</p>
@@ -306,30 +298,37 @@ export const EmbedRenderer = ({
     case 'app.bsky.embed.external#view':
       return (
         <a
-          href={embed.external.uri}
+          href={(embed.external as AppBskyEmbedExternal.View['external']).uri}
           target='_blank'
           rel='noopener noreferrer'
           className='block mt-4 shadow-md hover:shadow-lg transition-shadow'
         >
-          {embed.external.thumb && (
+          {(embed as AppBskyEmbedExternal.View).external.thumb && (
             <OptimizedImage
-              src={embed.external.thumb}
-              alt={embed.external.title || 'External Content'}
+              src={
+                (embed.external as AppBskyEmbedExternal.View['external']).thumb
+              }
+              alt={
+                (embed.external as AppBskyEmbedExternal.View['external'])
+                  .title || 'External Content'
+              }
               className='rounded w-full'
             />
           )}
-          <p className='mt-2 font-bold'>{embed.external.title}</p>
-          <p>{embed.external.description}</p>
+          <p className='mt-2 font-bold'>
+            {(embed.external as AppBskyEmbedExternal.View['external']).title}
+          </p>
+          <p>
+            {
+              (embed.external as AppBskyEmbedExternal.View['external'])
+                .description
+            }
+          </p>
         </a>
       );
 
     case 'app.bsky.embed.external':
-      console.log('app.bsky.embed.external', embed);
-      return (
-        <div className='mt-4 bg-pink-400'>
-          <p>Unsupported content type: {embed.$type}</p>
-        </div>
-      );
+      return <EmbedRecord embed={embed} />;
 
     case 'app.bsky.embed.recordWithMedia#view':
       return (
@@ -341,7 +340,6 @@ export const EmbedRenderer = ({
       );
 
     case 'app.bsky.embed.recordWithMedia':
-      console.log('app.bsky.embed.recordWithMedia', embed);
       return (
         <div className='mt-4 bg-pink-400'>
           <p>Unsupported content type: {embed.$type}</p>
@@ -350,12 +348,11 @@ export const EmbedRenderer = ({
 
     case 'app.bsky.embed.record#view':
       if (embed?.record?.value?.$type === 'app.bsky.feed.post') {
-        return <EmbeddedPost embed={embed} />;
+        return <EmbeddedPost embed={embed as AppBskyEmbedRecord.View} />;
       }
       return <EmbedRecord embed={embed} />;
 
     case 'app.bsky.embed.record':
-      console.log('app.bsky.embed.record', embed);
       return (
         <div className='mt-4 bg-pink-400'>
           <p>Unsupported content type: {embed.$type}</p>
@@ -363,7 +360,6 @@ export const EmbedRenderer = ({
       );
 
     default:
-      console.warn('Unsupported content type:', { embed });
       return (
         <div className='bg-pink-500'>
           Unsupported content type {embed?.$type}
@@ -378,53 +374,4 @@ export const Post = ({ post }: { post: PostView }) => (
     <PostContent post={post} />
     <PostFooter {...post} />
   </article>
-);
-
-// Post Footer Component
-const PostFooter = (postRecord: PostView) => {
-  return (
-    <footer className='flex p-4 justify-between items-center text-sm'>
-      <span>
-        Posted on: {new Date(postRecord.indexedAt).toLocaleDateString()}
-      </span>
-      <div className='flex items-center space-x-4'>
-        <PostFooterIcon
-          icon='ChatBubbleLeftIcon'
-          count={postRecord.replyCount || 0}
-          label='replies'
-        />
-        <PostFooterIcon
-          icon='ArrowPathRoundedSquareIcon'
-          count={postRecord.repostCount || 0}
-          label='reposts'
-        />
-        <PostFooterIcon
-          icon='HeartIcon'
-          count={postRecord.likeCount || 0}
-          label='likes'
-        />
-        <PostFooterIcon
-          icon='LinkIcon'
-          count={postRecord.quoteCount || 0}
-          label='quotes'
-        />
-      </div>
-    </footer>
-  );
-};
-
-// Post Footer Icon Component
-export const PostFooterIcon = ({
-  icon,
-  count,
-  label,
-}: {
-  icon: keyof typeof HeroIcons;
-  count: number;
-  label: string;
-}) => (
-  <div className='flex items-center space-x-1'>
-    <Icon icon={icon} className='h-5 w-5 text-theme-btn-primary' />
-    <span>{count}</span>
-  </div>
 );
