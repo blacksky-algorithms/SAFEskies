@@ -35,7 +35,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       <img
         src={thumbnail || undefined} // Pass `undefined` if thumbnail is not available
         alt={alt}
-        className={cc([className, 'object-cover'])}
+        className={cc(['object-cover', {}, className])}
         loading={lazy ? 'lazy' : 'eager'}
       />
     );
@@ -48,16 +48,16 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         loop
         muted
         playsInline
-        className={cc([className, 'object-cover'])}
+        className={cc(['object-cover', {}, className])}
         onError={() => setFallback(true)}
-        src={safeSrc} // Use validated safeSrc
+        src={safeSrc}
       >
         <source src={safeSrc} type='image/gif' />
         {/* Fallback */}
         <img
           src={thumbnail || undefined}
           alt={alt}
-          className={cc([className, 'object-cover'])}
+          className={cc(['object-cover', {}, className])}
           onError={() => setFallback(true)}
         />
       </video>
@@ -70,14 +70,14 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         controls
         playsInline
         poster={thumbnail || undefined}
-        className={cc([className, 'object-cover'])}
+        className={cc(['object-cover', {}, className])}
         onError={() => setFallback(true)}
       >
         <source src={safeSrc} type={mimeType || 'video/mp4'} />
         <img
           src={thumbnail || undefined}
           alt={alt}
-          className={cc([className, 'object-cover'])}
+          className={cc(['object-cover', {}, className])}
           onError={() => setFallback(true)}
         />
       </video>
@@ -88,7 +88,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     <img
       src={safeSrc}
       alt={alt}
-      className={cc([className, 'object-cover'])}
+      className={cc(['object-cover', {}, className])}
       loading={lazy ? 'lazy' : 'eager'}
       onError={() => setFallback(true)}
     />
