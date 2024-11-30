@@ -12,6 +12,7 @@ import { OptimizedImage } from '@/components/optimized-image';
 import * as HeroIcons from '@heroicons/react/24/outline';
 import { Icon } from '@/components/icon';
 import cc from 'classcat';
+import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
 // Define a type for text-based records if none exists
 interface TextRecord {
@@ -80,7 +81,7 @@ export const PostContent = ({ post }: { post: PostView }) => {
             <p className='font-semibold'>
               {author.displayName || author.handle}
             </p>
-            <p className='text-sm text-gray-500'>@{author.handle}</p>
+            <p className='text-sm '>@{author.handle}</p>
           </div>
         </div>
       )}
@@ -169,11 +170,24 @@ export const EmbedRenderer = ({
               className='rounded w-full'
             />
           )}
-          <p className='mt-2 text-gray-800 font-bold'>
+          <p className='mt-2  font-bold'>
             {(embed.external as AppBskyEmbedExternal.External).title}
           </p>
         </a>
       );
+
+    case 'app.bsky.embed.record#view':
+    case 'app.bsky.embed.recordWithMedia#view':
+      return (
+        <EmbedRecord
+          embed={
+            embed as AppBskyEmbedRecord.View | AppBskyEmbedRecordWithMedia.View
+          }
+        />
+      );
+
+    // case 'app.bsky.embed.recordWithMedia#view':
+    //   return <Post post={(embed as AppBskyEmbedRecordWithMedia.View).record} />;
 
     default:
       return <div className='text-gray-500'>Unsupported Embed Type</div>;
@@ -233,5 +247,64 @@ const PostFooter = (postRecord: PostView) => {
         />
       </div>
     </footer>
+  );
+};
+
+export const EmbedRecord = ({
+  embed,
+}: {
+  embed: AppBskyEmbedRecord.View | AppBskyEmbedRecordWithMedia.View;
+}) => {
+  if (!embed || !embed.record) {
+    return <div>Unsupported Embedded Record</div>;
+  }
+
+  const recordData =
+    embed.$type === 'app.bsky.embed.recordWithMedia#view'
+      ? (embed as AppBskyEmbedRecordWithMedia.View).record
+      : embed.record;
+
+  if (recordData.$type !== 'app.bsky.embed.record#viewRecord') {
+    return <div>Unsupported Record Type</div>;
+  }
+
+  const { value } = recordData as { value: { text?: string } };
+
+  // Handle media embeds if they exist
+  const mediaEmbed =
+    embed.$type === 'app.bsky.embed.recordWithMedia#view'
+      ? (embed as AppBskyEmbedRecordWithMedia.View).media
+      : null;
+  console.log(recordData);
+  return (
+    <div className='m-4'>
+      {/* Render text or linked content */}
+      {value?.text && (
+        <PostContent
+          post={{
+            ...recordData,
+            record: value,
+            embed: undefined,
+            uri: recordData.uri as string,
+            cid: recordData.cid as string,
+            author: recordData.author as ProfileViewBasic,
+            indexedAt: recordData.indexedAt as string,
+          }}
+        />
+      )}
+
+      {/* Render any additional embeds (e.g., media) */}
+      {mediaEmbed && (
+        <EmbedRenderer
+          embed={
+            mediaEmbed as
+              | AppBskyEmbedImages.View
+              | AppBskyEmbedVideo.View
+              | AppBskyEmbedExternal.View
+              | AppBskyEmbedRecord.View
+          }
+        />
+      )}
+    </div>
   );
 };
