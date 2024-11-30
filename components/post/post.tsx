@@ -146,7 +146,11 @@ export const EmbedRenderer = ({
       );
 
     case 'app.bsky.embed.external#view':
-      console.log({ embed });
+      //Todo: refine isGif check
+      const isGif = (
+        embed.external as AppBskyEmbedExternal.External
+      ).uri.includes('.gif');
+
       return (
         <a
           href={
@@ -159,9 +163,13 @@ export const EmbedRenderer = ({
           {(embed.external as AppBskyEmbedExternal.External).thumb && (
             <OptimizedImage
               src={
-                (
-                  embed?.external as AppBskyEmbedExternal.External
-                )?.thumb?.toString() || undefined
+                isGif
+                  ? (
+                      embed?.external as AppBskyEmbedExternal.External
+                    )?.uri?.toString()
+                  : (
+                      embed?.external as AppBskyEmbedExternal.External
+                    )?.thumb?.toString() || undefined
               }
               alt={
                 (embed.external as AppBskyEmbedExternal.External).title ||
