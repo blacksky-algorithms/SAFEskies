@@ -91,7 +91,7 @@ export const Feed = ({ did, feedName }: FeedProps) => {
   const handleErrorModalClose = () => {
     refreshFeed();
   };
-
+  console.log({ feed });
   return (
     <section
       className='flex w-full flex-col items-center relative max-w-screen desktop:max-w-lg mx-auto'

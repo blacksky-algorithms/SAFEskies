@@ -11,9 +11,9 @@ interface FeedListProps {
 export const FeedList = ({ feed }: FeedListProps) => {
   return (
     <ul className='w-full flex flex-col items-center' role='list'>
-      {feed.map((feedPost) => (
+      {feed.map((feedPost, index) => (
         <li key={feedPost.post.cid} className='w-full desktop:max-w-screen-lg'>
-          <Post post={feedPost.post} />
+          <Post post={feedPost.post} position={index} />
         </li>
       ))}
     </ul>

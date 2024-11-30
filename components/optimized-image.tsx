@@ -1,57 +1,109 @@
-/* eslint-disable @next/next/no-img-element */
 import React, { useState } from 'react';
+import cc from 'classcat';
 
 interface OptimizedImageProps {
-  src: string;
+  src?: string; // Make src optional
   alt: string;
   className?: string;
-  placeholder?: string;
-  sizes?: string;
-  srcSet?: string;
   lazy?: boolean;
-  mimeType?: string; // Optional MIME type for better detection
+  mimeType?: string;
+  thumbnail?: string; // Fallback thumbnail or poster
 }
 
 export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   src,
   alt,
   className = '',
-  sizes,
-  srcSet,
   lazy = true,
   mimeType,
+  thumbnail,
 }) => {
   const [fallback, setFallback] = useState(false);
 
-  // Determine if the file is a GIF based on MIME type or file extension
-  const isGif = mimeType === 'image/gif' || src.toLowerCase().endsWith('.gif');
+  // Safeguard: Ensure src is null if it's not a valid string
+  const isValidSrc = typeof src === 'string' && src.trim() !== '';
+  const safeSrc = isValidSrc ? src : null;
 
-  if (fallback || !isGif) {
-    // Fallback to <img> or render <img> for non-GIF files
+  const isGif =
+    mimeType === 'image/gif' || (safeSrc && safeSrc.endsWith('.gif'));
+  const isVideo =
+    mimeType?.startsWith('video/') ||
+    (safeSrc && (safeSrc.endsWith('.mp4') || safeSrc.endsWith('.webm')));
+
+  //   console.log({
+  //     src,
+  //     safeSrc,
+  //     isGif,
+  //     isVideo,
+  //     alt,
+  //     mimeType,
+  //     thumbnail,
+  //     className,
+  //     lazy,
+  //     fallback,
+  //   });
+
+  if (fallback || !safeSrc) {
     return (
       <img
-        src={src}
+        src={thumbnail || undefined} // Pass `undefined` if thumbnail is not available
         alt={alt}
-        sizes={sizes}
-        srcSet={srcSet}
+        className={cc([className, 'object-cover'])}
         loading={lazy ? 'lazy' : 'eager'}
-        className={`object-cover ${className}`}
-        onError={() => setFallback(true)}
       />
     );
   }
 
+  if (isGif) {
+    return (
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className={cc([className, 'object-cover'])}
+        onError={() => setFallback(true)}
+        src={safeSrc} // Use validated safeSrc
+      >
+        <source src={safeSrc} type='image/gif' />
+        {/* Fallback */}
+        <img
+          src={thumbnail || undefined}
+          alt={alt}
+          className={cc([className, 'object-cover'])}
+          onError={() => setFallback(true)}
+        />
+      </video>
+    );
+  }
+
+  if (isVideo) {
+    return (
+      <video
+        controls
+        playsInline
+        poster={thumbnail || undefined}
+        className={cc([className, 'object-cover'])}
+        onError={() => setFallback(true)}
+      >
+        <source src={safeSrc} type={mimeType || 'video/mp4'} />
+        <img
+          src={thumbnail || undefined}
+          alt={alt}
+          className={cc([className, 'object-cover'])}
+          onError={() => setFallback(true)}
+        />
+      </video>
+    );
+  }
+
   return (
-    <video
-      autoPlay
-      loop
-      muted
-      playsInline
-      className={`object-cover ${className}`}
+    <img
+      src={safeSrc}
+      alt={alt}
+      className={cc([className, 'object-cover'])}
+      loading={lazy ? 'lazy' : 'eager'}
       onError={() => setFallback(true)}
-    >
-      <source src={src} type='image/gif' />
-      Your browser does not support the video tag.
-    </video>
+    />
   );
 };

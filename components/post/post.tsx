@@ -1,329 +1,164 @@
-/* eslint-disable @next/next/no-img-element */
 import React from 'react';
-import { Icon } from '@/components/icon';
+import {
+  AppBskyEmbedExternal,
+  AppBskyEmbedImages,
+  AppBskyEmbedRecord,
+  AppBskyEmbedRecordWithMedia,
+  AppBskyEmbedVideo,
+  AppBskyRichtextFacet,
+} from '@atproto/api/dist/client';
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import {
-  EmbedType,
-  ExternalEmbed,
-  ImageEmbed,
-  PostRecord,
-  RecordEmbed,
-  VideoEmbed,
-} from '@/types/post';
-import {
-  isExternalEmbed,
-  isImagesEmbed,
-  isRecordEmbed,
-  isRecordWithMediaEmbed,
-  isVideoEmbed,
-} from '@/types/guards';
-
-import * as HeroIcons from '@heroicons/react/24/outline';
+import { OptimizedImage } from '@/components/optimized-image';
+import { Icon } from '@/components/icon';
 import cc from 'classcat';
 
-import { OptimizedImage } from '@/components/optimized-image';
+// Define a type for text-based records if none exists
+interface TextRecord {
+  text: string;
+  facets?: AppBskyRichtextFacet.Main[];
+}
 
-// Main Post Component
-export const Post = ({ post }: { post: PostView }) => {
-  const {
-    author,
-    record,
-    embed,
-    replyCount = 0,
-    repostCount = 0,
-    likeCount = 0,
-    quoteCount = 0,
-  } = post;
+// Post Content Component
+export const PostContent = ({ post }: { post: PostView }) => {
+  const { record, author, embed } = post;
 
-  const postRecord = record as PostRecord;
+  // Safely cast the record to TextRecord
+  const textRecord = record as TextRecord;
 
-  if (!postRecord) {
-    console.warn('Missing post record:', post);
-    return null;
-  }
+  const renderLinks = (
+    text: string,
+    facets: AppBskyRichtextFacet.Main[] = []
+  ) => {
+    const elements: React.ReactNode[] = [];
+    let lastIndex = 0;
 
-  const hashtags = postRecord.facets?.flatMap((facet) =>
-    facet.features.map((feature) => `#${feature.tag}`)
-  );
+    facets.forEach((facet, idx) => {
+      const { byteStart, byteEnd } = facet.index;
+      const feature = facet.features[0];
 
-  return (
-    <article
-      className={cc([
-        'bg-theme-background border border-theme-btn-secondary shadow-sm p-4 w-full mx-auto max-w-screen',
-      ])}
-      aria-labelledby={`post-title-${post.cid}`}
-    >
-      <header className='flex items-center mb-3'>
-        {author?.avatar && (
-          <OptimizedImage
-            src={`${author.avatar}?w=48&h=48`}
-            alt={`Avatar of ${author?.displayName || author?.handle}`}
-            className='w-12 h-12 rounded-full mr-3'
-            lazy={false}
-          />
-        )}
-        <div>
-          <p
-            id={`post-title-${post.cid}`}
-            className='text-base font-semibold text-theme-foreground'
+      if (lastIndex < byteStart) {
+        elements.push(
+          <span key={`text-${idx}`}>{text.slice(lastIndex, byteStart)}</span>
+        );
+      }
+
+      if (feature.$type === 'app.bsky.richtext.facet#link') {
+        elements.push(
+          <a
+            key={`link-${idx}`}
+            href={feature.uri || ''}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='text-blue-600 underline'
           >
-            {author?.displayName || author?.handle}
-          </p>
-          <p className='text-sm text-theme-visited'>@{author?.handle}</p>
-        </div>
-      </header>
+            {text.slice(byteStart, byteEnd)}
+          </a>
+        );
+      }
 
-      <section>
-        <p className='text-theme-btn-text break-words'>
-          {postRecord.text.split(' ').map((word, index) =>
-            hashtags?.includes(word) ? (
-              <span key={index} className='text-theme-btn-primary break-words'>
-                {word}
-              </span>
-            ) : (
-              <span key={index} className='break-words'>
-                {word}{' '}
-              </span>
-            )
-          )}
-        </p>
-        {embed && <EmbedComponent embed={embed as EmbedType} />}
-      </section>
+      lastIndex = byteEnd;
+    });
 
-      <footer className='flex justify-between items-center mt-4 text-sm text-theme-btn-text'>
-        <span>
-          Posted on: {new Date(postRecord.createdAt).toLocaleDateString()}
-        </span>
-        <div className='flex items-center space-x-4'>
-          <PostFooterIcon
-            icon='ChatBubbleLeftIcon'
-            count={replyCount}
-            label='replies'
-          />
-          <PostFooterIcon
-            icon='ArrowPathRoundedSquareIcon'
-            count={repostCount}
-            label='reposts'
-          />
-          <PostFooterIcon icon='HeartIcon' count={likeCount} label='likes' />
-          <PostFooterIcon icon='LinkIcon' count={quoteCount} label='quotes' />
-        </div>
-      </footer>
-    </article>
-  );
-};
-
-// Record Embed Component
-export const RecordEmbedComponent = ({ embed }: { embed: RecordEmbed }) => {
-  const { author, value } = embed;
-
-  if (!value) {
-    console.warn('RecordEmbed has no value:', embed);
-    return null;
-  }
-
-  return (
-    <div className='mt-4 p-3 border border-theme-btn-secondary rounded-md bg-theme-background'>
-      <header className='flex items-center mb-2'>
-        {author?.avatar && (
-          <OptimizedImage
-            src={`${author.avatar}?w=8&h=8`}
-            alt={`Avatar of ${author?.displayName || author?.handle}`}
-            className='w-8 h-8 rounded-full mr-3'
-            lazy={true}
-          />
-        )}
-        <div>
-          <p className='text-sm font-semibold text-theme-foreground'>
-            {author?.displayName || author?.handle}
-          </p>
-          <p className='text-xs text-theme-visited'>@{author?.handle}</p>
-        </div>
-      </header>
-
-      <p className='text-theme-btn-text'>{value?.text}</p>
-
-      {value?.embed && <EmbedComponent embed={value.embed as EmbedType} />}
-    </div>
-  );
-};
-
-// Video Embed Component
-export const VideoEmbedComponent = ({ embed }: { embed: VideoEmbed }) => {
-  const { playlist, thumbnail, aspectRatio, mimeType, video } = embed;
-
-  // Video source priority: HLS (playlist), fallback to linked video
-  const videoSource = playlist || video?.ref?.$link;
-
-  if (!videoSource) {
-    console.warn('No video source available for embed:', embed);
-    return null;
-  }
-
-  return (
-    <div
-      className='mt-4 border border-theme-btn-secondary rounded-md overflow-hidden'
-      style={{
-        aspectRatio: aspectRatio
-          ? `${aspectRatio.width} / ${aspectRatio.height}`
-          : undefined,
-      }}
-    >
-      <video
-        controls
-        poster={thumbnail}
-        loop
-        muted
-        playsInline
-        className='w-full h-auto object-cover'
-      >
-        {mimeType && <source src={videoSource} type={mimeType} />}
-        <source src={videoSource} type='video/mp4' />
-        <source src={videoSource} type='application/x-mpegURL' />
-        Your browser does not support the video tag.
-      </video>
-    </div>
-  );
-};
-
-// Image Embed Component
-export const ImagesEmbedComponent = ({ embed }: { embed: ImageEmbed[] }) => {
-  const imagesToRender = embed.slice(0, 4); // Limit to 4 images maximum
-
-  return (
-    <div
-      className={cc([
-        'mt-4 grid gap-2 ',
-        {
-          'grid-cols-1': imagesToRender.length === 1,
-          'grid-cols-2': imagesToRender.length > 1,
-        },
-      ])}
-    >
-      {imagesToRender.map((image, index) => (
-        <a
-          key={index}
-          href={image.fullsize}
-          target='_blank'
-          rel='noopener noreferrer'
-          className='block relative overflow-hidden w-full '
-        >
-          <OptimizedImage
-            src={image.thumb}
-            alt={image.alt || ''}
-            className={cc([
-              'object-cover rounded-md',
-              {
-                'w-full h-auto': imagesToRender.length === 1,
-                'w-theme-post-image-multi h-theme-post-image-multi':
-                  imagesToRender.length > 1,
-              },
-            ])}
-            lazy
-          />
-        </a>
-      ))}
-    </div>
-  );
-};
-
-// Embed Component
-export const EmbedComponent = ({ embed }: { embed: EmbedType }) => {
-  if (!embed) {
-    console.warn('Embed is null or undefined');
-    return null;
-  }
-
-  if (isExternalEmbed(embed)) {
-    return <ExternalEmbedComponent embed={embed.external} />;
-  }
-
-  if (isRecordEmbed(embed)) {
-    return <RecordEmbedComponent embed={embed.record} />;
-  }
-
-  if (isImagesEmbed(embed)) {
-    return <ImagesEmbedComponent embed={embed.images} />;
-  }
-
-  if (isVideoEmbed(embed)) {
-    return <VideoEmbedComponent embed={embed.video ?? embed} />;
-  }
-
-  if (isRecordWithMediaEmbed(embed)) {
-    const { record, media } = embed.recordWithMedia || {};
-
-    if (!record && !media) {
-      return (
-        <div className='mt-4 p-4 border border-theme-btn-secondary rounded-md bg-theme-background'>
-          <p className='text-sm text-theme-btn-text'>
-            No embedded content available.
-          </p>
-        </div>
-      );
+    if (lastIndex < text.length) {
+      elements.push(<span key='remaining-text'>{text.slice(lastIndex)}</span>);
     }
 
-    return (
-      <div className='mt-4'>
-        {record && (
-          <div className='mb-4'>
-            <RecordEmbedComponent embed={record} />
+    return <p>{elements}</p>;
+  };
+
+  return (
+    <div className='post-content p-3 border border-gray-300 rounded shadow'>
+      {author && (
+        <div className='author-info mb-2 flex items-center'>
+          <OptimizedImage
+            src={author.avatar || ''}
+            alt={`Avatar of ${author.displayName || author.handle}`}
+            className='w-8 h-8 rounded-full mr-2'
+          />
+          <div>
+            <p className='font-semibold'>
+              {author.displayName || author.handle}
+            </p>
+            <p className='text-sm text-gray-500'>@{author.handle}</p>
           </div>
-        )}
-        {media && <EmbedComponent embed={media} />}
-      </div>
-    );
-  }
-
-  return (
-    <div className='mt-4 p-4 border border-theme-btn-secondary rounded-md bg-theme-background'>
-      <p className='text-sm text-theme-btn-text'>
-        Unsupported embedded content type.
-      </p>
+        </div>
+      )}
+      {textRecord.text && renderLinks(textRecord.text, textRecord.facets || [])}
+      {embed && <EmbedRenderer embed={embed} />}
     </div>
   );
 };
 
-// External Embed Component
-const ExternalEmbedComponent = ({ embed }: { embed: ExternalEmbed }) => {
-  const { uri, title, description } = embed;
-
-  if (!uri) {
-    console.warn('Missing URI in ExternalEmbed', embed);
-    return null;
-  }
-
-  return (
-    <div className='mt-4 border border-theme-btn-secondary rounded-md overflow-hidden'>
-      <OptimizedImage
-        src={uri}
-        alt={description || 'External content'}
-        className='w-full h-auto object-cover'
-        mimeType={uri.endsWith('.gif') ? 'image/gif' : undefined}
-        lazy
-      />
-      <div className='p-2'>
-        <p className='font-bold text-theme-foreground'>{title}</p>
-        {description && (
-          <p className='text-sm text-theme-btn-text'>{description}</p>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Post Footer Icon Component
-export const PostFooterIcon = ({
-  icon,
-  count,
-  label,
+// Embed Renderer Component
+export const EmbedRenderer = ({
+  embed,
 }: {
-  icon: keyof typeof HeroIcons;
-  count: number;
-  label: string;
-}) => (
-  <div className='flex items-center space-x-1' aria-label={`${count} ${label}`}>
-    <Icon icon={icon} className='h-5 w-5 text-theme-btn-primary' />
-    <span>{count}</span>
-  </div>
+  embed:
+    | AppBskyEmbedImages.View
+    | AppBskyEmbedVideo.View
+    | AppBskyEmbedExternal.View
+    | AppBskyEmbedRecord.View
+    | AppBskyEmbedRecordWithMedia.View;
+}) => {
+  switch (embed.$type) {
+    case 'app.bsky.embed.images#view':
+      return (
+        <div className='mt-4 grid gap-2 grid-cols-2'>
+          {(embed as AppBskyEmbedImages.View).images.map((image, index) => (
+            <OptimizedImage
+              key={index}
+              src={image.fullsize || image.thumb}
+              alt={image.alt || 'Image'}
+              className='rounded-md object-cover w-full'
+            />
+          ))}
+        </div>
+      );
+
+    case 'app.bsky.embed.video#view':
+      return (
+        <div className='relative mt-4'>
+          <video
+            controls
+            playsInline
+            poster={(embed as AppBskyEmbedVideo.View).thumbnail}
+            className='object-cover w-full rounded-md'
+          >
+            <source
+              src={(embed as AppBskyEmbedVideo.View).playlist || ''}
+              type='application/x-mpegURL'
+            />
+          </video>
+        </div>
+      );
+
+    case 'app.bsky.embed.external#view':
+      return (
+        <a
+          href={embed.uri || ''}
+          target='_blank'
+          rel='noopener noreferrer'
+          className='block mt-4 p-3 border border-gray-300 rounded-md shadow-md hover:shadow-lg transition-shadow'
+        >
+          {embed.thumb && (
+            <OptimizedImage
+              src={embed.thumb}
+              alt={embed.title || 'External Content'}
+              className='rounded w-full'
+            />
+          )}
+          <p className='mt-2 text-gray-800 font-bold'>{embed.title}</p>
+        </a>
+      );
+
+    default:
+      return <div className='text-gray-500'>Unsupported Embed Type</div>;
+  }
+};
+
+// Main Post Component
+export const Post = ({ post }: { post: PostView }) => (
+  <article className='bg-theme-background border border-theme-btn-secondary shadow-sm p-4 w-full mx-auto max-w-screen-md rounded-lg'>
+    <PostContent post={post} />
+  </article>
 );
