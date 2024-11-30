@@ -273,15 +273,13 @@ export const EmbedRenderer = ({
       return (
         <div className='relative mt-4'>
           <video
-            autoPlay
-            loop
-            muted
             controls
-            poster={embed.thumbnail as string | undefined}
+            playsInline
+            poster={(embed as AppBskyEmbedVideo.View).thumbnail}
             className='object-cover w-full rounded-md'
           >
             <source
-              src={embed.playlist as string | undefined}
+              src={(embed as AppBskyEmbedVideo.View).playlist || ''}
               type='application/x-mpegURL'
             />
           </video>
@@ -296,33 +294,43 @@ export const EmbedRenderer = ({
       );
 
     case 'app.bsky.embed.external#view':
+      //Todo: refine isGif check
+      const isGif = (
+        embed.external as AppBskyEmbedExternal.External
+      ).uri.includes('.gif');
+
       return (
         <a
-          href={(embed.external as AppBskyEmbedExternal.View['external']).uri}
+          href={
+            isGif
+              ? undefined
+              : (embed.external as AppBskyEmbedExternal.External).uri ||
+                undefined
+          }
           target='_blank'
           rel='noopener noreferrer'
-          className='block mt-4 shadow-md hover:shadow-lg transition-shadow'
+          className='block mt-4 p-3 border border-gray-300 rounded-md shadow-md hover:shadow-lg transition-shadow'
         >
-          {(embed as AppBskyEmbedExternal.View).external.thumb && (
+          {(embed.external as AppBskyEmbedExternal.External).thumb && (
             <OptimizedImage
               src={
-                (embed.external as AppBskyEmbedExternal.View['external']).thumb
+                isGif
+                  ? (
+                      embed?.external as AppBskyEmbedExternal.External
+                    )?.uri?.toString()
+                  : (
+                      embed?.external as AppBskyEmbedExternal.External
+                    )?.thumb?.toString() || undefined
               }
               alt={
-                (embed.external as AppBskyEmbedExternal.View['external'])
-                  .title || 'External Content'
+                (embed.external as AppBskyEmbedExternal.External).title ||
+                'External Content'
               }
               className='rounded w-full'
             />
           )}
-          <p className='mt-2 font-bold'>
-            {(embed.external as AppBskyEmbedExternal.View['external']).title}
-          </p>
-          <p>
-            {
-              (embed.external as AppBskyEmbedExternal.View['external'])
-                .description
-            }
+          <p className='mt-2  font-bold'>
+            {(embed.external as AppBskyEmbedExternal.External).title}
           </p>
         </a>
       );
