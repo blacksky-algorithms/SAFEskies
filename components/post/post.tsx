@@ -46,7 +46,7 @@ export const PostContent = ({ post }: { post: PostView }) => {
         elements.push(
           <a
             key={`link-${idx}`}
-            href={feature.uri || ''}
+            href={(feature as AppBskyRichtextFacet.Link).uri || ''}
             target='_blank'
             rel='noopener noreferrer'
             className='text-blue-600 underline'
@@ -84,7 +84,18 @@ export const PostContent = ({ post }: { post: PostView }) => {
         </div>
       )}
       {textRecord.text && renderLinks(textRecord.text, textRecord.facets || [])}
-      {embed && <EmbedRenderer embed={embed} />}
+      {embed && (
+        <EmbedRenderer
+          embed={
+            embed as
+              | AppBskyEmbedImages.View
+              | AppBskyEmbedVideo.View
+              | AppBskyEmbedExternal.View
+              | AppBskyEmbedRecord.View
+              | AppBskyEmbedRecordWithMedia.View
+          }
+        />
+      )}
     </div>
   );
 };
@@ -133,21 +144,33 @@ export const EmbedRenderer = ({
       );
 
     case 'app.bsky.embed.external#view':
+      console.log({ embed });
       return (
         <a
-          href={embed.uri || ''}
+          href={
+            (embed.external as AppBskyEmbedExternal.External).uri || undefined
+          }
           target='_blank'
           rel='noopener noreferrer'
           className='block mt-4 p-3 border border-gray-300 rounded-md shadow-md hover:shadow-lg transition-shadow'
         >
-          {embed.thumb && (
+          {(embed.external as AppBskyEmbedExternal.External).thumb && (
             <OptimizedImage
-              src={embed.thumb}
-              alt={embed.title || 'External Content'}
+              src={
+                (
+                  embed?.external as AppBskyEmbedExternal.External
+                )?.thumb?.toString() || undefined
+              }
+              alt={
+                (embed.external as AppBskyEmbedExternal.External).title ||
+                'External Content'
+              }
               className='rounded w-full'
             />
           )}
-          <p className='mt-2 text-gray-800 font-bold'>{embed.title}</p>
+          <p className='mt-2 text-gray-800 font-bold'>
+            {(embed.external as AppBskyEmbedExternal.External).title}
+          </p>
         </a>
       );
 
