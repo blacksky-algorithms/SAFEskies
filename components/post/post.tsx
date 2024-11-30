@@ -11,7 +11,6 @@ import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { OptimizedImage } from '@/components/optimized-image';
 import * as HeroIcons from '@heroicons/react/24/outline';
 import { Icon } from '@/components/icon';
-import cc from 'classcat';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
 // Define a type for text-based records if none exists
@@ -154,7 +153,10 @@ export const EmbedRenderer = ({
       return (
         <a
           href={
-            (embed.external as AppBskyEmbedExternal.External).uri || undefined
+            isGif
+              ? undefined
+              : (embed.external as AppBskyEmbedExternal.External).uri ||
+                undefined
           }
           target='_blank'
           rel='noopener noreferrer'
@@ -193,9 +195,6 @@ export const EmbedRenderer = ({
           }
         />
       );
-
-    // case 'app.bsky.embed.recordWithMedia#view':
-    //   return <Post post={(embed as AppBskyEmbedRecordWithMedia.View).record} />;
 
     default:
       return <div className='text-gray-500'>Unsupported Embed Type</div>;

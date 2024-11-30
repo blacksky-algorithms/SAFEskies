@@ -30,19 +30,6 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     mimeType?.startsWith('video/') ||
     (safeSrc && (safeSrc.endsWith('.mp4') || safeSrc.endsWith('.webm')));
 
-  //   console.log({
-  //     src,
-  //     safeSrc,
-  //     isGif,
-  //     isVideo,
-  //     alt,
-  //     mimeType,
-  //     thumbnail,
-  //     className,
-  //     lazy,
-  //     fallback,
-  //   });
-
   if (fallback || !safeSrc) {
     return (
       <img
