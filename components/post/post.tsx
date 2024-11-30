@@ -9,6 +9,7 @@ import {
 } from '@atproto/api/dist/client';
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { OptimizedImage } from '@/components/optimized-image';
+import * as HeroIcons from '@heroicons/react/24/outline';
 import { Icon } from '@/components/icon';
 import cc from 'classcat';
 
@@ -183,5 +184,54 @@ export const EmbedRenderer = ({
 export const Post = ({ post }: { post: PostView }) => (
   <article className='bg-theme-background border border-theme-btn-secondary shadow-sm p-4 w-full mx-auto max-w-screen-md rounded-lg'>
     <PostContent post={post} />
+    <PostFooter {...post} />
   </article>
 );
+// Post Footer Icon Component
+export const PostFooterIcon = ({
+  icon,
+  count,
+  label,
+}: {
+  icon: keyof typeof HeroIcons;
+  count: number;
+  label: string;
+}) => (
+  <div className='flex items-center space-x-1' aria-label={`${count} ${label}`}>
+    <Icon icon={icon} className='h-5 w-5 text-theme-btn-primary' />
+    <span>{count}</span>
+  </div>
+);
+
+const PostFooter = (postRecord: PostView) => {
+  return (
+    <footer className='flex justify-between items-center mt-4 text-sm text-theme-btn-text'>
+      <span>
+        Posted on:{' '}
+        {new Date(postRecord.indexedAt as string | number).toLocaleDateString()}
+      </span>
+      <div className='flex items-center space-x-4'>
+        <PostFooterIcon
+          icon='ChatBubbleLeftIcon'
+          count={postRecord.replyCount || 0}
+          label='replies'
+        />
+        <PostFooterIcon
+          icon='ArrowPathRoundedSquareIcon'
+          count={postRecord.repostCount || 0}
+          label='reposts'
+        />
+        <PostFooterIcon
+          icon='HeartIcon'
+          count={postRecord.likeCount || 0}
+          label='likes'
+        />
+        <PostFooterIcon
+          icon='LinkIcon'
+          count={postRecord.quoteCount || 0}
+          label='quotes'
+        />
+      </div>
+    </footer>
+  );
+};
