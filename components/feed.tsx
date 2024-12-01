@@ -75,9 +75,9 @@ export const Feed = ({ did, feedName }: FeedProps) => {
       aria-labelledby={`feed-title-${feedName}`}
     >
       <header className='w-full text-center my-4'>
-        <h1 id={`feed-title-${feedName}`} className='text-2xl font-bold '>
+        <h2 id={`feed-title-${feedName}`} className='text-2xl font-bold '>
           {feedName}
-        </h1>
+        </h2>
       </header>
       <div
         ref={containerRef}
