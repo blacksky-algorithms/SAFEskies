@@ -63,52 +63,6 @@ button {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Button Variants */
-button.primary {
-  background-color: var(--btn-primary);
-  color: var(--foreground);
-}
-
-button.primary:hover {
-  background-color: var(--btn-primary-hover);
-}
-
-button.secondary {
-  background-color: var(--btn-secondary);
-  color: var(--foreground);
-}
-
-button.secondary:hover {
-  background-color: var(--btn-secondary-hover);
-}
-
-button.error {
-  background-color: var(--btn-error);
-  color: var(--foreground);
-}
-
-button.error:hover {
-  background-color: var(--btn-error-hover);
-}
-
-button.info {
-  background-color: var(--btn-info);
-  color: var(--foreground);
-}
-
-button.info:hover {
-  background-color: var(--btn-info-hover);
-}
-
-button.success {
-  background-color: var(--btn-success);
-  color: var(--foreground);
-}
-
-button.success:hover {
-  background-color: var(--btn-success-hover);
-}
-
 input,
 textarea,
 select {
