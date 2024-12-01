@@ -107,11 +107,12 @@ const renderFacet = (
   const { byteStart, byteEnd } = facet.index;
   const feature = facet.features[0];
   const content = text.slice(byteStart, byteEnd);
+  console.log({ feature });
 
   switch (feature.$type) {
     case 'app.bsky.richtext.facet#tag':
       return (
-        <span key={`hashtag-${idx}`} className='text-theme-btn-primary'>
+        <span key={`hashtag-${idx}`} className='text-theme-btn-primary '>
           #{content}
         </span>
       );
