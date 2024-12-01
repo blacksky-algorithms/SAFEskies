@@ -16,14 +16,14 @@ export const Icon = ({ icon, variant, className, ...props }: IconProps) => {
   }
 
   const iconStyles = cc([
-    'h-5 w-5', // Default size
+    'h-5 w-5',
     {
       'text-theme-btn-primary': variant === 'primary',
       'text-theme-btn-secondary': variant === 'secondary',
       'text-theme-btn-error': variant === 'error',
       'text-theme-btn-info': variant === 'info',
       'text-theme-btn-success': variant === 'success',
-      'text-inherit': !variant, // Default to inherited text color
+      'text-inherit': !variant,
     },
     className,
   ]);
