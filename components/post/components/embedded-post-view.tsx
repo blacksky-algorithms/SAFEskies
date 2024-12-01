@@ -20,8 +20,8 @@ export const EmbeddedPostView = ({
   return (
     <div className='m-4 p-2 border border-gray-800 rounded-md'>
       <PostHeader author={author} />
-      {text && <PostText text={text} />}
-      {nestedEmbed && <EmbedRenderer embed={nestedEmbed} />}
+      {text ? <PostText text={text} /> : null}
+      {nestedEmbed ? <EmbedRenderer embed={nestedEmbed} /> : null}
     </div>
   );
 };

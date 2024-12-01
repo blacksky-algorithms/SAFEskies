@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { OptimizedImage } from '../../optimized-image';
+import { OptimizedImage } from '@/components/optimized-image';
 import cc from 'classcat';
 import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 
