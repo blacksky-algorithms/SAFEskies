@@ -36,7 +36,7 @@ export default {
         'theme-post-image-multi': '200px',
       },
       width: {
-        'theme-post-image-multi': '200px',
+        'theme-post-image-multi': '150px',
         'theme-post-image-single': '100%',
       },
     },
