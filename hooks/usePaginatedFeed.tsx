@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FeedParams, fetchFeed } from '@/repos/feed-repo';
 import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
@@ -7,7 +7,7 @@ interface FeedState {
   cursor?: string;
   isFetching: boolean;
   hasNextPage: boolean;
-  error: string | null; // Updated to reflect the error type from `fetchFeed`
+  error: string | null;
 }
 
 export const usePaginatedFeed = ({
@@ -25,92 +25,94 @@ export const usePaginatedFeed = ({
 
   const controllerRef = useRef<AbortController | null>(null);
 
-  const updateState = (partialState: Partial<FeedState>) => {
-    setState((prevState) => ({ ...prevState, ...partialState }));
-  };
-
-  // Abort any ongoing fetch
-  const abortOngoingRequest = () => {
+  // Initialize or abort the fetch controller
+  const initializeController = () => {
     if (controllerRef.current) {
       controllerRef.current.abort();
     }
     controllerRef.current = new AbortController();
   };
 
-  // Process the fetch response
-  const handleFetchResponse = (
+  // Handle the response from fetchFeed
+  const handleFetchResponse = async (
     response: Awaited<ReturnType<typeof fetchFeed>>
   ) => {
     if ('error' in response) {
-      // Check if error is actionable (not AbortError)
+      // Ignore AbortError; handle other errors
       if (response.error !== 'AbortError') {
-        updateState({ error: response.error, isFetching: false });
+        setState((prevState) => ({
+          ...prevState,
+          error: response.error,
+          isFetching: false,
+        }));
       } else {
-        updateState({ isFetching: false });
+        setState((prevState) => ({ ...prevState, isFetching: false }));
       }
       return;
     }
 
     const { feed: newFeed, cursor: newCursor } = response;
 
+    // Deduplicate feed items by `post.cid`
     const uniqueFeed = Array.from(
       new Map(
         [...state.feed, ...newFeed].map((item) => [item.post.cid, item])
       ).values()
     );
 
-    updateState({
+    setState((prevState) => ({
+      ...prevState,
       feed: uniqueFeed,
       cursor: newCursor,
       hasNextPage: !!newCursor,
       isFetching: false,
       error: null,
-    });
+    }));
   };
 
-  const fetchNextPage = useCallback(async () => {
-    const { hasNextPage, isFetching, cursor } = state;
-    if (!hasNextPage || isFetching) return;
+  // Fetch the next page of the feed
+  const fetchNextPage = async () => {
+    if (!state.hasNextPage || state.isFetching) return;
 
-    abortOngoingRequest();
-    const signal = controllerRef.current?.signal;
-
-    updateState({ isFetching: true });
+    initializeController();
+    setState((prevState) => ({ ...prevState, isFetching: true }));
 
     const response = await fetchFeed({
       did,
       feedName,
       limit,
-      cursor,
-      signal,
+      cursor: state.cursor,
+      signal: controllerRef.current?.signal,
     });
 
     handleFetchResponse(response);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, did, feedName, limit]);
+  };
 
-  const refreshFeed = useCallback(async () => {
-    abortOngoingRequest();
-    const signal = controllerRef.current?.signal;
-
-    updateState({ isFetching: true, error: null });
+  // Refresh the feed
+  const refreshFeed = async () => {
+    initializeController();
+    setState((prevState) => ({
+      ...prevState,
+      isFetching: true,
+      error: null,
+    }));
 
     const response = await fetchFeed({
       did,
       feedName,
       limit,
-      signal,
+      signal: controllerRef.current?.signal,
     });
 
     handleFetchResponse(response);
-  }, [did, feedName, handleFetchResponse, limit]);
+  };
 
+  // Initialize the feed on mount or when `did`/`feedName`/`limit` changes
   useEffect(() => {
-    const controller = new AbortController();
-    controllerRef.current = controller;
+    initializeController();
 
     const initializeFeed = async () => {
-      updateState({
+      setState({
         feed: [],
         cursor: undefined,
         isFetching: true,
@@ -122,7 +124,7 @@ export const usePaginatedFeed = ({
         did,
         feedName,
         limit,
-        signal: controller.signal,
+        signal: controllerRef.current?.signal,
       });
 
       handleFetchResponse(response);
@@ -130,19 +132,19 @@ export const usePaginatedFeed = ({
 
     initializeFeed();
 
-    return () => controller.abort();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      if (controllerRef.current) {
+        controllerRef.current.abort();
+      }
+    };
   }, [did, feedName, limit]);
 
-  return useMemo(
-    () => ({
-      feed: state.feed,
-      error: state.error,
-      isFetching: state.isFetching,
-      hasNextPage: state.hasNextPage,
-      fetchNextPage,
-      refreshFeed,
-    }),
-    [state, fetchNextPage, refreshFeed]
-  );
+  return {
+    feed: state.feed,
+    error: state.error,
+    isFetching: state.isFetching,
+    hasNextPage: state.hasNextPage,
+    fetchNextPage,
+    refreshFeed,
+  };
 };
