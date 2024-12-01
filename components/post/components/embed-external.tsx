@@ -14,6 +14,7 @@ export const EmbedExternal = ({
     <div className='mt-4 border border-gray-800 rounded-md p-2'>
       {isGif ? (
         <OptimizedImage
+          lazy
           src={uri}
           alt={description ?? title}
           className='rounded-md mx-auto'
@@ -21,7 +22,12 @@ export const EmbedExternal = ({
       ) : (
         <a href={uri} target='_blank' rel='noopener noreferrer'>
           <div className='flex flex-col'>
-            <OptimizedImage src={thumb} alt={title} className='rounded-md' />
+            <OptimizedImage
+              lazy
+              src={thumb}
+              alt={title}
+              className='rounded-md'
+            />
             <div className='mt-2'>
               <h4 className='text-sm font-bold'>{title}</h4>
               <p className='text-xs text-gray-500'>{description}</p>

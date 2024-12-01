@@ -20,6 +20,7 @@ export const PostImages = ({ images }: { images: ViewImage[] }) => {
     >
       {images.map((image, index) => (
         <OptimizedImage
+          lazy
           key={index}
           src={image.fullsize || image.thumb}
           alt={image.alt || 'Image'}
