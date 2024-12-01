@@ -7,31 +7,8 @@ import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
 import { GenericErrorModal } from '@/components/modals/generic-error-modal';
 import { LiveRegion } from './live-region';
+import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 
-// // Reusable useIntersectionObserver Hook
-// export const useIntersectionObserver = (
-//   callback: IntersectionObserverCallback,
-//   options?: IntersectionObserverInit
-// ) => {
-//   const targetRef = useRef<HTMLDivElement>(null);
-
-//   useEffect(() => {
-//     const target = targetRef.current;
-//     if (!target) return;
-
-//     const observer = new IntersectionObserver(callback, options);
-
-//     observer.observe(target);
-
-//     return () => {
-//       observer.disconnect();
-//     };
-//   }, [callback, options]);
-
-//   // return targetRef;
-// };
-
-// Main Feed Component
 interface FeedProps {
   did: string;
   feedName: string;
@@ -60,20 +37,20 @@ export const Feed = ({ did, feedName }: FeedProps) => {
     }
   }, [error, errorHandled, openModalInstance]);
 
-  // const handleIntersection = useCallback(
-  //   ([entry]: IntersectionObserverEntry[]) => {
-  //     if (entry.isIntersecting && hasNextPage && !isFetching) {
-  //       fetchNextPage();
-  //     }
-  //   },
-  //   [hasNextPage, isFetching]
-  // );
+  const handleIntersection = useCallback(
+    ([entry]: IntersectionObserverEntry[]) => {
+      if (entry.isIntersecting && hasNextPage && !isFetching) {
+        fetchNextPage();
+      }
+    },
+    [hasNextPage, isFetching]
+  );
 
-  // const sentinelRef = useIntersectionObserver(handleIntersection, {
-  //   root: containerRef.current,
-  //   rootMargin: '150px',
-  //   threshold: 0.1,
-  // });
+  const sentinelRef = useIntersectionObserver(handleIntersection, {
+    root: containerRef.current,
+    rootMargin: '150px',
+    threshold: 0.1,
+  });
 
   // Pull-to-refresh functionality
   const handlePullToRefresh = async () => {
@@ -91,7 +68,7 @@ export const Feed = ({ did, feedName }: FeedProps) => {
   const handleErrorModalClose = () => {
     refreshFeed();
   };
-  console.log({ feed, isFetching, error, isRefreshing });
+
   return (
     <section
       className='flex w-full flex-col items-center relative max-w-screen desktop:max-w-lg mx-auto'
@@ -119,8 +96,8 @@ export const Feed = ({ did, feedName }: FeedProps) => {
         className='overflow-y-auto h-screen flex flex-col items-center'
       >
         <LiveRegion>{isRefreshing && <span>Refreshing...</span>}</LiveRegion>
-        <FeedList feed={feed} fetchNextPage={fetchNextPage} />
-        {/* <div ref={sentinelRef} className='h-10 w-full' /> */}
+        <FeedList feed={feed} />
+        <div ref={sentinelRef} className='h-10 w-full' />
       </div>
 
       <GenericErrorModal onClose={handleErrorModalClose}>

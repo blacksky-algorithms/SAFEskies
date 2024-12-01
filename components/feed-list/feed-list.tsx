@@ -3,14 +3,12 @@
 import React from 'react';
 import { Post } from '../post';
 import { type FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { Button } from '../button';
 
 interface FeedListProps {
   feed: FeedViewPost[];
-  fetchNextPage: () => void;
 }
 
-export const FeedList = ({ feed, fetchNextPage }: FeedListProps) => {
+export const FeedList = ({ feed }: FeedListProps) => {
   return (
     <ul className='w-full flex flex-col items-center' role='list'>
       {feed.map((feedPost) => (
@@ -18,7 +16,6 @@ export const FeedList = ({ feed, fetchNextPage }: FeedListProps) => {
           <Post post={feedPost.post} />
         </li>
       ))}
-      <Button onClick={fetchNextPage}>Load more</Button>
     </ul>
   );
 };
