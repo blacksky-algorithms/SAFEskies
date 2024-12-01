@@ -48,7 +48,11 @@ const PostFooterIcon = ({
   label: string;
 }) => (
   <div className='flex items-center space-x-1'>
-    <Icon icon={icon} className='h-5 w-5 text-theme-btn-primary' />
+    <Icon
+      aria-label={label}
+      icon={icon}
+      className='h-5 w-5 text-theme-btn-primary'
+    />
     <span>{count}</span>
   </div>
 );
