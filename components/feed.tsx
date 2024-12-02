@@ -76,7 +76,8 @@ export const Feed = ({ did, feedName }: FeedProps) => {
     >
       <header className='w-full text-center my-4'>
         <h2 id={`feed-title-${feedName}`} className='text-2xl font-bold '>
-          {feedName}
+          {/* {feedName} */}
+          Test Feed - Kendrick
         </h2>
       </header>
       <div
