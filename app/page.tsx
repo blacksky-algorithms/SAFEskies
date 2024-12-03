@@ -1,7 +1,8 @@
+import { Feed } from '@/components/feed';
+
 export default async function page() {
+  // TODO: remove hardcoded values
   return (
-    <div className='container mx-auto'>
-      <h1>Hello world</h1>
-    </div>
+    <Feed did='did:plc:qzkrgc4ahglknwb7ymee4a6w' feedName='aaafstml2groe' />
   );
 }
