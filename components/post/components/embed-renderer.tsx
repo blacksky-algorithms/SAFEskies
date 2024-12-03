@@ -90,7 +90,7 @@ export const EmbedRenderer = ({
           text = record.value.text;
           facets = record.value.facets;
         }
-        console.log({ record, text });
+
         const isAuthorLabeled = record.author.labels?.some((label) =>
           CONTENT_LABELS.includes(label.val)
         );
@@ -143,7 +143,6 @@ export const EmbedRenderer = ({
       }
 
       if (AppBskyLabelerDefs.isLabelerView(record)) {
-        console.log('isLabeler: record:', { record });
         // TODO: run some experiments to see what this is
         return null;
       }
