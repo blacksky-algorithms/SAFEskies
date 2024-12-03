@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Post } from '../post';
+import { Post } from '@/components/post';
 import { type FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 interface FeedListProps {
