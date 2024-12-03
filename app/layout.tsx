@@ -6,7 +6,7 @@ import { Providers } from '@/contexts';
 import { preferredLanguages } from '@/utils/todo';
 
 export const metadata: Metadata = {
-  title: 'Feed Moderator',
+  title: 'OnlyFeeds',
 };
 
 export default function RootLayout({
