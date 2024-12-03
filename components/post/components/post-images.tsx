@@ -2,10 +2,20 @@ import React from 'react';
 
 import { OptimizedImage } from '@/components/optimized-image';
 import cc from 'classcat';
-import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { AppBskyEmbedImages } from '@atproto/api';
+import { Info } from './embed-info';
 
-export const PostImages = ({ images }: { images: ViewImage[] }) => {
-  const imageCount = images.length;
+export const PostImages = ({
+  content,
+  labelInfo,
+}: {
+  content: AppBskyEmbedImages.View;
+  labelInfo?: string;
+}) => {
+  if (labelInfo) {
+    return <Info>{labelInfo}</Info>;
+  }
+  const imageCount = content.images.length;
 
   return (
     <div
@@ -18,18 +28,18 @@ export const PostImages = ({ images }: { images: ViewImage[] }) => {
         },
       ])}
     >
-      {images.map((image, index) => (
+      {content.images.map((image, index) => (
         <OptimizedImage
           lazy
           key={index}
           src={image.fullsize || image.thumb}
           alt={image.alt || 'Image'}
           className={cc([
-            'rounded-md object-contain',
+            'rounded-lg object-contain',
             {
-              'h-auto w-full': images.length <= 2,
+              'h-auto w-full': imageCount <= 2,
               'h-theme-post-image-multi w-theme-post-image-multi':
-                images.length >= 3,
+                imageCount >= 3,
             },
           ])}
         />

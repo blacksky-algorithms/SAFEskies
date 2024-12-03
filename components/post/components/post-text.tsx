@@ -1,5 +1,4 @@
 import { AppBskyRichtextFacet } from '@atproto/api';
-
 const renderTextSegment = (
   text: string,
   start: number,
@@ -16,34 +15,34 @@ const renderFacet = (
   const feature = facet.features[0];
   const content = text.slice(byteStart, byteEnd);
 
-  switch (feature.$type) {
-    case 'app.bsky.richtext.facet#tag':
-      return (
-        <span key={`hashtag-${idx}`} className='text-theme-btn-primary '>
-          #{content}
-        </span>
-      );
-    case 'app.bsky.richtext.facet#mention':
-      return (
-        <span key={`mention-${idx}`} className='text-theme-btn-primary'>
-          {content}
-        </span>
-      );
-    case 'app.bsky.richtext.facet#link':
-      return (
-        <a
-          key={`link-${idx}`}
-          href={(feature as AppBskyRichtextFacet.Link).uri || undefined}
-          target='_blank'
-          rel='noopener noreferrer'
-          className='text-theme-btn-primary underline'
-        >
-          {content}
-        </a>
-      );
-    default:
-      return null;
+  if (AppBskyRichtextFacet.isTag(feature)) {
+    return (
+      <span key={`hashtag-${idx}`} className='text-theme-btn-primary '>
+        {content}
+      </span>
+    );
   }
+
+  if (AppBskyRichtextFacet.isMention(feature)) {
+    return (
+      <span key={`mention-${idx}`} className='text-theme-btn-primary'>
+        {content}
+      </span>
+    );
+  }
+  if (AppBskyRichtextFacet.isLink(feature)) {
+    <a
+      key={`link-${idx}`}
+      href={(feature as AppBskyRichtextFacet.Link).uri || undefined}
+      target='_blank'
+      rel='noopener noreferrer'
+      className='text-theme-btn-primary underline'
+    >
+      {content}
+    </a>;
+  }
+
+  return null;
 };
 
 export const PostText = ({

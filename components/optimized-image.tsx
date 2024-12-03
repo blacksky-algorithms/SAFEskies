@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import cc from 'classcat';
 
 interface OptimizedImageProps {
-  src?: string; // Make src optional
+  src: string;
   alt: string;
   className?: string;
   lazy?: boolean;
-  mimeType?: string;
-  thumbnail?: string; // Fallback thumbnail or poster
+  thumbnail?: string;
 }
 
 export const OptimizedImage: React.FC<OptimizedImageProps> = ({
@@ -15,82 +14,14 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   alt,
   className = '',
   lazy = true,
-  mimeType,
   thumbnail,
 }) => {
-  const [fallback, setFallback] = useState(false);
-
-  // Safeguard: Ensure src is null if it's not a valid string
-  const isValidSrc = typeof src === 'string' && src.trim() !== '';
-  const safeSrc = isValidSrc ? src : null;
-
-  const isGif =
-    mimeType === 'image/gif' || (safeSrc && safeSrc.endsWith('.gif'));
-  const isVideo =
-    mimeType?.startsWith('video/') ||
-    (safeSrc && (safeSrc.endsWith('.mp4') || safeSrc.endsWith('.webm')));
-
-  if (fallback || !safeSrc) {
-    return (
-      <img
-        src={thumbnail || undefined} // Pass `undefined` if thumbnail is not available
-        alt={alt}
-        className={cc(['object-cover', {}, className])}
-        loading={lazy ? 'lazy' : 'eager'}
-      />
-    );
-  }
-
-  if (isGif) {
-    return (
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className={cc(['object-cover', {}, className])}
-        onError={() => setFallback(true)}
-        src={safeSrc}
-      >
-        <source src={safeSrc} type='image/gif' />
-        {/* Fallback */}
-        <img
-          src={thumbnail || undefined}
-          alt={alt}
-          className={cc(['object-cover', {}, className])}
-          onError={() => setFallback(true)}
-        />
-      </video>
-    );
-  }
-
-  if (isVideo) {
-    return (
-      <video
-        controls
-        playsInline
-        poster={thumbnail || undefined}
-        className={cc(['object-cover', {}, className])}
-        onError={() => setFallback(true)}
-      >
-        <source src={safeSrc} type={mimeType || 'video/mp4'} />
-        <img
-          src={thumbnail || undefined}
-          alt={alt}
-          className={cc(['object-cover', {}, className])}
-          onError={() => setFallback(true)}
-        />
-      </video>
-    );
-  }
-
   return (
     <img
-      src={safeSrc}
+      src={src || thumbnail}
       alt={alt}
-      className={cc(['object-cover', {}, className])}
+      className={cc([className, 'object-cover'])}
       loading={lazy ? 'lazy' : 'eager'}
-      onError={() => setFallback(true)}
     />
   );
 };
