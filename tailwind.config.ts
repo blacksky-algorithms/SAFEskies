@@ -33,11 +33,12 @@ export default {
         'theme-btn-text-hover': 'var(--btn-text-hover)',
       },
       height: {
-        'theme-post-image-multi': '200px',
+        'theme-post-image-multi-small': '150px',
+        'theme-post-image-single-small': '300px',
       },
       width: {
-        'theme-post-image-multi': '150px',
-        'theme-post-image-single': '100%',
+        'theme-post-image-multi-small': '150px',
+        'theme-post-image-single-small': '100%',
       },
     },
   },
