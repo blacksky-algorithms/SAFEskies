@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { FeedList } from '@/components/feed-list/feed-list';
 import { usePaginatedFeed } from '@/hooks/usePaginatedFeed';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
 import { GenericErrorModal } from '@/components/modals/generic-error-modal';
-import { LiveRegion } from './live-region';
+import { LiveRegion } from '@/components/live-region';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
+import { IconButton } from '@/components/button/icon-button';
+import { Post } from '@/components/post';
 
 interface FeedProps {
   did: string;
@@ -43,6 +44,7 @@ export const Feed = ({ did, feedName }: FeedProps) => {
         fetchNextPage();
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [hasNextPage, isFetching]
   );
 
@@ -70,40 +72,60 @@ export const Feed = ({ did, feedName }: FeedProps) => {
   };
 
   return (
-    <section
-      className='flex w-full flex-col items-center relative max-w-screen desktop:max-w-lg mx-auto'
-      aria-labelledby={`feed-title-${feedName}`}
-    >
-      <header className='w-full text-center my-4'>
-        <h2 id={`feed-title-${feedName}`} className='text-2xl font-bold '>
-          {/* {feedName} */}
-          Test Feed - Kendrick
-        </h2>
-      </header>
-      <div
-        ref={containerRef}
-        onTouchStart={(e) =>
-          (containerRef.current!.dataset.touchStartY =
-            e.touches[0].clientY.toString())
-        }
-        onTouchMove={(e) => {
-          const touchStartY = parseFloat(
-            containerRef.current!.dataset.touchStartY || '0'
-          );
-          const deltaY = e.touches[0].clientY - touchStartY;
-          if (deltaY > 50 && containerRef.current?.scrollTop === 0)
-            handlePullToRefresh();
-        }}
-        className='overflow-y-auto h-screen flex flex-col items-center'
+    <div className='relative max-h-page'>
+      <section
+        className='flex flex-col items-center mx-auto tablet:px-10'
+        aria-labelledby={`feed-title-${feedName}`}
       >
-        <LiveRegion>{isRefreshing && <span>Refreshing...</span>}</LiveRegion>
-        <FeedList feed={feed} />
-        <div ref={sentinelRef} className='h-10 w-full' />
-      </div>
+        <header className='w-full text-center my-4'>
+          <h2 id={`feed-title-${feedName}`} className='text-2xl font-bold '>
+            {/* {feedName} */}
+            Test Feed - Kendrick
+          </h2>
+        </header>
+        <div
+          ref={containerRef}
+          onTouchStart={(e) =>
+            (containerRef.current!.dataset.touchStartY =
+              e.touches[0].clientY.toString())
+          }
+          onTouchMove={(e) => {
+            const touchStartY = parseFloat(
+              containerRef.current!.dataset.touchStartY || '0'
+            );
+            const deltaY = e.touches[0].clientY - touchStartY;
+            if (deltaY > 50 && containerRef.current?.scrollTop === 0)
+              handlePullToRefresh();
+          }}
+          className='overflow-y-auto h-screen flex flex-col items-center'
+        >
+          <LiveRegion>{isRefreshing && <span>Refreshing...</span>}</LiveRegion>
 
-      <GenericErrorModal onClose={handleErrorModalClose}>
-        <p>{error || `${feedName} is unavailable`}</p>
-      </GenericErrorModal>
-    </section>
+          <ul className='w-screen tablet:max-w-screen-sm flex flex-col items-center'>
+            {feed.map((feedPost) => (
+              <li
+                key={feedPost.post.cid}
+                className='w-full tablet:max-w-screen'
+              >
+                <Post post={feedPost.post} />
+              </li>
+            ))}
+          </ul>
+
+          <div ref={sentinelRef} className='h-10 w-full' />
+        </div>
+        <GenericErrorModal onClose={handleErrorModalClose}>
+          <p>{error || `${feedName} is unavailable`}</p>
+        </GenericErrorModal>
+      </section>
+      <IconButton
+        icon='ArrowUpCircleIcon'
+        aria-label='Return to Top'
+        onClick={() =>
+          containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+        }
+        className='absolute bottom-10 left-4 h-20 w-20'
+      />
+    </div>
   );
 };

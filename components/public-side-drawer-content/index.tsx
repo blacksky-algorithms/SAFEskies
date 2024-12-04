@@ -14,7 +14,6 @@ export const PublicSideDrawerContent: React.FC = () => {
           <Link
             href='/'
             onClick={() => closeModalInstance(MODAL_INSTANCE_IDS.SIDE_DRAWER)}
-            className='text-blue-500 hover:underline'
           >
             View Feed
           </Link>

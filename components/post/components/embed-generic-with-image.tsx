@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { Button } from '@/components/button';
 import { NotImplementedModal } from '@/components/modals/not-implemented-modal';
 import { useModal } from '@/contexts/modal-context';

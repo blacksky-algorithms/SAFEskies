@@ -17,7 +17,7 @@ export const Post = ({ post }: { post: PostView }) => {
   const textRecord = record as TextRecord;
 
   return (
-    <article className='bg-theme-background border border-gray-800 shadow-sm w-full mx-auto max-w-screen'>
+    <article className='bg-app-background border border-gray-800 shadow-sm w-full mx-auto max-w-screen'>
       <div className={'p-3 shadow'}>
         <PostHeader author={author} />
         {textRecord?.text && (

@@ -5,9 +5,16 @@ import cc from 'classcat';
 export interface IconProps extends React.HTMLAttributes<SVGElement> {
   icon: keyof typeof HeroIcons;
   variant?: 'primary' | 'secondary' | 'error' | 'info' | 'success';
+  isButton?: boolean;
 }
 
-export const Icon = ({ icon, variant, className, ...props }: IconProps) => {
+export const Icon = ({
+  icon,
+  variant = 'primary',
+  className,
+  isButton = false,
+  ...props
+}: IconProps) => {
   const IconComponent = HeroIcons[icon];
 
   if (!IconComponent) {
@@ -16,14 +23,15 @@ export const Icon = ({ icon, variant, className, ...props }: IconProps) => {
   }
 
   const iconStyles = cc([
-    'h-5 w-5',
+    'block',
     {
-      'text-theme-btn-primary': variant === 'primary',
-      'text-theme-btn-secondary': variant === 'secondary',
-      'text-theme-btn-error': variant === 'error',
-      'text-theme-btn-info': variant === 'info',
-      'text-theme-btn-success': variant === 'success',
+      'text-app-primary': variant === 'primary',
+      'text-app-secondary': variant === 'secondary',
+      'text-app-error': variant === 'error',
+      'text-app-info': variant === 'info',
+      'text-app-success': variant === 'success',
       'text-inherit': !variant,
+      'w-full h-full': isButton,
     },
     className,
   ]);
