@@ -38,7 +38,7 @@ export const PostImages = ({
             'rounded-lg object-contain',
             {
               'h-auto w-full': imageCount <= 2,
-              'h-theme-post-image-multi-small w-theme-post-image-multi-small':
+              'h-app-post-image-multi-small w-app-post-image-multi-small':
                 imageCount >= 3,
             },
           ])}

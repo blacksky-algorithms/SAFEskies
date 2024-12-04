@@ -6,7 +6,7 @@
 :root {
   --background: #1c1b1b;
   --foreground: #e4e4e4;
-  --visited: #a0a0a0;
+  --visited: #707070;
   ---primary: #0db9d7;
   ---primary-hover: #0ca4c3;
   ---secondary: #585858;
@@ -19,6 +19,8 @@
   ---success-hover: #38a169;
   ---text: #e5e5e5;
   ---text-hover: #ffffff;
+  --header-height-app: 6rem;
+  --page-height-app: calc(100vh - var(--header-height-app));
 }
 
 /* CSS Reset */
@@ -44,8 +46,13 @@ body {
 
 /* Link Styles */
 a {
-  color: var(--foreground);
+  color: var(---primary);
   text-decoration: none;
+}
+
+a:hover {
+  color: var(---primary-hover);
+  text-decoration: underline;
 }
 
 a:visited {

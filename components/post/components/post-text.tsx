@@ -17,7 +17,7 @@ const renderFacet = (
 
   if (AppBskyRichtextFacet.isTag(feature)) {
     return (
-      <span key={`hashtag-${idx}`} className='text-theme-primary '>
+      <span key={`hashtag-${idx}`} className='text-app-primary '>
         {content}
       </span>
     );
@@ -25,7 +25,7 @@ const renderFacet = (
 
   if (AppBskyRichtextFacet.isMention(feature)) {
     return (
-      <span key={`mention-${idx}`} className='text-theme-primary'>
+      <span key={`mention-${idx}`} className='text-app-primary'>
         {content}
       </span>
     );
@@ -36,7 +36,7 @@ const renderFacet = (
       href={(feature as AppBskyRichtextFacet.Link).uri || undefined}
       target='_blank'
       rel='noopener noreferrer'
-      className='text-theme-primary underline'
+      className='text-app-primary underline'
     >
       {content}
     </a>;

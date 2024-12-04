@@ -24,17 +24,17 @@ export const Button = ({
       className={cc([
         'font-medium rounded-md transition-all duration-150 focus:outline-none focus:ring-2',
         {
-          'bg-theme-primary text-white hover:bg-theme-primary-hover focus:ring-theme-primary':
+          'bg-app-primary text-white hover:bg-app-primary-hover focus:ring-app-primary':
             variant === 'primary',
-          'bg-theme-secondary text-white hover:bg-theme-secondary-hover focus:ring-theme-secondary':
+          'bg-app-secondary text-white hover:bg-app-secondary-hover focus:ring-app-secondary':
             variant === 'secondary',
-          'bg-theme-error text-white hover:bg-theme-error-hover focus:ring-theme-error':
+          'bg-app-error text-white hover:bg-app-error-hover focus:ring-app-error':
             variant === 'error',
-          'bg-theme-info text-white hover:bg-theme-info-hover focus:ring-theme-info':
+          'bg-app-info text-white hover:bg-app-info-hover focus:ring-app-info':
             variant === 'info',
-          'bg-theme-success text-white hover:bg-theme-success-hover focus:ring-theme-success':
+          'bg-app-success text-white hover:bg-app-success-hover focus:ring-app-success':
             variant === 'success',
-          'text-theme-text hover:text-theme-text-hover focus:underline bg-transparent':
+          'text-app-text hover:text-app-text-hover focus:underline bg-transparent':
             variant === 'text-button',
         },
         className,
