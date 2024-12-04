@@ -53,9 +53,6 @@ export default {
         'app-post-image-multi-small': '150px',
         'app-post-image-single-small': '100%',
       },
-      top: {
-        'app-to-top-button': 'calc(100vh - 2.5rem)',
-      },
     },
   },
   // eslint-disable-next-line @typescript-eslint/no-require-imports
