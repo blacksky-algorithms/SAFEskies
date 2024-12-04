@@ -124,7 +124,7 @@ export const Feed = ({ did, feedName }: FeedProps) => {
         onClick={() =>
           containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
         }
-        className='absolute bottom-8 left-4 tablet:bottom-10 h-20 w-20'
+        className='absolute bottom-24 left-4 tablet:bottom-10 h-20 w-20'
       />
     </div>
   );
