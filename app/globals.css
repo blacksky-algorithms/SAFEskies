@@ -7,19 +7,18 @@
   --background: #1c1b1b;
   --foreground: #e4e4e4;
   --visited: #a0a0a0;
-  /* Button Colors */
-  --btn-primary: #0db9d7;
-  --btn-primary-hover: #0ca4c3;
-  --btn-secondary: #585858;
-  --btn-secondary-hover: #4a4a4a;
-  --btn-error: #f56565;
-  --btn-error-hover: #e05353;
-  --btn-info: #4299e1;
-  --btn-info-hover: #3182ce;
-  --btn-success: #48bb78;
-  --btn-success-hover: #38a169;
-  --btn-text: #e5e5e5;
-  --btn-text-hover: #ffffff;
+  ---primary: #0db9d7;
+  ---primary-hover: #0ca4c3;
+  ---secondary: #585858;
+  ---secondary-hover: #4a4a4a;
+  ---error: #f56565;
+  ---error-hover: #e05353;
+  ---info: #4299e1;
+  ---info-hover: #3182ce;
+  ---success: #48bb78;
+  ---success-hover: #38a169;
+  ---text: #e5e5e5;
+  ---text-hover: #ffffff;
 }
 
 /* CSS Reset */
@@ -51,16 +50,6 @@ a {
 
 a:visited {
   color: var(--visited);
-}
-
-/* Button Base Styles */
-button {
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 input,

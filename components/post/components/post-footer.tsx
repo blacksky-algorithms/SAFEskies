@@ -51,7 +51,7 @@ const PostFooterIcon = ({
     <Icon
       aria-label={label}
       icon={icon}
-      className='h-5 w-5 text-theme-btn-primary'
+      className='h-5 w-5 text-theme-primary'
     />
     <span>{count}</span>
   </div>

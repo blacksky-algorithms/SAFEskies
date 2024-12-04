@@ -24,17 +24,17 @@ export const Button = ({
       className={cc([
         'font-medium rounded-md transition-all duration-150 focus:outline-none focus:ring-2',
         {
-          'bg-theme-btn-primary text-white hover:bg-theme-btn-primary-hover focus:ring-theme-btn-primary':
+          'bg-theme-primary text-white hover:bg-theme-primary-hover focus:ring-theme-primary':
             variant === 'primary',
-          'bg-theme-btn-secondary text-white hover:bg-theme-btn-secondary-hover focus:ring-theme-btn-secondary':
+          'bg-theme-secondary text-white hover:bg-theme-secondary-hover focus:ring-theme-secondary':
             variant === 'secondary',
-          'bg-theme-btn-error text-white hover:bg-theme-btn-error-hover focus:ring-theme-btn-error':
+          'bg-theme-error text-white hover:bg-theme-error-hover focus:ring-theme-error':
             variant === 'error',
-          'bg-theme-btn-info text-white hover:bg-theme-btn-info-hover focus:ring-theme-btn-info':
+          'bg-theme-info text-white hover:bg-theme-info-hover focus:ring-theme-info':
             variant === 'info',
-          'bg-theme-btn-success text-white hover:bg-theme-btn-success-hover focus:ring-theme-btn-success':
+          'bg-theme-success text-white hover:bg-theme-success-hover focus:ring-theme-success':
             variant === 'success',
-          'text-theme-btn-text hover:text-theme-btn-text-hover focus:underline bg-transparent':
+          'text-theme-text hover:text-theme-text-hover focus:underline bg-transparent':
             variant === 'text-button',
         },
         className,

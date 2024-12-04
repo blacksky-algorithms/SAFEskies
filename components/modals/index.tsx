@@ -80,7 +80,7 @@ export const Modal = ({
             >
               {/* Close Button */}
               <IconButton
-                className='absolute top-4 right-4 p-2 '
+                className='absolute top-4 right-4 p-2 h-10 w-10'
                 onClick={handleClose}
                 aria-label='Close modal'
                 icon='XMarkIcon'
