@@ -25,11 +25,11 @@ export const Icon = ({
   const iconStyles = cc([
     'block',
     {
-      'text-theme-primary': variant === 'primary',
-      'text-theme-secondary': variant === 'secondary',
-      'text-theme-error': variant === 'error',
-      'text-theme-info': variant === 'info',
-      'text-theme-success': variant === 'success',
+      'text-app-primary': variant === 'primary',
+      'text-app-secondary': variant === 'secondary',
+      'text-app-error': variant === 'error',
+      'text-app-info': variant === 'info',
+      'text-app-success': variant === 'success',
       'text-inherit': !variant,
       'w-full h-full': isButton,
     },

@@ -5,10 +5,10 @@ import { usePaginatedFeed } from '@/hooks/usePaginatedFeed';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
 import { GenericErrorModal } from '@/components/modals/generic-error-modal';
-import { LiveRegion } from './live-region';
+import { LiveRegion } from '@/components/live-region';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
-import { IconButton } from './button/icon-button';
-import { Post } from './post';
+import { IconButton } from '@/components/button/icon-button';
+import { Post } from '@/components/post';
 
 interface FeedProps {
   did: string;
@@ -72,9 +72,9 @@ export const Feed = ({ did, feedName }: FeedProps) => {
   };
 
   return (
-    <div className='relative h-screen overflow-auto'>
+    <div className='relative h-full overflow-auto'>
       <section
-        className='flex flex-col items-center mx-auto px-0 tablet:px-10'
+        className='flex flex-col items-center mx-auto tablet:px-10'
         aria-labelledby={`feed-title-${feedName}`}
       >
         <header className='w-full text-center my-4'>
@@ -101,11 +101,11 @@ export const Feed = ({ did, feedName }: FeedProps) => {
         >
           <LiveRegion>{isRefreshing && <span>Refreshing...</span>}</LiveRegion>
 
-          <ul className='w-screen tablet:w-2/3 desktop:w-3/4 flex flex-col items-center'>
+          <ul className='w-screen tablet:max-w-screen-sm flex flex-col items-center'>
             {feed.map((feedPost) => (
               <li
                 key={feedPost.post.cid}
-                className='w-full desktop:max-w-screen-lg'
+                className='w-full tablet:max-w-screen'
               >
                 <Post post={feedPost.post} />
               </li>
@@ -124,7 +124,7 @@ export const Feed = ({ did, feedName }: FeedProps) => {
         onClick={() =>
           containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
         }
-        className='absolute bottom-24 left-3 tablet:bottom-24 h-20 w-20'
+        className='absolute bottom-8 left-4 tablet:bottom-10 h-20 w-20'
       />
     </div>
   );

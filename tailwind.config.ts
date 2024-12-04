@@ -19,14 +19,13 @@ export default {
       },
       maxHeight: {
         screen: '100vh',
+        page: 'calc(100vh - var(--header-height-app))',
       },
       screens: {
         tablet: '640px',
         desktop: '1024px',
       },
       colors: {
-        'app-background': 'var(--background)',
-        'app-foreground': 'var(--foreground)',
         'app-visited': 'var(--visited)',
         'app-primary': 'var(---primary)',
         'app-primary-hover': 'var(---primary-hover)',
@@ -39,22 +38,10 @@ export default {
         'app-success': 'var(---success)',
         'app-success-hover': 'var(---success-hover)',
         'app-text': 'var(---text)',
-        'app-text-hover': 'var(---text-hover)',
-        'app-text-primary': 'var(--text-primary)',
-        'app-text-secondary': 'var(--text-secondary)',
-        'app-text-tertiary': 'var(--text-tertiary)',
-        'app-text-placeholder': 'var(--text-placeholder)',
-        'app-text-link': 'var(--text-link)',
-        'app-text-link-hover': 'var(--text-link-hover)',
-        'app-text-error': 'var(--text-error)',
-        'app-text-info': 'var(--text-info)',
-        'app-text-success': 'var(--text-success)',
-        'app-border-primary': 'var(--border-primary)',
-        'app-border-secondary': 'var(--border-secondary)',
-        'app-border-tertiary': 'var(--border-tertiary)',
-        'app-border-error': 'var(--border-error)',
-        'app-border-info': 'var(--border-info)',
-        'app-border-success': 'var(--border-success)',
+      },
+      backgroundColor: {
+        'app-background': 'var(--background)',
+        'app-foreground': 'var(--foreground)',
       },
       height: {
         'app-post-image-multi-small': '150px',
@@ -65,6 +52,9 @@ export default {
       width: {
         'app-post-image-multi-small': '150px',
         'app-post-image-single-small': '100%',
+      },
+      top: {
+        'app-to-top-button': 'calc(100vh - 2.5rem)',
       },
     },
   },
