@@ -11,12 +11,14 @@ export interface ButtonProps
     | 'success'
     | 'text-button';
   children: React.ReactNode;
+  noPadding?: boolean;
 }
 
 export const Button = ({
   variant = 'primary',
   children,
   className,
+  noPadding,
   ...props
 }: ButtonProps) => {
   return (
@@ -36,6 +38,7 @@ export const Button = ({
             variant === 'success',
           'text-app-text hover:text-app-text-hover focus:underline bg-transparent':
             variant === 'text-button',
+          'p-2': !noPadding,
         },
         className,
       ])}
