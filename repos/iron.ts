@@ -9,7 +9,7 @@ export type Session = {
   user: User | null;
 };
 
-const getSession = async (): Promise<IronSession<Session>> => {
+export const getSession = async (): Promise<IronSession<Session>> => {
   return await getIronSession<Session>(
     cookies() as unknown as ResponseCookies,
     {
@@ -18,5 +18,3 @@ const getSession = async (): Promise<IronSession<Session>> => {
     }
   );
 };
-
-export default getSession;
