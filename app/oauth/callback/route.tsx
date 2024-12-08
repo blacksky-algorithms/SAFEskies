@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     await ironSession.save();
 
     // Redirect to the private page
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}/private`);
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}/mod`);
   } catch (e: unknown) {
     if (e instanceof Error) {
       // Bluesky error

@@ -34,7 +34,7 @@ export const Login = () => {
   };
 
   return (
-    <section>
+    <section className='w-full'>
       <form onSubmit={handleSubmit} className='space-y-5'>
         <div>
           <label htmlFor='handle'>Bluesky Handle</label>

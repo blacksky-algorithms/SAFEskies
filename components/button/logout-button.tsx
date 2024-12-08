@@ -1,12 +1,12 @@
 'use client';
 
-import { signOut } from '@/repos/actions';
-import { useRouter } from 'next/navigation';
 import { FormEvent } from 'react';
+import { Button } from '.';
+import { useUser } from '@/hooks/useUser';
 
 // This is the logout button
-export default function LogoutButton() {
-  const router = useRouter();
+export const LogoutButton = () => {
+  const { signOut } = useUser();
 
   // Handle the form submission
   const handleClick = async (event: FormEvent<HTMLButtonElement>) => {
@@ -15,16 +15,12 @@ export default function LogoutButton() {
     // Sign out
     await signOut();
 
-    router.push(`/`);
+    window.location.href = '/';
   };
 
   return (
-    <button
-      type='button'
-      onClick={handleClick}
-      className='rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-    >
+    <Button type='button' onClick={handleClick}>
       Logout
-    </button>
+    </Button>
   );
-}
+};
