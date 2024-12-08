@@ -16,14 +16,18 @@ export async function signInWithBluesky(handle: string): Promise<string> {
   } catch (error) {
     console.error('Error signing in with Bluesky:', error);
     throw new Error('Failed to sign in with Bluesky');
-    debugger;
   }
 }
 
 export async function signOut(): Promise<void> {
-  // Get the session
-  const session = await getSession();
+  try {
+    // Get the session
+    const session = await getSession();
 
-  // Destroy the session
-  session.destroy();
+    // Destroy the session
+    session.destroy();
+  } catch (error) {
+    console.error('Error signing out:', error);
+    throw new Error('Failed to sign out');
+  }
 }
