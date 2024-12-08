@@ -1,14 +1,7 @@
-import { type ComAtprotoLabelDefs, type AppBskyActorDefs } from '@atproto/api';
+import { User } from '@/types/user';
+import { type AppBskyActorDefs } from '@atproto/api';
 
 // User type
-export type User = {
-  did: string;
-  handle: string;
-  name: string;
-  avatar: string | null;
-  associated?: AppBskyActorDefs.ProfileAssociated;
-  labels?: ComAtprotoLabelDefs.Label[];
-};
 
 // Create a user
 export function createUser(data: AppBskyActorDefs.ProfileViewDetailed): User {

@@ -24,7 +24,7 @@ export const Button = ({
   return (
     <button
       className={cc([
-        'font-medium rounded-md transition-all duration-150 focus:outline-none focus:ring-2',
+        'font-medium rounded-md transition-all duration-150 focus:outline-none focus:ring-2 w-full',
         {
           'bg-app-primary text-white hover:bg-app-primary-hover focus:ring-app-primary':
             variant === 'primary',

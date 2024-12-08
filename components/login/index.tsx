@@ -3,9 +3,11 @@
 import { signInWithBluesky } from '@/repos/actions';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
+import { Button } from '../button';
+import { Input } from '../input';
 
 // This is the login page
-export default function Page() {
+export const Login = () => {
   const router = useRouter();
 
   // This is a controlled input
@@ -32,17 +34,12 @@ export default function Page() {
   };
 
   return (
-    <main className='flex flex-col gap-8 row-start-2 items-center sm:items-start'>
+    <section>
       <form onSubmit={handleSubmit} className='space-y-5'>
         <div>
-          <label
-            htmlFor='handle'
-            className='block text-sm font-medium leading-6 text-gray-900'
-          >
-            Bluesky Handle
-          </label>
+          <label htmlFor='handle'>Bluesky Handle</label>
           <div className='mt-2'>
-            <input
+            <Input
               id='handle'
               name='handle'
               type='text'
@@ -53,13 +50,8 @@ export default function Page() {
             />
           </div>
         </div>
-        <button
-          type='submit'
-          className='rounded-md bg-blue-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-        >
-          Sign in with Bluesky
-        </button>
+        <Button type='submit'>Sign in with Bluesky</Button>
       </form>
-    </main>
+    </section>
   );
-}
+};
