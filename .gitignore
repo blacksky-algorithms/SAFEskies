@@ -41,9 +41,6 @@ next-env.d.ts
 
 # prisma
 /prisma/.prisma/client
-# Ignore development database
-dev.db
-/prisma/.dev.db
 
 # temp
 /temp.md
