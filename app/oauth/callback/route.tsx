@@ -1,6 +1,6 @@
 import { createUser } from '@/utils/createUser';
-import createBlueskyOAuthClient from '@/repos/auth-repo';
-import getSession from '@/repos/iron';
+import { createBlueskyOAuthClient } from '@/repos/auth-repo';
+import { getSession } from '@/repos/iron';
 import { prisma } from '@/repos/prisma';
 import { Agent } from '@atproto/api';
 import { NextRequest, NextResponse } from 'next/server';
