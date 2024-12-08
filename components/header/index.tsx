@@ -15,8 +15,7 @@ export const Header = ({ children }: PropsWithChildren) => {
   } = useUser();
 
   const pathname = usePathname();
-  const isAuthScreen =
-    pathname === '/oauth/login' || pathname === '/oauth/callback';
+  const isAuthScreen = pathname === '/oauth/login';
 
   if (isAuthScreen) {
     return (
