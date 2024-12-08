@@ -24,7 +24,7 @@ export function blueskyClientMetadata(): OAuthClientMetadataInput {
   };
 }
 
-const createBlueskyClient = async (
+const createBlueskyOAuthClient = async (
   prisma: PrismaClient
 ): Promise<NodeOAuthClient> =>
   new NodeOAuthClient({
@@ -33,4 +33,4 @@ const createBlueskyClient = async (
     sessionStore: new SessionStore(prisma),
   });
 
-export default createBlueskyClient;
+export default createBlueskyOAuthClient;
