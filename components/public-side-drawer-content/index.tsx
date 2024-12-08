@@ -10,7 +10,6 @@ import { LogoutButton } from '@/components/button/logout-button';
 export const PublicSideDrawerContent: React.FC = () => {
   const { closeModalInstance } = useModal();
   const { user } = useUser();
-
   return (
     <nav className='p-4 h-full flex flex-col'>
       {user ? (

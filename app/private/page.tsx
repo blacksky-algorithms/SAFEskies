@@ -1,6 +1,6 @@
 import LoginButton from '@/components/button/login-button';
 import LogoutButton from '@/components/button/logout-button';
-import getSession from '@/repos/iron';
+import { getSession } from '@/repos/iron';
 
 export default async function Page() {
   const session = await getSession();
