@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@atproto/api": "^0.13.16",
-    "@atproto/oauth-client-browser": "^0.3.1",
     "@atproto/oauth-client-node": "^0.2.3",
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
