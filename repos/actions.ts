@@ -1,6 +1,6 @@
 'use server';
 
-import createBlueskyOAuthClient from '@/repos/auth-repo';
+import { createBlueskyOAuthClient } from '@/repos/auth-repo';
 import getSession from '@/repos/iron';
 import { prisma } from '@/repos/prisma';
 
