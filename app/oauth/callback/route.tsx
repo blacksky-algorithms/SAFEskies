@@ -1,5 +1,5 @@
 import { createUser } from '@/utils/createUser';
-import createBlueskyClient from '@/repos/auth-repo';
+import createBlueskyOAuthClient from '@/repos/auth-repo';
 import getSession from '@/repos/iron';
 import { prisma } from '@/repos/prisma';
 import { Agent } from '@atproto/api';
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Create a Bluesky client
-    const blueskyClient = await createBlueskyClient(prisma);
+    const blueskyClient = await createBlueskyOAuthClient(prisma);
 
     // Get the session and state from the callback
     const { session } = await blueskyClient.callback(nextUrl.searchParams);
