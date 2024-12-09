@@ -36,7 +36,7 @@ export const Modal = ({
     small: 'max-w-sm',
     medium: 'max-w-md',
     large: 'max-w-2xl',
-    full: 'w-full h-full',
+    full: 'w-full h-full max-h-screen overflow-y-auto',
   };
 
   const handleClose = () => {
@@ -57,7 +57,7 @@ export const Modal = ({
           leaveFrom='opacity-100'
           leaveTo='opacity-0'
         >
-          <DialogBackdrop className='fixed inset-0  bg-opacity-80' />
+          <DialogBackdrop className='fixed inset-0 bg-black bg-opacity-80' />
         </TransitionChild>
 
         {/* Dialog Panel */}
@@ -73,7 +73,7 @@ export const Modal = ({
           >
             <DialogPanel
               className={cc([
-                'bg-gray-900 p-6 rounded-lg shadow-lg relative overflow-y-auto',
+                'bg-gray-900 p-6 rounded-lg shadow-lg relative overflow-y-auto max-h-screen w-full',
                 sizeClasses[size],
                 className,
               ])}
