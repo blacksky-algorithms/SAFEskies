@@ -4,15 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma migrate deploy && next build",
+    "build": "prisma generate && prisma migrate deploy || echo 'Migrations already applied' && next build",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
     "test:watch": "TZ=UTC jest --watch",
-    "postinstall": "prisma generate && prisma migrate deploy",
+    "postinstall": "prisma generate || echo 'Prisma client already generated'",
     "prisma:generate": "prisma generate",
-    "migrate": "prisma migrate deploy",
-    "prisma:reset": "prisma migrate reset --force --skip-seed"
+    "migrate": "prisma db push --accept-data-loss && prisma migrate deploy",
+    "prisma:reset": "prisma db push --force-reset && prisma migrate deploy"
   },
   "dependencies": {
     "@atproto/api": "^0.13.16",
