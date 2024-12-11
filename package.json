@@ -9,9 +9,10 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "TZ=UTC jest --watch",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate && prisma migrate deploy",
     "prisma:generate": "prisma generate",
-    "migrate": "prisma migrate deploy"
+    "migrate": "prisma migrate deploy",
+    "prisma:reset": "prisma db push --force-reset && prisma migrate deploy"
   },
   "dependencies": {
     "@atproto/api": "^0.13.16",
