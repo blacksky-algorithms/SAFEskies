@@ -6,16 +6,27 @@ import { prisma } from '@/repos/prisma';
 
 export async function signInWithBluesky(handle: string): Promise<string> {
   try {
+    console.log('Starting Bluesky sign-in process for handle:', handle);
+
+    // Check Prisma connection
+    console.log('Testing Prisma connection...');
+    await prisma.$queryRaw`SELECT 1`;
+    console.log('Prisma connection successful.');
+
     // Create a Bluesky client
+    console.log('Creating Bluesky OAuth client...');
     const blueskyClient = await createBlueskyOAuthClient(prisma);
 
     // Get the URL to authorize the user
+    console.log('Generating authorization URL...');
     const url: URL = await blueskyClient.authorize(handle);
-    // Return the URL
+
+    console.log('Authorization URL generated:', url.toString());
     return url.toString();
   } catch (error) {
-    console.error('Error signing in with Bluesky:', error);
-    throw new Error('Failed to sign in with Bluesky');
+    const errMessage = error instanceof Error ? error.message : String(error);
+    console.error('Detailed error during sign-in:', error);
+    throw new Error(`Bluesky sign-in failed: ${errMessage}`);
   }
 }
 

@@ -26,9 +26,12 @@ export function blueskyClientMetadata(): OAuthClientMetadataInput {
 
 export const createBlueskyOAuthClient = async (
   prisma: PrismaClient
-): Promise<NodeOAuthClient> =>
-  new NodeOAuthClient({
+): Promise<NodeOAuthClient> => {
+  console.log('Bluesky Client Metadata:', blueskyClientMetadata());
+
+  return new NodeOAuthClient({
     clientMetadata: blueskyClientMetadata(),
     stateStore: new StateStore(prisma),
     sessionStore: new SessionStore(prisma),
   });
+};
