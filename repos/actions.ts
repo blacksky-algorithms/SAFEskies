@@ -9,7 +9,9 @@ export async function signInWithBluesky(handle: string): Promise<string> {
     console.log('Starting Bluesky sign-in process for handle:', handle);
 
     // Check Prisma connection
-    console.log('Testing Prisma connection...');
+    console.log('Testing Prisma connection...', {
+      url: process.env.DATABASE_URL,
+    });
     await prisma.$queryRaw`SELECT 1`;
     console.log('Prisma connection successful.');
 
