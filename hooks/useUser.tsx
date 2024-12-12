@@ -22,7 +22,7 @@ export const useUser = () => {
       const { user } = await getSessionUser();
       setState({ user, loading: false, error: null });
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      // TODO: Handle error
       setState({
         user: null,
         loading: false,
@@ -30,14 +30,12 @@ export const useUser = () => {
       });
     }
   }, []);
-  console.log({ state });
-  // Sign out user from Supabase
+
   const signOut = useCallback(async () => {
     try {
       await signOutOfBlueSky();
       setState({ user: null, loading: false, error: null });
     } catch (error) {
-      console.error('Error signing out:', error);
       setState((prevState) => ({
         ...prevState,
         error: 'Failed to sign out',

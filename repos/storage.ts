@@ -1,11 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
-// import type {
-//   NodeSavedSession,
-//   NodeSavedSessionStore,
-//   NodeSavedState,
-//   NodeSavedStateStore,
-// } from '@atproto/oauth-client-node';
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!

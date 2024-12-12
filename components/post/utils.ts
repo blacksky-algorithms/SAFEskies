@@ -10,7 +10,6 @@ export const toNiceDomain = (url: string): string => {
     const urlp = new URL(url);
     return urlp.host ? urlp.host : url;
   } catch (e) {
-    console.error(e);
     return url;
   }
 };
