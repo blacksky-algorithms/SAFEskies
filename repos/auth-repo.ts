@@ -3,9 +3,8 @@ import {
   NodeOAuthClient,
   OAuthClientMetadataInput,
 } from '@atproto/oauth-client-node';
-import { PrismaClient } from '@prisma/client';
 
-export function blueskyClientMetadata(): OAuthClientMetadataInput {
+export const blueskyClientMetadata = (): OAuthClientMetadataInput => {
   const baseUrl: string = process.env.NEXT_PUBLIC_URL as string;
 
   return {
@@ -22,16 +21,14 @@ export function blueskyClientMetadata(): OAuthClientMetadataInput {
     token_endpoint_auth_method: 'none',
     dpop_bound_access_tokens: true,
   };
-}
+};
 
-export const createBlueskyOAuthClient = async (
-  prisma: PrismaClient
-): Promise<NodeOAuthClient> => {
+export const createBlueskyOAuthClient = async () => {
   console.log('Bluesky Client Metadata:', blueskyClientMetadata());
 
   return new NodeOAuthClient({
     clientMetadata: blueskyClientMetadata(),
-    stateStore: new StateStore(prisma),
-    sessionStore: new SessionStore(prisma),
+    stateStore: new StateStore(),
+    sessionStore: new SessionStore(),
   });
 };

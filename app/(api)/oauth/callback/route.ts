@@ -1,7 +1,6 @@
 import { createUser } from '@/utils/createUser';
 import { createBlueskyOAuthClient } from '@/repos/auth-repo';
 import { getSession } from '@/repos/iron';
-import { prisma } from '@/repos/prisma';
 import { Agent } from '@atproto/api';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -10,8 +9,8 @@ export async function GET(request: NextRequest) {
   const nextUrl = request.nextUrl;
 
   try {
-    // Create a Bluesky client
-    const blueskyClient = await createBlueskyOAuthClient(prisma);
+    // Create a Bluesky client using Supabase-based stores
+    const blueskyClient = await createBlueskyOAuthClient();
 
     // Get the session and state from the callback
     const { session } = await blueskyClient.callback(nextUrl.searchParams);

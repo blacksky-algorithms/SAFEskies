@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getSessionUser } from '@/repos/iron'; // Assuming this is the function to get user data
-import { signOut as signOutAction } from '@/repos/actions'; // Import the signOut action
-import { User } from '@/types/user'; // Assuming this is the User type
+import { User } from '@/types/user';
+import { getSessionUser } from '@/repos/iron';
+import { signOutOfBlueSky } from '@/repos/actions';
 
 export const useUser = () => {
   const [state, setState] = useState<{
@@ -14,24 +14,35 @@ export const useUser = () => {
     error: null,
   });
 
+  // Fetch user from Supabase session
   const fetchUser = useCallback(async () => {
     setState((prevState) => ({ ...prevState, loading: true, error: null }));
+
     try {
       const { user } = await getSessionUser();
       setState({ user, loading: false, error: null });
     } catch (error) {
-      console.error('Error fetching session data:', error);
+      console.error('Error fetching user data:', error);
       setState({
         user: null,
         loading: false,
-        error: 'Failed to fetch session data',
+        error: 'Failed to fetch user data',
       });
     }
   }, []);
-
+  console.log({ state });
+  // Sign out user from Supabase
   const signOut = useCallback(async () => {
-    await signOutAction();
-    setState({ user: null, loading: false, error: null });
+    try {
+      await signOutOfBlueSky();
+      setState({ user: null, loading: false, error: null });
+    } catch (error) {
+      console.error('Error signing out:', error);
+      setState((prevState) => ({
+        ...prevState,
+        error: 'Failed to sign out',
+      }));
+    }
   }, []);
 
   useEffect(() => {

@@ -2,37 +2,24 @@
 
 import { createBlueskyOAuthClient } from '@/repos/auth-repo';
 import { getSession } from '@/repos/iron';
-import { prisma } from '@/repos/prisma';
 
 export async function signInWithBluesky(handle: string): Promise<string> {
   try {
-    console.log('Starting Bluesky sign-in process for handle:', handle);
-
-    // Check Prisma connection
-    console.log('Testing Prisma connection...', {
-      url: process.env.DATABASE_URL,
-    });
-    await prisma.$queryRaw`SELECT 1`;
-    console.log('Prisma connection successful.');
-
-    // Create a Bluesky client
     console.log('Creating Bluesky OAuth client...');
-    const blueskyClient = await createBlueskyOAuthClient(prisma);
+    const blueskyClient = await createBlueskyOAuthClient();
 
-    // Get the URL to authorize the user
     console.log('Generating authorization URL...');
-    const url: URL = await blueskyClient.authorize(handle);
+    const url = await blueskyClient.authorize(handle);
 
     console.log('Authorization URL generated:', url.toString());
     return url.toString();
   } catch (error) {
-    const errMessage = error instanceof Error ? error.message : String(error);
-    console.error('Detailed error during sign-in:', error);
-    throw new Error(`Bluesky sign-in failed: ${errMessage}`);
+    console.error('Bluesky sign-in failed:', { error });
+    throw new Error('Bluesky sign-in failed');
   }
 }
 
-export async function signOut(): Promise<void> {
+export async function signOutOfBlueSky(): Promise<void> {
   try {
     // Get the session
     const session = await getSession();
