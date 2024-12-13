@@ -5,14 +5,12 @@ import { useModal } from '@/contexts/modal-context';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { Button } from '@/components/button';
 import { OptimizedImage } from '../optimized-image';
-import { useUser } from '@/hooks/useUser';
 import cc from 'classcat';
+import { User } from '@/types/user';
 
-export const UserButton = () => {
+export const UserButton = ({ user }: { user: User }) => {
   const { openModalInstance } = useModal();
   const toggleModal = () => openModalInstance(MODAL_INSTANCE_IDS.SIDE_DRAWER);
-
-  const { user } = useUser();
 
   return (
     <Button

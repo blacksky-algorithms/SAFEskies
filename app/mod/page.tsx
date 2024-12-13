@@ -2,9 +2,9 @@ import { LoginButton } from '@/components/button/login-button';
 import { getSession } from '@/repos/iron';
 
 export default async function Page() {
-  const session = await getSession();
+  const { user } = await getSession();
 
-  if (!session.user) {
+  if (!user) {
     return (
       <section className='flex flex-col gap-8 row-start-2 items-center sm:items-start'>
         <span>
@@ -13,10 +13,10 @@ export default async function Page() {
       </section>
     );
   }
-
+  console.log({ user });
   return (
     <section className='flex flex-col items-center justify-center'>
-      <span>Private page, welcome {session.user.name}! </span>
+      <span>Private page, welcome {user.name}! </span>
     </section>
   );
 }

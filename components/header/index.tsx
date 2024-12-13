@@ -2,18 +2,15 @@
 
 import { PropsWithChildren } from 'react';
 import { UserButton } from '@/components/user-button';
-import { useUser } from '@/hooks/useUser';
 import { LoginButton } from '@/components/button/login-button';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { User } from '@/types/user';
 
-export const Header = ({ children }: PropsWithChildren) => {
-  const {
-    user,
-    loading,
-    // error, // TODO: handle error
-  } = useUser();
-
+export const Header = ({
+  children,
+  user,
+}: PropsWithChildren<{ user: User | null }>) => {
   const pathname = usePathname();
   const isAuthScreen = pathname === '/oauth/login';
 
@@ -33,7 +30,7 @@ export const Header = ({ children }: PropsWithChildren) => {
       <h1 className='text-lg font-bold'>OnlyFeeds</h1>
       {children}
       <div className='flex items-center space-x-4'>
-        {!user && !loading ? <LoginButton /> : <UserButton />}
+        {!user ? <LoginButton /> : <UserButton user={user} />}
       </div>
     </header>
   );

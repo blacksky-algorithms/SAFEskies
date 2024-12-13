@@ -2,18 +2,16 @@
 
 import { FormEvent } from 'react';
 import { Button } from '.';
-import { useUser } from '@/hooks/useUser';
+import { signOutOfBlueSky } from '@/repos/actions';
 
 // This is the logout button
 export const LogoutButton = () => {
-  const { signOut } = useUser();
-
   // Handle the form submission
   const handleClick = async (event: FormEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
     // Sign out
-    await signOut();
+    await signOutOfBlueSky();
 
     window.location.href = '/';
   };
