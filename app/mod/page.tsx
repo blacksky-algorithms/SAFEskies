@@ -1,5 +1,6 @@
 import { LoginButton } from '@/components/button/login-button';
 import { getSession } from '@/repos/iron';
+import { getUserProfile } from '@/repos/user';
 
 export default async function Page() {
   const { user } = await getSession();
@@ -14,9 +15,11 @@ export default async function Page() {
     );
   }
 
+  const profile = await getUserProfile(user.did);
+
   return (
     <section className='flex flex-col items-center justify-center h-full'>
-      <span>Welcome {user.name}! </span>
+      <span>Welcome {profile.name}!</span>
     </section>
   );
 }

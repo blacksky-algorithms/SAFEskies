@@ -1,10 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+import supabase from '@/repos/supabase';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 // Validate or Generate ENCRYPTION_KEY
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
 if (!ENCRYPTION_KEY) {
@@ -21,6 +17,7 @@ try {
     throw new Error('Decoded ENCRYPTION_KEY must be exactly 32 bytes long.');
   }
 } catch (error) {
+  console.error(error);
   throw new Error(
     'Invalid ENCRYPTION_KEY format. Ensure it is base64-encoded and represents exactly 32 bytes.'
   );

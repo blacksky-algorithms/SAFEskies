@@ -3,6 +3,7 @@ import { createBlueskyOAuthClient } from '@/repos/auth-repo';
 import { getSession } from '@/repos/iron';
 import { Agent } from '@atproto/api';
 import { NextRequest, NextResponse } from 'next/server';
+import { saveUserProfile } from '@/repos/user';
 
 export async function GET(request: NextRequest) {
   // Get the next URL from the request
@@ -23,11 +24,16 @@ export async function GET(request: NextRequest) {
       actor: session.did,
     });
 
+    const user = createUser(data);
+
+    // Save user profile in Supabase
+    await saveUserProfile(user);
+
     // Create a user from the Bluesky profile
     const ironSession = await getSession();
 
     // Save the user to the session
-    ironSession.user = createUser(data);
+    ironSession.user = user;
 
     // Save the session
     await ironSession.save();
