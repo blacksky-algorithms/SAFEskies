@@ -1,5 +1,6 @@
 import supabase from '@/repos/supabase';
 import { User } from '@/types/user';
+import { getSessionUser } from '@/repos/iron';
 
 export const saveUserProfile = async (userData: User): Promise<void> => {
   const { data, error } = await supabase
@@ -22,11 +23,17 @@ export const saveUserProfile = async (userData: User): Promise<void> => {
   console.log('User profile saved/updated:', data);
 };
 
-export const getUserProfile = async (did: string) => {
+export const getUserProfile = async () => {
+  const session = await getSessionUser();
+
+  if (!session?.user?.did) {
+    throw new Error('No user session found. Cannot fetch profile.');
+  }
+
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
-    .eq('did', did)
+    .eq('did', session.user.did)
     .single();
 
   if (error) {
