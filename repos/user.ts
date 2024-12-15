@@ -3,7 +3,7 @@ import { User } from '@/types/user';
 import { getSessionUser } from '@/repos/iron';
 
 export const saveUserProfile = async (userData: User): Promise<void> => {
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('profiles')
     .upsert({
       did: userData.did,
@@ -19,8 +19,6 @@ export const saveUserProfile = async (userData: User): Promise<void> => {
     console.error('Error saving user profile:', error);
     throw new Error('Failed to save user profile.');
   }
-
-  console.log('User profile saved/updated:', data);
 };
 
 export const getUserProfile = async () => {
