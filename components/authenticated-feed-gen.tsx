@@ -38,7 +38,7 @@ export const AuthenticatedFeedGen = ({ actorUri }: { actorUri: string }) => {
       }
     };
     fetchFeedData(actorUri);
-  }, []);
+  }, [actorUri]);
 
   if (!actorUri) {
     return <p>Feed URI is required.</p>;
@@ -52,13 +52,20 @@ export const AuthenticatedFeedGen = ({ actorUri }: { actorUri: string }) => {
     <div>
       {data.error && <p className='error'>{data.error}</p>}
       {data &&
-        data.feeds.map((feed: any) => (
-          <div key={feed.did}>
-            <h2>Feed name:{feed.displayName}</h2>
-            <p>Created by: @{feed.creator.handle}</p>
-            <p>Description: {feed.description}</p>
-          </div>
-        ))}
+        data.feeds.map(
+          (feed: {
+            did: string;
+            displayName: string;
+            creator: { handle: string };
+            description: string;
+          }) => (
+            <div key={feed.did}>
+              <h2>Feed name:{feed.displayName || ''}</h2>
+              <p>Created by: @{feed.creator.handle}</p>
+              <p>Description: {feed.description}</p>
+            </div>
+          )
+        )}
     </div>
   );
 };
