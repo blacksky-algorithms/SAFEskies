@@ -1,44 +1,36 @@
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { usePaginatedFeed } from '@/hooks/usePaginatedFeed';
-// import { MODAL_INSTANCE_IDS } from '@/enums/modals';
-// import { useModal } from '@/contexts/modal-context';
-// import { GenericErrorModal } from '@/components/modals/generic-error-modal';
+import { MODAL_INSTANCE_IDS } from '@/enums/modals';
+import { useModal } from '@/contexts/modal-context';
+import { GenericErrorModal } from '@/components/modals/generic-error-modal';
 import { LiveRegion } from '@/components/live-region';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { IconButton } from '@/components/button/icon-button';
 import { Post } from '@/components/post';
 
 interface FeedProps {
-  did: string;
-  feedName: string;
+  uri: string;
 }
 
-export const Feed = ({ did, feedName }: FeedProps) => {
-  const {
-    feed,
-    // error,
-    isFetching,
-    hasNextPage,
-    fetchNextPage,
-    refreshFeed,
-  } = usePaginatedFeed({
-    did,
-    feedName,
-    limit: 10,
-  });
+export const Feed = ({ uri }: FeedProps) => {
+  const { feed, error, isFetching, hasNextPage, fetchNextPage, refreshFeed } =
+    usePaginatedFeed({
+      limit: 10,
+      uri,
+    });
 
-  // const { openModalInstance, closeModalInstance } = useModal();
+  const { openModalInstance, closeModalInstance } = useModal();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // // Automatically open the error modal if there is an error
-  // useEffect(() => {
-  //   if (error) {
-  //     openModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR, true);
-  //   }
-  // }, [error, openModalInstance]);
+  // Automatically open the error modal if there is an error
+  useEffect(() => {
+    if (error) {
+      openModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR, true);
+    }
+  }, [error, openModalInstance]);
 
   // Infinite scrolling: Fetch next page when sentinel is visible
   const handleIntersection = useCallback(
@@ -83,23 +75,18 @@ export const Feed = ({ did, feedName }: FeedProps) => {
     }
   };
 
-  // // Refresh feed when error modal is closed
-  // const handleErrorModalClose = () => {
-  //   closeModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR);
-  //   refreshFeed();
-  // };
-
+  // Refresh feed when error modal is closed
+  const handleErrorModalClose = () => {
+    closeModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR);
+    refreshFeed();
+  };
+  console.log({ feed });
   return (
     <div className='relative max-h-page'>
       <section
         className='flex flex-col items-center mx-auto tablet:px-10'
-        aria-labelledby={`feed-title-${feedName}`}
+        // aria-labelledby={`feed-title-${feedName}`}
       >
-        <header className='w-full text-center my-4'>
-          <h2 id={`feed-title-${feedName}`} className='text-2xl font-bold'>
-            {feedName}
-          </h2>
-        </header>
         <div
           ref={containerRef}
           onTouchStart={onTouchStart}
@@ -125,9 +112,9 @@ export const Feed = ({ did, feedName }: FeedProps) => {
 
           <div ref={sentinelRef} className='h-10 w-full' />
         </div>
-        {/* <GenericErrorModal onClose={handleErrorModalClose}>
-          <p>{error || `${feedName} is unavailable`}</p>
-        </GenericErrorModal> */}
+        <GenericErrorModal onClose={handleErrorModalClose}>
+          <p>{error || 'Feed unavailable'}</p>
+        </GenericErrorModal>
       </section>
       <IconButton
         icon='ArrowUpCircleIcon'
