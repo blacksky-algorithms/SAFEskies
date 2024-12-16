@@ -53,6 +53,9 @@ export default {
         'app-post-image-multi-small': '150px',
         'app-post-image-single-small': '100%',
       },
+      borderColor: {
+        'app-border': 'var(--border)',
+      },
     },
   },
   // eslint-disable-next-line @typescript-eslint/no-require-imports

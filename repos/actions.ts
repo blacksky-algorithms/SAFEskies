@@ -2,32 +2,28 @@
 
 import { createBlueskyOAuthClient } from '@/repos/auth-repo';
 import { getSession } from '@/repos/iron';
-import { prisma } from '@/repos/prisma';
 
 export async function signInWithBluesky(handle: string): Promise<string> {
   try {
-    // Create a Bluesky client
-    const blueskyClient = await createBlueskyOAuthClient(prisma);
+    const blueskyClient = await createBlueskyOAuthClient();
 
-    // Get the URL to authorize the user
-    const url: URL = await blueskyClient.authorize(handle);
-    // Return the URL
+    const url = await blueskyClient.authorize(handle);
+
     return url.toString();
   } catch (error) {
-    console.error('Error signing in with Bluesky:', error);
-    throw new Error('Failed to sign in with Bluesky');
+    console.error(error);
+    // TODO: Handle error
+    throw new Error('Bluesky sign-in failed');
   }
 }
 
-export async function signOut(): Promise<void> {
+export async function signOutOfBlueSky(): Promise<void> {
   try {
-    // Get the session
     const session = await getSession();
-
-    // Destroy the session
-    session.destroy();
+    session.destroy(); // Clear session data
+    await session.save(); // Persist destruction
   } catch (error) {
-    console.error('Error signing out:', error);
-    throw new Error('Failed to sign out');
+    console.error('Error during logout:', error);
+    throw new Error('Failed to sign out.');
   }
 }

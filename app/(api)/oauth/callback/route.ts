@@ -1,17 +1,17 @@
 import { createUser } from '@/utils/createUser';
 import { createBlueskyOAuthClient } from '@/repos/auth-repo';
 import { getSession } from '@/repos/iron';
-import { prisma } from '@/repos/prisma';
 import { Agent } from '@atproto/api';
 import { NextRequest, NextResponse } from 'next/server';
+import { saveUserProfile } from '@/repos/user';
 
 export async function GET(request: NextRequest) {
   // Get the next URL from the request
   const nextUrl = request.nextUrl;
 
   try {
-    // Create a Bluesky client
-    const blueskyClient = await createBlueskyOAuthClient(prisma);
+    // Create a Bluesky client using Supabase-based stores
+    const blueskyClient = await createBlueskyOAuthClient();
 
     // Get the session and state from the callback
     const { session } = await blueskyClient.callback(nextUrl.searchParams);
@@ -24,11 +24,16 @@ export async function GET(request: NextRequest) {
       actor: session.did,
     });
 
+    const user = createUser(data);
+
+    // Save user profile in Supabase
+    await saveUserProfile(user);
+
     // Create a user from the Bluesky profile
     const ironSession = await getSession();
 
     // Save the user to the session
-    ironSession.user = createUser(data);
+    ironSession.user = user;
 
     // Save the session
     await ironSession.save();

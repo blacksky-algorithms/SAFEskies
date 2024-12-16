@@ -21,6 +21,7 @@
   ---text-hover: #ffffff;
   --header-height-app: 6rem;
   --page-height-app: calc(100vh - var(--header-height-app));
+  --border: #1f2937;
 }
 
 /* CSS Reset */

@@ -1,11 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
-import type {
-  NodeSavedSession,
-  NodeSavedSessionStore,
-  NodeSavedState,
-  NodeSavedStateStore,
-} from '@atproto/oauth-client-node';
+import supabase from '@/repos/supabase';
 
 // Validate or Generate ENCRYPTION_KEY
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
@@ -23,6 +17,7 @@ try {
     throw new Error('Decoded ENCRYPTION_KEY must be exactly 32 bytes long.');
   }
 } catch (error) {
+  console.error(error);
   throw new Error(
     'Invalid ENCRYPTION_KEY format. Ensure it is base64-encoded and represents exactly 32 bytes.'
   );
@@ -32,6 +27,7 @@ try {
 const encrypt = (data: string): { iv: string; encrypted: string } => {
   const iv = randomBytes(16);
   const cipher = createCipheriv('aes-256-cbc', ENCRYPTION_KEY_BUFFER, iv);
+
   let encrypted = cipher.update(data, 'utf8', 'hex');
   encrypted += cipher.final('hex');
   return { iv: iv.toString('hex'), encrypted };
@@ -56,83 +52,74 @@ const decrypt = ({
 };
 
 // StateStore implementation
-export class StateStore implements NodeSavedStateStore {
-  constructor(private prisma: PrismaClient) {}
+export class StateStore {
+  async get(key: string) {
+    const { data, error } = await supabase
+      .from('auth_states')
+      .select('state')
+      .eq('key', key)
+      .single();
 
-  async get(key: string): Promise<NodeSavedState | undefined> {
-    const record = await this.prisma.authState.findUnique({ where: { key } });
-    if (!record) return undefined;
+    if (error || !data) return undefined;
+    const { iv, encrypted } = JSON.parse(data.state);
+    return JSON.parse(decrypt({ iv, encrypted }));
+  }
 
-    try {
-      const { iv, encrypted } = JSON.parse(record.state);
-      const decrypted = decrypt({ iv, encrypted });
-      return JSON.parse(decrypted) as NodeSavedState;
-    } catch (error) {
-      console.error(`Failed to decrypt state for key ${key}:`, error);
-      return undefined;
+  async set(key: string, value: object) {
+    const { iv, encrypted } = encrypt(JSON.stringify(value));
+    const { error } = await supabase
+      .from('auth_states')
+      .upsert({ key, state: JSON.stringify({ iv, encrypted }) });
+
+    if (error) {
+      throw new Error(`Failed to save state for key ${key}: ${error.message}`);
     }
   }
 
-  async set(key: string, value: NodeSavedState): Promise<void> {
-    try {
-      const serialized = JSON.stringify(value);
-      const { iv, encrypted } = encrypt(serialized);
-
-      await this.prisma.authState.upsert({
-        where: { key },
-        update: { state: JSON.stringify({ iv, encrypted }) },
-        create: { key, state: JSON.stringify({ iv, encrypted }) },
-      });
-    } catch (error) {
-      console.error(`Failed to save state for key ${key}:`, error);
-      throw new Error('Failed to save state');
-    }
-  }
-
-  async del(key: string): Promise<void> {
-    await this.prisma.authState.delete({ where: { key } }).catch((error) => {
+  async del(key: string) {
+    const { error } = await supabase
+      .from('auth_states')
+      .delete()
+      .eq('key', key);
+    if (error) {
       console.warn(`Failed to delete state for key ${key}:`, error);
-    });
+    }
   }
 }
+// Session Store implementation
+export class SessionStore {
+  async get(key: string) {
+    const { data, error } = await supabase
+      .from('auth_sessions')
+      .select('session')
+      .eq('key', key)
+      .single();
 
-// SessionStore implementation
-export class SessionStore implements NodeSavedSessionStore {
-  constructor(private prisma: PrismaClient) {}
+    if (error || !data) return undefined;
+    const { iv, encrypted } = JSON.parse(data.session);
+    return JSON.parse(decrypt({ iv, encrypted }));
+  }
 
-  async get(key: string): Promise<NodeSavedSession | undefined> {
-    const record = await this.prisma.authSession.findUnique({ where: { key } });
-    if (!record) return undefined;
+  async set(key: string, value: object) {
+    const { iv, encrypted } = encrypt(JSON.stringify(value));
+    const { error } = await supabase
+      .from('auth_sessions')
+      .upsert({ key, session: JSON.stringify({ iv, encrypted }) });
 
-    try {
-      const { iv, encrypted } = JSON.parse(record.session);
-      const decrypted = decrypt({ iv, encrypted });
-      return JSON.parse(decrypted) as NodeSavedSession;
-    } catch (error) {
-      console.error(`Failed to decrypt session for key ${key}:`, error);
-      return undefined;
+    if (error) {
+      throw new Error(
+        `Failed to save session for key ${key}: ${error.message}`
+      );
     }
   }
 
-  async set(key: string, value: NodeSavedSession): Promise<void> {
-    try {
-      const serialized = JSON.stringify(value);
-      const { iv, encrypted } = encrypt(serialized);
-
-      await this.prisma.authSession.upsert({
-        where: { key },
-        update: { session: JSON.stringify({ iv, encrypted }) },
-        create: { key, session: JSON.stringify({ iv, encrypted }) },
-      });
-    } catch (error) {
-      console.error(`Failed to save session for key ${key}:`, error);
-      throw new Error('Failed to save session');
-    }
-  }
-
-  async del(key: string): Promise<void> {
-    await this.prisma.authSession.delete({ where: { key } }).catch((error) => {
+  async del(key: string) {
+    const { error } = await supabase
+      .from('auth_sessions')
+      .delete()
+      .eq('key', key);
+    if (error) {
       console.warn(`Failed to delete session for key ${key}:`, error);
-    });
+    }
   }
 }
