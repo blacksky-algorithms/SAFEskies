@@ -8,7 +8,9 @@ import { saveUserProfile } from '@/repos/user';
 export async function GET(request: NextRequest) {
   // Get the next URL from the request
   const nextUrl = request.nextUrl;
-
+  if (!process.env.NEXT_PUBLIC_URL) {
+    console.error('NEXT_PUBLIC_URL is not set');
+  }
   try {
     // Create a Bluesky client using Supabase-based stores
     const blueskyClient = await createBlueskyOAuthClient();

@@ -3,7 +3,7 @@ import { getSession } from '@/repos/iron';
 // import { getUserProfile } from '@/repos/user';
 
 export async function middleware(req: NextRequest) {
-  const url = req.nextUrl.clone(); // Correctly using `NextRequest`
+  const url = req.nextUrl.clone();
 
   const session = await getSession();
 

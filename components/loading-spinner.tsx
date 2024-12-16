@@ -1,37 +1,30 @@
 import React from 'react';
 import cc from 'classcat';
-import { Variant } from '@/enums/styles';
+import { VisualIntent, SharedSize } from '@/enums/styles';
 
 interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg';
-  variant?: Variant;
+  size?: keyof typeof SharedSize; // Use SharedSize enum keys
+  variant?: VisualIntent;
 }
 
 export const LoadingSpinner = ({
   size = 'md',
-  variant = Variant.Primary,
+  variant = VisualIntent.Primary,
 }: LoadingSpinnerProps) => {
-  const sizeClasses = {
-    sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8',
-  };
-
-  const colorClasses = {
-    [Variant.Primary]: 'text-app-primary',
-    [Variant.Secondary]: 'text-app-secondary',
-    [Variant.Error]: 'text-app-error',
-    [Variant.Info]: 'text-app-info',
-    [Variant.Success]: 'text-app-success',
-    [Variant.TextButton]: 'text-app-text',
-  };
+  const sizeClass = SharedSize[size];
 
   return (
     <div
       className={cc([
         'flex items-center justify-center',
-        sizeClasses[size],
-        colorClasses[variant],
+        sizeClass,
+        {
+          'text-app-primary': variant === VisualIntent.Primary,
+          'text-app-secondary': variant === VisualIntent.Secondary,
+          'text-app-error': variant === VisualIntent.Error,
+          'text-app-info': variant === VisualIntent.Info,
+          'text-app-success': variant === VisualIntent.Success,
+        },
       ])}
       role='status'
       aria-live='polite'

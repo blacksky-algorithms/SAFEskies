@@ -1,21 +1,33 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { FormEvent } from 'react';
+import { useState, FormEvent } from 'react';
 import { Button } from '.';
 
 export const LoginButton = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  // Handle the form submission
   const handleClick = async (event: FormEvent<HTMLButtonElement>) => {
     event.preventDefault();
+    setIsSubmitting(true);
 
-    router.push(`/oauth/login`);
+    try {
+      await router.push('/oauth/login');
+    } catch (error) {
+      console.error('Login failed:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <Button type='button' onClick={handleClick}>
+    <Button
+      type='button'
+      onClick={handleClick}
+      submitting={isSubmitting}
+      disabled={isSubmitting}
+    >
       Login with Bluesky
     </Button>
   );
