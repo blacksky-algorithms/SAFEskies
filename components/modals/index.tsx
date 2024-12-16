@@ -39,7 +39,7 @@ export const Modal = ({
     small: 'max-w-sm',
     medium: 'max-w-md',
     large: 'max-w-2xl',
-    full: 'w-full h-full max-h-screen',
+    full: 'w-screen h-screen max-w-screen max-h-screen',
   };
 
   const handleClose = () => {
@@ -51,72 +51,82 @@ export const Modal = ({
     <Transition show={isOpen(id)} as={Fragment}>
       <Dialog
         as='div'
-        className='fixed inset-0 z-50 overflow-hidden'
+        className='fixed inset-0 z-50'
         onClose={handleClose}
         aria-labelledby={`${id}-title`}
         aria-describedby={`${id}-content`}
       >
-        {/* Backdrop */}
-        <TransitionChild
-          as={Fragment}
-          enter='ease-out duration-300'
-          enterFrom='opacity-0'
-          enterTo='opacity-100'
-          leave='ease-in duration-200'
-          leaveFrom='opacity-100'
-          leaveTo='opacity-0'
-        >
+        <TransitionChild>
           <DialogBackdrop className='fixed inset-0 bg-black bg-opacity-80' />
         </TransitionChild>
-
-        {/* Dialog Container */}
         <div
           className={cc([
-            'fixed inset-0 flex items-center justify-center p-4',
-            size === 'full' && 'h-screen w-screen',
+            'fixed inset-0 flex items-center justify-center',
+            { 'p-4': size !== 'full' },
           ])}
         >
-          <TransitionChild
-            as={Fragment}
-            enter='ease-out duration-300'
-            enterFrom='opacity-0 scale-95'
-            enterTo='opacity-100 scale-100'
-            leave='ease-in duration-200'
-            leaveFrom='opacity-100 scale-100'
-            leaveTo='opacity-0 scale-95'
-          >
+          <TransitionChild>
             <DialogPanel
               className={cc([
-                'bg-gray-900 p-6 rounded-lg shadow-lg relative overflow-y-auto',
+                'bg-gray-900 shadow-lg relative flex flex-col',
+                {
+                  'w-screen h-screen rounded-none overflow-hidden':
+                    size === 'full',
+                  'p-6 rounded-lg overflow-y-auto': size !== 'full',
+                },
                 sizeClasses[size],
-                size === 'full' && 'w-screen h-screen rounded-none',
                 className,
               ])}
             >
-              {/* Close Button */}
               <IconButton
-                className='absolute top-4 right-4 p-2 h-10 w-10'
+                className={cc([
+                  'absolute p-2 h-10 w-10',
+                  {
+                    'top-4 right-4': size !== 'full',
+                    'top-6 right-6': size === 'full',
+                  },
+                ])}
                 onClick={handleClose}
                 aria-label='Close modal'
                 icon='XMarkIcon'
               />
 
-              {/* Title (Optional) */}
-              {title && (
-                <DialogTitle
-                  id={`${id}-title`}
-                  className='text-lg font-bold mb-4'
-                >
-                  {title}
-                </DialogTitle>
-              )}
-
-              {/* Custom Content */}
               <div
-                id={`${id}-content`}
-                className={size === 'full' ? 'h-full w-full' : ''}
+                className={cc([
+                  'w-full h-full',
+                  'flex flex-col',
+                  {
+                    'px-6': size === 'full',
+                  },
+                ])}
               >
-                {children}
+                {title && (
+                  <DialogTitle
+                    id={`${id}-title`}
+                    className={cc([
+                      'text-lg font-bold',
+                      {
+                        'pt-6 mb-4': size === 'full',
+                        'mb-4': size !== 'full',
+                      },
+                    ])}
+                  >
+                    {title}
+                  </DialogTitle>
+                )}
+                <div
+                  id={`${id}-content`}
+                  className={cc([
+                    'flex-1',
+                    'min-h-0',
+                    {
+                      'overflow-hidden': size === 'full',
+                      'pb-6': size === 'full',
+                    },
+                  ])}
+                >
+                  {children}
+                </div>
               </div>
             </DialogPanel>
           </TransitionChild>

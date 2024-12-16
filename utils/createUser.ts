@@ -1,13 +1,16 @@
 import { User } from '@/types/user';
 import { AppBskyActorDefs } from '@atproto/api';
 
-export function createUser(data: AppBskyActorDefs.ProfileViewDetailed): User {
+export function createUser(
+  profile: AppBskyActorDefs.ProfileViewDetailed
+): User {
   return {
-    did: data.did,
-    handle: data.handle,
-    name: data.displayName || 'Anonymous',
-    avatar: data.avatar || null,
-    associated: data.associated,
-    labels: data.labels || [],
+    did: profile.did,
+    handle: profile.handle,
+    name: profile.displayName || profile.handle,
+    avatar: profile.avatar || null,
+    associated: profile.associated,
+    labels: profile.labels,
+    role: 'user',
   };
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getActorFeeds } from '@/repos/bluesky-api';
+import { getActorFeeds } from '@/repos/actor';
 
 export async function GET(request: NextRequest) {
   try {

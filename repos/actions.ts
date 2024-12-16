@@ -3,7 +3,7 @@
 import { BlueskyOAuthClient } from '@/repos/blue-sky-oauth-client';
 import { getSession } from '@/repos/iron';
 
-export async function signInWithBluesky(handle: string): Promise<string> {
+export const signInWithBluesky = async (handle: string): Promise<string> => {
   try {
     const blueskyClient = BlueskyOAuthClient;
 
@@ -15,9 +15,9 @@ export async function signInWithBluesky(handle: string): Promise<string> {
     // TODO: Handle error
     return '';
   }
-}
+};
 
-export async function signOutOfBlueSky(): Promise<void> {
+export const signOutOfBlueSky = async (): Promise<void> => {
   try {
     const session = await getSession();
     session.destroy(); // Clear session data
@@ -26,4 +26,4 @@ export async function signOutOfBlueSky(): Promise<void> {
     console.error('Error during logout:', error);
     // TODO: Handle error
   }
-}
+};
