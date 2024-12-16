@@ -3,9 +3,14 @@
 import { useEffect, useState } from 'react';
 
 export const AuthenticatedFeedGen = ({ actorUri }: { actorUri: string }) => {
-  const [data, setData] = useState<{ feeds: []; error: string | null }>({
+  const [data, setData] = useState<{
+    feeds: [];
+    error: string | null;
+    isFetching: boolean;
+  }>({
     feeds: [],
     error: null,
+    isFetching: true,
   });
 
   useEffect(() => {
@@ -20,11 +25,16 @@ export const AuthenticatedFeedGen = ({ actorUri }: { actorUri: string }) => {
         }
 
         const result = await response.json();
-        setData({ feeds: result, error: null });
+
+        setData({ feeds: result.feeds, error: null, isFetching: false });
       } catch (err) {
         console.error(err);
 
-        setData({ feeds: [], error: 'Failed to fetch feed generator data.' });
+        setData({
+          feeds: [],
+          error: 'Failed to fetch feed generator data.',
+          isFetching: false,
+        });
       }
     };
     fetchFeedData(actorUri);
@@ -34,10 +44,21 @@ export const AuthenticatedFeedGen = ({ actorUri }: { actorUri: string }) => {
     return <p>Feed URI is required.</p>;
   }
 
+  if (data.isFetching) {
+    return <p>Fetching your feeds...</p>;
+  }
+
   return (
     <div>
       {data.error && <p className='error'>{data.error}</p>}
-      {data && <pre>{JSON.stringify(data.feeds, null, 2)}</pre>}
+      {data &&
+        data.feeds.map((feed: any) => (
+          <div key={feed.did}>
+            <h2>Feed name:{feed.displayName}</h2>
+            <p>Created by: @{feed.creator.handle}</p>
+            <p>Description: {feed.description}</p>
+          </div>
+        ))}
     </div>
   );
 };
