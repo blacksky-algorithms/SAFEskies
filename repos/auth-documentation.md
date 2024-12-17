@@ -29,6 +29,7 @@ The flow is designed to authenticate users with Bluesky OAuth and manage session
 - **Implementation**:
   - Ensures only one instance of the OAuth client exists.
   - Uses the `StateStore` and `SessionStore` for state management.
+  - Includes `requestLock` to ensure no concurrent requests interfere with token handling.
 
 ### 2. **`BLUE_SKY_CLIENT_META_DATA`**
 
@@ -122,6 +123,7 @@ When using platforms like Netlify for deploy previews, ensure that `NEXT_PUBLIC_
 - **Mitigation**:
   - Supabase storage encrypts tokens before saving.
   - IronSession ensures secure, server-side storage.
+  - `requestLock` ensures that token refresh operations are serialized to prevent conflicts.
 
 ### 2. **CSRF Protection**
 
@@ -177,6 +179,7 @@ This implementation leverages BlueSky's OAuth system, Supabase for secure storag
 - Secure storage and encryption of OAuth data.
 - Auto-refresh of access tokens using BlueSky's provided mechanisms.
 - Robust error handling to maintain a smooth user experience.
+- Serialized operations using `requestLock` for enhanced reliability.
 
 ### Key Files
 
