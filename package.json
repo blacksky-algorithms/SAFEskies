@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "echo 'Supabase setup complete'"
+    "postinstall": "echo 'Supabase setup complete'",
+    "test": "jest",
+    "test:watch": "TZ=UTC jest --watch"
   },
   "dependencies": {
     "@atproto/api": "^0.13.16",
