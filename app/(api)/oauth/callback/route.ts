@@ -59,6 +59,11 @@ export async function GET(request: NextRequest) {
     // Clean up URL and redirect to the base `/mod` path with NEXT_PUBLIC_URL
     const cleanUrl = new URL(`${process.env.NEXT_PUBLIC_URL}/mod`);
 
+    // Remove unwanted parameters if they exist
+    ['iss', 'state', 'code'].forEach((param) => {
+      cleanUrl.searchParams.delete(param);
+    });
+
     return NextResponse.redirect(cleanUrl.toString());
   } catch (error: unknown) {
     console.error('OAuth callback error:', error);
