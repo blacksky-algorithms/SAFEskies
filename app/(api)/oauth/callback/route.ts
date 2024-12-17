@@ -17,7 +17,6 @@ export async function GET(request: NextRequest) {
     // Validate tokens (auto-refresh if needed)
     const tokenInfo = await session.getTokenInfo('auto');
     if (tokenInfo.expired) {
-      // TODO: Redirect user to re-login or prompt session renewal
       return NextResponse.redirect(
         `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=${encodeURIComponent(
           'Session is expired. Please log in again.'
@@ -30,9 +29,7 @@ export async function GET(request: NextRequest) {
       actor: session.did, // Use the DID from the session
     });
 
-    // Extract the profile data
     if (!agentResponse.success || !agentResponse.data) {
-      // TODO: Handle missing or invalid profile gracefully (e.g., retry, fallback data)
       return NextResponse.redirect(
         `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=${encodeURIComponent(
           'Failed to fetch user profile.'
@@ -47,7 +44,6 @@ export async function GET(request: NextRequest) {
     const saveSuccess = await saveUserProfile(user);
 
     if (!saveSuccess) {
-      // TODO: Handle failed profile saving, retry logic or user notification
       return NextResponse.redirect(
         `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=${encodeURIComponent(
           'Failed to save user profile.'
@@ -60,10 +56,14 @@ export async function GET(request: NextRequest) {
     ironSession.user = user;
     await ironSession.save();
 
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}/mod`);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // Clean up URL and redirect to the base `/mod` path with NEXT_PUBLIC_URL
+    const cleanUrl = new URL(`${process.env.NEXT_PUBLIC_URL}/mod`);
+
+    return NextResponse.redirect(cleanUrl.toString());
   } catch (error: unknown) {
-    // TODO: Handle generic OAuth errors more gracefully (e.g., retries, detailed logging)
+    console.error('OAuth callback error:', error);
+
+    // Redirect to login with an error message
     return NextResponse.redirect(
       `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=${encodeURIComponent(
         'An error occurred. Please try again.'
