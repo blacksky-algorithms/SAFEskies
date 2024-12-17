@@ -9,6 +9,14 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+echo "🔎 Running TypeScript type checks..."
+npm run type-check
+
+if [ $? -ne 0 ]; then
+  echo "❌ Type checks failed. Commit aborted."
+  exit 1
+fi
+
 echo "🧪 Running tests..."
 npm test
 

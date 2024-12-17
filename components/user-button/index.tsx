@@ -7,6 +7,7 @@ import { Button } from '@/components/button';
 import { OptimizedImage } from '../optimized-image';
 import cc from 'classcat';
 import { User } from '@/types/user';
+import { VisualIntent } from '@/enums/styles';
 
 export const UserButton = ({ user }: { user: User }) => {
   const { openModalInstance } = useModal();
@@ -14,7 +15,7 @@ export const UserButton = ({ user }: { user: User }) => {
 
   return (
     <Button
-      variant='text-button'
+      variant={VisualIntent.TextButton}
       className='flex items-center space-x-2'
       onClick={toggleModal}
       aria-label='Open user menu'
