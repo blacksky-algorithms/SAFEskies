@@ -2,12 +2,14 @@ import React from 'react';
 import * as HeroIcons from '@heroicons/react/24/outline';
 import cc from 'classcat';
 import { VisualIntent, SharedSize } from '@/enums/styles';
+import { LoadingSpinner } from '@/components/loading-spinner';
 
 export interface IconProps extends React.HTMLAttributes<SVGElement> {
   icon: keyof typeof HeroIcons | 'loader';
   variant?: Exclude<VisualIntent, VisualIntent.TextButton>;
   isButton?: boolean;
   size?: keyof typeof SharedSize;
+  'aria-label'?: string;
 }
 
 const variantClasses: Record<
@@ -27,38 +29,23 @@ export const Icon = ({
   className,
   isButton = false,
   size = 'md',
+  'aria-label': ariaLabel,
   ...props
 }: IconProps) => {
   const sizeClass = SharedSize[size];
 
+  // Default accessible name for interactive icons
+  const defaultAriaLabel =
+    isButton && !ariaLabel ? icon.replace(/([A-Z])/g, ' $1').trim() : undefined;
+
+  // Use the LoadingSpinner for the loader icon
   if (icon === 'loader') {
     return (
-      <svg
-        className={cc([
-          'animate-spin',
-          sizeClass,
-          variantClasses[variant],
-          className,
-        ])}
-        xmlns='http://www.w3.org/2000/svg'
-        viewBox='0 0 24 24'
-        fill='none'
-        {...props}
-      >
-        <circle
-          className='opacity-25'
-          cx='12'
-          cy='12'
-          r='10'
-          stroke='currentColor'
-          strokeWidth='4'
-        ></circle>
-        <path
-          className='opacity-75'
-          fill='currentColor'
-          d='M4 12a8 8 0 018-8v8H4z'
-        ></path>
-      </svg>
+      <LoadingSpinner
+        size={size}
+        variant={variant}
+        {...(defaultAriaLabel && { 'aria-label': defaultAriaLabel })}
+      />
     );
   }
 
@@ -71,13 +58,12 @@ export const Icon = ({
 
   return (
     <IconComponent
+      aria-label={ariaLabel || defaultAriaLabel}
       className={cc([
         'block',
         sizeClass,
         variantClasses[variant],
-        {
-          'w-full h-full': isButton,
-        },
+        { 'w-full h-full': isButton },
         className,
       ])}
       {...props}

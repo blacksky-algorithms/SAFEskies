@@ -3,13 +3,15 @@ import cc from 'classcat';
 import { VisualIntent, SharedSize } from '@/enums/styles';
 
 interface LoadingSpinnerProps {
-  size?: keyof typeof SharedSize; // Use SharedSize enum keys
+  size?: keyof typeof SharedSize;
   variant?: VisualIntent;
+  'aria-label'?: string;
 }
 
 export const LoadingSpinner = ({
   size = 'md',
   variant = VisualIntent.Primary,
+  'aria-label': ariaLabel = 'Loading...',
 }: LoadingSpinnerProps) => {
   const sizeClass = SharedSize[size];
 
@@ -26,8 +28,9 @@ export const LoadingSpinner = ({
           'text-app-success': variant === VisualIntent.Success,
         },
       ])}
-      role='status'
-      aria-live='polite'
+      role='status' // Announces the loading state
+      aria-live='polite' // Screen readers announce politely
+      aria-label={ariaLabel} // Ensures screen readers announce the name
     >
       <svg
         className='animate-spin'
