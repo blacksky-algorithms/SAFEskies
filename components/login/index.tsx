@@ -1,13 +1,15 @@
 'use client';
 
 import { signInWithBluesky } from '@/repos/actions';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { Button } from '../button';
 import { Input } from '../input';
 
 export const Login = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const errorMessage = searchParams.get('error');
 
   const [state, setState] = useState({
     handle: '',
@@ -93,6 +95,9 @@ export const Login = () => {
         >
           Sign in with Bluesky
         </Button>
+        {errorMessage && (
+          <p style={{ color: 'red' }}>{decodeURIComponent(errorMessage)}</p>
+        )}
       </form>
     </section>
   );

@@ -2,7 +2,7 @@ import supabase from '@/repos/supabase';
 import { User } from '@/types/user';
 import { getSessionUser } from '@/repos/iron';
 
-export const saveUserProfile = async (userData: User): Promise<void> => {
+export const saveUserProfile = async (userData: User): Promise<boolean> => {
   const { error } = await supabase
     .from('profiles')
     .upsert({
@@ -17,15 +17,18 @@ export const saveUserProfile = async (userData: User): Promise<void> => {
 
   if (error) {
     console.error('Error saving user profile:', error);
-    throw new Error('Failed to save user profile.');
+    return false; // Early return for failure
   }
+
+  return true; // Success
 };
 
 export const getUserProfile = async () => {
   const session = await getSessionUser();
 
   if (!session?.user?.did) {
-    throw new Error('No user session found. Cannot fetch profile.');
+    // TODO: Handle
+    return null;
   }
 
   const { data, error } = await supabase
@@ -35,9 +38,10 @@ export const getUserProfile = async () => {
     .single();
 
   if (error) {
+    // TODO: Handle error
     console.error('Error fetching user profile:', error);
-    throw new Error('Failed to fetch user profile.');
+    return null;
   }
 
-  return data;
+  return data; // Success
 };

@@ -31,6 +31,7 @@ export const Feed = ({ did, feedName }: FeedProps) => {
   // Handle error modal opening when an error occurs
   useEffect(() => {
     if (error && !errorHandled) {
+      console.log({ error });
       openModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR, true);
       setErrorHandled(true);
     } else if (!error) {
