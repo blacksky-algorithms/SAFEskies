@@ -1,1 +1,20 @@
-npx lint-staged
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running linting..."
+npm run lint
+
+if [ $? -ne 0 ]; then
+  echo "❌ Linting failed. Commit aborted."
+  exit 1
+fi
+
+echo "🧪 Running tests..."
+npm test
+
+if [ $? -ne 0 ]; then
+  echo "❌ Tests failed. Commit aborted."
+  exit 1
+fi
+
+echo "✅ All checks passed!"
