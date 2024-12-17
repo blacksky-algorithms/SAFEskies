@@ -10,7 +10,7 @@ import {
   Transition,
   TransitionChild,
 } from '@headlessui/react';
-import { Fragment, useEffect } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 import { IconButton } from '@/components/button/icon-button';
 import cc from 'classcat';
 
@@ -20,33 +20,42 @@ export const Modal = ({
   children,
   size = 'medium',
   className = '',
-  onClose = () => {},
+  onClose,
 }: ModalProps) => {
   const { isOpen, closeModalInstance, registerModal, unregisterModal } =
     useModal();
+  const isMounted = useRef(false);
 
-  // Register the modal on mount and unregister on unmount
   useEffect(() => {
+    isMounted.current = true;
     registerModal(id);
-    return () => unregisterModal(id);
+    return () => {
+      unregisterModal(id);
+      isMounted.current = false;
+    };
   }, [id, registerModal, unregisterModal]);
 
-  // Determine modal width based on size
   const sizeClasses = {
     small: 'max-w-sm',
     medium: 'max-w-md',
     large: 'max-w-2xl',
-    full: 'w-full h-full max-h-screen overflow-y-auto',
+    full: 'w-full h-full max-h-screen',
   };
 
   const handleClose = () => {
-    onClose();
-    closeModalInstance(id);
+    if (onClose) onClose();
+    if (isMounted.current) closeModalInstance(id);
   };
 
   return (
     <Transition show={isOpen(id)} as={Fragment}>
-      <Dialog as='div' className='fixed inset-0 z-50' onClose={handleClose}>
+      <Dialog
+        as='div'
+        className='fixed inset-0 z-50 overflow-hidden'
+        onClose={handleClose}
+        aria-labelledby={`${id}-title`}
+        aria-describedby={`${id}-content`}
+      >
         {/* Backdrop */}
         <TransitionChild
           as={Fragment}
@@ -60,8 +69,13 @@ export const Modal = ({
           <DialogBackdrop className='fixed inset-0 bg-black bg-opacity-80' />
         </TransitionChild>
 
-        {/* Dialog Panel */}
-        <div className='fixed inset-0 flex items-center justify-center'>
+        {/* Dialog Container */}
+        <div
+          className={cc([
+            'fixed inset-0 flex items-center justify-center p-4',
+            size === 'full' && 'h-screen w-screen',
+          ])}
+        >
           <TransitionChild
             as={Fragment}
             enter='ease-out duration-300'
@@ -73,8 +87,9 @@ export const Modal = ({
           >
             <DialogPanel
               className={cc([
-                'bg-gray-900 p-6 rounded-lg shadow-lg relative overflow-y-auto max-h-screen w-full',
+                'bg-gray-900 p-6 rounded-lg shadow-lg relative overflow-y-auto',
                 sizeClasses[size],
+                size === 'full' && 'w-screen h-screen rounded-none',
                 className,
               ])}
             >
@@ -85,15 +100,24 @@ export const Modal = ({
                 aria-label='Close modal'
                 icon='XMarkIcon'
               />
+
               {/* Title (Optional) */}
               {title && (
-                <DialogTitle className='text-lg font-bold mb-4'>
+                <DialogTitle
+                  id={`${id}-title`}
+                  className='text-lg font-bold mb-4'
+                >
                   {title}
                 </DialogTitle>
               )}
 
               {/* Custom Content */}
-              {children}
+              <div
+                id={`${id}-content`}
+                className={size === 'full' ? 'h-full w-full' : ''}
+              >
+                {children}
+              </div>
             </DialogPanel>
           </TransitionChild>
         </div>

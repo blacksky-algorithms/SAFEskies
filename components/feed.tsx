@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { usePaginatedFeed } from '@/hooks/usePaginatedFeed';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
-// import { GenericErrorModal } from '@/components/modals/generic-error-modal';
+import { GenericErrorModal } from '@/components/modals/generic-error-modal';
 import { LiveRegion } from '@/components/live-region';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { IconButton } from '@/components/button/icon-button';
@@ -67,9 +67,9 @@ export const Feed = ({ did, feedName }: FeedProps) => {
   };
 
   // Function to refetch feed when error modal is closed
-  // const handleErrorModalClose = () => {
-  //   refreshFeed();
-  // };
+  const handleErrorModalClose = () => {
+    refreshFeed();
+  };
 
   return (
     <div className='relative max-h-page'>
@@ -114,9 +114,9 @@ export const Feed = ({ did, feedName }: FeedProps) => {
 
           <div ref={sentinelRef} className='h-10 w-full' />
         </div>
-        {/* <GenericErrorModal onClose={handleErrorModalClose}>
+        <GenericErrorModal onClose={handleErrorModalClose}>
           <p>{error || `${feedName} is unavailable`}</p>
-        </GenericErrorModal> */}
+        </GenericErrorModal>
       </section>
       <IconButton
         icon='ArrowUpCircleIcon'

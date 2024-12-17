@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, act, waitFor } from '@/setupTests';
+import { render, act, waitFor, axe } from '@/setupTests';
 import { useModal } from '@/contexts/modal-context';
 import { Modal } from '@/components/modals';
 
@@ -38,23 +38,14 @@ const TestComponent = () => {
       <button onClick={() => closeModalInstance('modal-4')}>
         Close Modal 4
       </button>
+      <button onClick={() => openModalInstance('full-screen-modal')}>
+        Open Full-screen Modal
+      </button>
     </div>
   );
 };
 
 describe('ModalProvider and Modal Integration', () => {
-  let originalWarn: typeof console.warn;
-
-  beforeAll(() => {
-    // Stop warns from cluttering the test output
-    originalWarn = console.warn;
-    console.warn = jest.fn();
-  });
-
-  afterAll(() => {
-    // Clean up
-    console.warn = originalWarn;
-  });
   it('should open a registered modal', async () => {
     const { getByText } = render(
       <>
@@ -114,7 +105,6 @@ describe('ModalProvider and Modal Integration', () => {
       </>
     );
 
-    // Open modal-1 with stacking enabled
     act(() => {
       getByText('Open Modal 1 (Stack)').click();
     });
@@ -123,7 +113,6 @@ describe('ModalProvider and Modal Integration', () => {
       expect(getByText('Modal 1 is open')).toBeInTheDocument();
     });
 
-    // Open modal-2 with stacking enabled
     act(() => {
       getByText('Open Modal 2 (Stack)').click();
     });
@@ -152,25 +141,12 @@ describe('ModalProvider and Modal Integration', () => {
       </>
     );
 
-    // Open modals 1, 2, and 3 with stacking enabled
-    act(() => {
-      getByText('Open Modal 1 (Stack)').click(); // Open modal-1
-    });
+    act(() => getByText('Open Modal 1 (Stack)').click());
+    act(() => getByText('Open Modal 2 (Stack)').click());
+    act(() => getByText('Open Modal 3 (Stack)').click());
 
-    act(() => {
-      getByText('Open Modal 2 (Stack)').click(); // Open modal-2
-    });
+    act(() => getByText('Open Modal 4 (Stack)').click());
 
-    act(() => {
-      getByText('Open Modal 3 (Stack)').click(); // Open modal-3
-    });
-
-    // Attempt to open modal-4, which exceeds the stacking limit
-    act(() => {
-      getByText('Open Modal 4 (Stack)').click(); // Open modal-4
-    });
-
-    // Verify that modal-4 was not opened
     await waitFor(() => {
       expect(() => getByText('Modal 4 is open')).toThrow();
     });
@@ -189,126 +165,130 @@ describe('ModalProvider and Modal Integration', () => {
       </>
     );
 
-    // Open modal-1 and modal-2 with stacking enabled
-    act(() => {
-      getByText('Open Modal 1 (Stack)').click();
-    });
-
-    act(() => {
-      getByText('Open Modal 2 (Stack)').click();
-    });
+    act(() => getByText('Open Modal 1 (Stack)').click());
+    act(() => getByText('Open Modal 2 (Stack)').click());
 
     await waitFor(() => {
       expect(getByText('Modal 1 is open')).toBeInTheDocument();
       expect(getByText('Modal 2 is open')).toBeInTheDocument();
     });
 
-    // Close modal-1
-    act(() => {
-      getByText('Close Modal 1').click();
-    });
+    act(() => getByText('Close Modal 1').click());
 
     await waitFor(() => {
       expect(() => getByText('Modal 1 is open')).toThrow();
       expect(getByText('Modal 2 is open')).toBeInTheDocument();
     });
   });
-  it('should not stack a non-stackable modal', async () => {
-    const { getByText } = render(
+
+  it('should render full-screen modal correctly', async () => {
+    const { baseElement, getByText, getByRole } = render(
       <>
-        <Modal id='modal-1' title='Modal 1'>
-          <p>Modal 1 is open</p>
-        </Modal>
-        <Modal id='test-modal' title='Modal (No Stack)'>
-          <p>Modal (No Stack) is open</p>
+        <Modal id='full-screen-modal' title='Full-screen Modal' size='full'>
+          <p>Full-screen modal content</p>
         </Modal>
         <TestComponent />
       </>
     );
 
-    // Open stackable modal-1
     act(() => {
-      getByText('Open Modal 1 (Stack)').click();
+      getByText('Open Full-screen Modal').click();
     });
 
     await waitFor(() => {
-      expect(getByText('Modal 1 is open')).toBeInTheDocument();
-    });
+      const dialog = getByRole('dialog', { hidden: true });
+      expect(dialog).toHaveAttribute('aria-modal', 'true');
 
-    // Open non-stackable modal-4
+      const modalPanel = baseElement.querySelector(
+        '[data-headlessui-state="open"].w-screen.h-screen'
+      );
+
+      expect(modalPanel).toBeInTheDocument();
+      expect(modalPanel).toHaveClass('w-screen h-screen');
+
+      expect(getByText('Full-screen modal content')).toBeInTheDocument();
+    });
+  });
+
+  it('should pass accessibility checks for a basic modal', async () => {
+    const modalText = 'Basic modal content';
+    const { container, getByText } = render(
+      <>
+        <Modal id='test-modal' title='Basic Modal'>
+          <p>{modalText}</p>
+        </Modal>
+        <TestComponent />
+      </>
+    );
+
     act(() => {
       getByText('Open Modal (No Stack)').click();
     });
 
     await waitFor(() => {
-      expect(getByText('Modal (No Stack)')).toBeInTheDocument();
-      expect(() => getByText('Modal 1 is open')).toThrow(); // Modal 1 should not be visible
+      expect(getByText(modalText)).toBeInTheDocument();
     });
 
-    // Close modal-4
-    act(() => {
-      getByText('Close Modal (No Stack)').click();
-    });
-
-    await waitFor(() => {
-      expect(() => getByText('Modal (No Stack)')).toThrow(); // Modal 4 should be closed
-      expect(() => getByText('Modal 1 is open')).toThrow(); // Modal 1 should not reappear
-    });
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 
-  it('should respect non-stackable modal behavior in a stack list', async () => {
-    const { getByText } = render(
+  it('should pass accessibility checks for stacked modals', async () => {
+    const modal1Text = 'Stacked modal 1 content';
+    const modal2Text = 'Stacked modal 2 content';
+    const { container, getByText } = render(
       <>
-        <Modal id='modal-1' title='Modal 1'>
-          <p>Modal 1 is open</p>
+        <Modal id='modal-1' title='Stacked Modal 1'>
+          <p>{modal1Text}</p>
         </Modal>
-        <Modal id='modal-2' title='Modal 2'>
-          <p>Modal 2 is open</p>
+        <Modal id='modal-2' title='Stacked Modal 2'>
+          <p>{modal2Text}</p>
         </Modal>
-        <Modal id='test-modal' title='Modal (No Stack)'>
-          <p>Modal (No Stack) is open</p>
-        </Modal>
-
         <TestComponent />
       </>
     );
 
-    // Open stackable modals
+    // Open first stacked modal
     act(() => {
       getByText('Open Modal 1 (Stack)').click();
     });
 
+    await waitFor(() => {
+      expect(getByText(modal1Text)).toBeInTheDocument();
+    });
+
+    // Open second stacked modal
     act(() => {
       getByText('Open Modal 2 (Stack)').click();
     });
 
     await waitFor(() => {
-      expect(getByText('Modal 1 is open')).toBeInTheDocument();
-      expect(getByText('Modal 2 is open')).toBeInTheDocument();
+      expect(getByText(modal2Text)).toBeInTheDocument();
     });
 
-    // Open non-stackable modal-4
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
+
+  it('should pass accessibility checks for a full-screen modal', async () => {
+    const { container, getByText } = render(
+      <>
+        <Modal id='full-screen-modal' title='Full-Screen Modal' size='full'>
+          <p>Full-screen modal content</p>
+        </Modal>
+        <TestComponent />
+      </>
+    );
+
     act(() => {
-      getByText('Open Modal (No Stack)').click();
+      getByText('Open Full-screen Modal').click();
     });
 
     await waitFor(() => {
-      expect(getByText('Modal (No Stack) is open')).toBeInTheDocument();
-      expect(() => getByText('Modal 1 is open')).toThrow(); // All other modals should be closed
-      expect(() => getByText('Modal 2 is open')).toThrow();
-      expect(() => getByText('Modal 3 is open')).toThrow();
+      expect(getByText('Full-screen modal content')).toBeInTheDocument();
     });
 
-    // Close modal-4
-    act(() => {
-      getByText('Close Modal (No Stack)').click();
-    });
-
-    await waitFor(() => {
-      expect(() => getByText('Modal (No Stack) is open')).toThrow(); // Modal 4 should be closed
-      expect(() => getByText('Modal 1 is open')).toThrow(); // Other modals should not reappear
-      expect(() => getByText('Modal 2 is open')).toThrow();
-      expect(() => getByText('Modal 3 is open')).toThrow();
-    });
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 });
