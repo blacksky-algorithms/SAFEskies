@@ -7,11 +7,11 @@ import { VisualIntent } from '@/enums/styles';
 interface IconButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon: IconProps['icon'];
-  iconPosition?: 'left' | 'right'; // Position of the icon relative to text
-  variant?: VisualIntent; // Button variant
-  text?: string; // Optional text for the button
-  noPadding?: boolean; // Use button's noPadding property
-  submitting?: boolean; // Use button's submitting property
+  iconPosition?: 'left' | 'right';
+  variant?: VisualIntent;
+  text?: string;
+  noPadding?: boolean;
+  submitting?: boolean;
 }
 
 export const IconButton = ({
@@ -25,12 +25,16 @@ export const IconButton = ({
   disabled = false,
   ...props
 }: IconButtonProps) => {
-  const isIconOnly = !text; // Determines if the button is icon-only
-  const isDisabled = disabled || submitting; // Account for both disabled and submitting states
+  const isIconOnly = !text;
+  const isDisabled = disabled || submitting;
+
+  // Narrow the variant for the Icon to exclude TextButton
+  const iconVariant: Exclude<VisualIntent, VisualIntent.TextButton> =
+    variant === VisualIntent.TextButton ? VisualIntent.Primary : variant;
 
   // Icon rendering
   const renderIcon = () => (
-    <Icon icon={icon} variant={variant} isButton={!text} />
+    <Icon icon={icon} variant={iconVariant} isButton={!text} />
   );
 
   // Accessibility: Set aria-label if the button has no text
@@ -55,7 +59,7 @@ export const IconButton = ({
       >
         {submitting ? (
           <span className='flex items-center'>
-            <Icon icon='loader' variant={variant} isButton />
+            <Icon icon='loader' variant={iconVariant} isButton />
           </span>
         ) : (
           renderIcon()

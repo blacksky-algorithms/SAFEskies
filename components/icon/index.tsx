@@ -5,10 +5,21 @@ import { VisualIntent, SharedSize } from '@/enums/styles';
 
 export interface IconProps extends React.HTMLAttributes<SVGElement> {
   icon: keyof typeof HeroIcons | 'loader';
-  variant?: VisualIntent;
+  variant?: Exclude<VisualIntent, VisualIntent.TextButton>;
   isButton?: boolean;
-  size?: keyof typeof SharedSize; // Use SharedSize enum keys
+  size?: keyof typeof SharedSize;
 }
+
+const variantClasses: Record<
+  Exclude<VisualIntent, VisualIntent.TextButton>,
+  string
+> = {
+  [VisualIntent.Primary]: 'text-app-primary',
+  [VisualIntent.Secondary]: 'text-app-secondary',
+  [VisualIntent.Error]: 'text-app-error',
+  [VisualIntent.Info]: 'text-app-info',
+  [VisualIntent.Success]: 'text-app-success',
+};
 
 export const Icon = ({
   icon,
@@ -26,13 +37,7 @@ export const Icon = ({
         className={cc([
           'animate-spin',
           sizeClass,
-          {
-            'text-app-primary': variant === VisualIntent.Primary,
-            'text-app-secondary': variant === VisualIntent.Secondary,
-            'text-app-error': variant === VisualIntent.Error,
-            'text-app-info': variant === VisualIntent.Info,
-            'text-app-success': variant === VisualIntent.Success,
-          },
+          variantClasses[variant],
           className,
         ])}
         xmlns='http://www.w3.org/2000/svg'
@@ -69,13 +74,8 @@ export const Icon = ({
       className={cc([
         'block',
         sizeClass,
+        variantClasses[variant],
         {
-          'text-app-primary': variant === VisualIntent.Primary,
-          'text-app-secondary': variant === VisualIntent.Secondary,
-          'text-app-error': variant === VisualIntent.Error,
-          'text-app-info': variant === VisualIntent.Info,
-          'text-app-success': variant === VisualIntent.Success,
-          'text-inherit': !variant,
           'w-full h-full': isButton,
         },
         className,

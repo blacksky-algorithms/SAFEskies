@@ -11,6 +11,21 @@ export interface ButtonProps
   submitting?: boolean;
 }
 
+const variantClasses = {
+  [VisualIntent.Primary]:
+    'bg-app-primary text-app-text hover:bg-app-primary-hover focus:ring-app-primary',
+  [VisualIntent.Secondary]:
+    'bg-app-secondary text-app-text hover:bg-app-secondary-hover focus:ring-app-secondary',
+  [VisualIntent.Error]:
+    'bg-app-error text-app-text hover:bg-app-error-hover focus:ring-app-error',
+  [VisualIntent.Info]:
+    'bg-app-info text-app-text hover:bg-app-info-hover focus:ring-app-info',
+  [VisualIntent.Success]:
+    'bg-app-success text-app-text hover:bg-app-success-hover focus:ring-app-success',
+  [VisualIntent.TextButton]:
+    'text-app-text hover:text-app-text-hover focus:underline bg-transparent',
+};
+
 export const Button = ({
   variant = VisualIntent.Primary,
   children,
@@ -26,20 +41,9 @@ export const Button = ({
     <button
       className={cc([
         'font-medium rounded-md transition-all duration-150 focus:outline-none focus:ring-2 w-full',
+        variantClasses[variant],
         {
           'opacity-50 cursor-not-allowed': isDisabled,
-          'bg-app-primary text-app-text hover:bg-app-primary-hover focus:ring-app-primary':
-            variant === VisualIntent.Primary && !isDisabled,
-          'bg-app-secondary text-app-text hover:bg-app-secondary-hover focus:ring-app-secondary':
-            variant === VisualIntent.Secondary && !isDisabled,
-          'bg-app-error text-app-text hover:bg-app-error-hover focus:ring-app-error':
-            variant === VisualIntent.Error && !isDisabled,
-          'bg-app-info text-app-text hover:bg-app-info-hover focus:ring-app-info':
-            variant === VisualIntent.Info && !isDisabled,
-          'bg-app-success text-app-text hover:bg-app-success-hover focus:ring-app-success':
-            variant === VisualIntent.Success && !isDisabled,
-          'text-app-text hover:text-app-text-hover focus:underline bg-transparent':
-            variant === VisualIntent.TextButton && !isDisabled,
           'p-2': !noPadding,
         },
         className,
