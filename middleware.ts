@@ -2,7 +2,8 @@ import { NextResponse, NextRequest } from 'next/server';
 import { getSession } from '@/repos/iron';
 // import { getUserProfile } from '@/repos/user';
 
-const isAuthenticated = async (req: NextRequest) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const isAuthenticated = async (_req: NextRequest) => {
   const session = await getSession();
   return session?.user || null;
 };

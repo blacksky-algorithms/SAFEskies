@@ -61,7 +61,8 @@ export async function GET(request: NextRequest) {
     await ironSession.save();
 
     return NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}/mod`);
-  } catch (error: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error: unknown) {
     // TODO: Handle generic OAuth errors more gracefully (e.g., retries, detailed logging)
     return NextResponse.redirect(
       `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=${encodeURIComponent(

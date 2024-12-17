@@ -1,7 +1,6 @@
 import React from 'react';
 import { render, screen, axe } from '@/setupTests';
 import { IconButton } from '../icon-button';
-import { VisualIntent } from '@/enums/styles';
 
 describe('IconButton Component', () => {
   it('renders an icon-only button with proper accessibility', () => {
