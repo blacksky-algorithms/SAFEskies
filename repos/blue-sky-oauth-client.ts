@@ -1,6 +1,17 @@
+import { Mutex } from 'async-mutex';
 import { SessionStore, StateStore } from '@/repos/storage';
 import { NodeOAuthClient } from '@atproto/oauth-client-node';
 import { BLUE_SKY_CLIENT_META_DATA } from '@/utils/consts';
+
+// Simple lock implementation using async-mutex
+const mutex = new Mutex();
+
+const requestLock = async <T>(
+  _name: string,
+  fn: () => T | Promise<T> | PromiseLike<T>
+): Promise<T> => {
+  return await mutex.runExclusive(() => Promise.resolve(fn()));
+};
 
 // Singleton Class for Bluesky OAuth Client
 class BlueskyOAuthClientSingleton {
@@ -14,6 +25,7 @@ class BlueskyOAuthClientSingleton {
         clientMetadata: BLUE_SKY_CLIENT_META_DATA,
         stateStore: new StateStore(),
         sessionStore: new SessionStore(),
+        requestLock,
       });
     }
     return BlueskyOAuthClientSingleton.instance;
