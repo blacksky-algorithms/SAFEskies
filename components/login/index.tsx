@@ -18,7 +18,7 @@ export const Login = () => {
   });
 
   useEffect(() => {
-    const sanitizedHandle = state.handle.replace('@', '');
+    const sanitizedHandle = state.handle.replace('@', '').toLowerCase();
     if (sanitizedHandle !== state.handle) {
       setState((prevState) => ({ ...prevState, handle: sanitizedHandle }));
     }
