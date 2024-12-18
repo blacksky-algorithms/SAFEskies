@@ -13,7 +13,7 @@ const config = {
 
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
-    '^@/(.*)$': './$1',
+    '^@/(.*)$': '<rootDir>/$1',
     '@react-hook/media-query': '@react-hook/media-query/dist/cjs', // search-bar.test.tsx needs this to pass as it's using the useMediaQuery hook
   },
 };

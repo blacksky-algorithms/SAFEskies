@@ -1,4 +1,4 @@
-import { Feed } from '@/components/feed';
+import { Feed } from '@/components/feed/feed';
 
 export default async function page() {
   return (

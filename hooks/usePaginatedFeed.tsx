@@ -1,31 +1,72 @@
-import { useState, useEffect, useRef } from 'react';
+import { useReducer, useEffect, useRef, startTransition } from 'react';
 import { FeedParams, fetchFeed } from '@/repos/feed-repo';
 import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
-interface FeedState {
+type FeedState = {
   feed: FeedViewPost[];
   cursor?: string;
   isFetching: boolean;
   hasNextPage: boolean;
   error: string | null;
-}
+};
+
+type FeedAction =
+  | { type: 'FETCH_START' }
+  | {
+      type: 'FETCH_SUCCESS';
+      payload: { feed: FeedViewPost[]; cursor?: string };
+    }
+  | { type: 'FETCH_ERROR'; payload: string }
+  | { type: 'REFRESH_FEED' }
+  | { type: 'RESET_ERROR' };
+
+const initialState: FeedState = {
+  feed: [],
+  cursor: undefined,
+  isFetching: false,
+  hasNextPage: true,
+  error: null,
+};
+
+const feedReducer = (state: FeedState, action: FeedAction): FeedState => {
+  switch (action.type) {
+    case 'FETCH_START':
+      return { ...state, isFetching: true, error: null };
+    case 'FETCH_SUCCESS':
+      return {
+        ...state,
+        feed: Array.from(
+          new Map(
+            [...state.feed, ...action.payload.feed].map((item) => [
+              item.post.cid,
+              item,
+            ])
+          ).values()
+        ),
+        cursor: action.payload.cursor,
+        hasNextPage: !!action.payload.cursor,
+        isFetching: false,
+        error: null,
+      };
+    case 'FETCH_ERROR':
+      return { ...state, isFetching: false, error: action.payload };
+    case 'REFRESH_FEED':
+      return { ...state, feed: [], cursor: undefined, hasNextPage: true };
+    case 'RESET_ERROR':
+      return { ...state, error: null };
+    default:
+      return state;
+  }
+};
 
 export const usePaginatedFeed = ({
   did,
   feedName,
   limit = 50,
 }: Omit<FeedParams, 'cursor' | 'signal'>) => {
-  const [state, setState] = useState<FeedState>({
-    feed: [],
-    cursor: undefined,
-    isFetching: false,
-    hasNextPage: true,
-    error: null,
-  });
-
+  const [state, dispatch] = useReducer(feedReducer, initialState);
   const controllerRef = useRef<AbortController | null>(null);
 
-  // Initialize or abort the fetch controller
   const initializeController = () => {
     if (controllerRef.current) {
       controllerRef.current.abort();
@@ -33,118 +74,46 @@ export const usePaginatedFeed = ({
     controllerRef.current = new AbortController();
   };
 
-  // Handle the response from fetchFeed
-  const handleFetchResponse = async (
-    response: Awaited<ReturnType<typeof fetchFeed>>
-  ) => {
+  const fetchFeedData = async (refresh = false) => {
+    initializeController();
+    if (refresh) dispatch({ type: 'REFRESH_FEED' });
+    dispatch({ type: 'FETCH_START' });
+
+    const response = await fetchFeed({
+      did,
+      feedName,
+      limit,
+      cursor: refresh ? undefined : state.cursor,
+      signal: controllerRef.current?.signal,
+    });
+
     if ('error' in response) {
-      // Ignore AbortError; handle other errors
       if (response.error !== 'AbortError') {
-        setState((prevState) => ({
-          ...prevState,
-          error: response.error,
-          isFetching: false,
-        }));
-      } else {
-        setState((prevState) => ({ ...prevState, isFetching: false }));
+        dispatch({ type: 'FETCH_ERROR', payload: response.error });
       }
-      return;
+    } else {
+      dispatch({
+        type: 'FETCH_SUCCESS',
+        payload: { feed: response.feed, cursor: response.cursor },
+      });
     }
-
-    const { feed: newFeed, cursor: newCursor } = response;
-
-    // Deduplicate feed items by `post.cid`
-    const uniqueFeed = Array.from(
-      new Map(
-        [...state.feed, ...newFeed].map((item) => [item.post.cid, item])
-      ).values()
-    );
-
-    setState((prevState) => ({
-      ...prevState,
-      feed: uniqueFeed,
-      cursor: newCursor,
-      hasNextPage: !!newCursor,
-      isFetching: false,
-      error: null,
-    }));
   };
 
-  // Fetch the next page of the feed
-  const fetchNextPage = async () => {
+  const fetchNextPage = () => {
     if (!state.hasNextPage || state.isFetching) return;
-
-    initializeController();
-    setState((prevState) => ({ ...prevState, isFetching: true }));
-
-    const response = await fetchFeed({
-      did,
-      feedName,
-      limit,
-      cursor: state.cursor,
-      signal: controllerRef.current?.signal,
-    });
-
-    handleFetchResponse(response);
+    startTransition(() => fetchFeedData());
   };
 
-  // Refresh the feed
-  const refreshFeed = async () => {
-    initializeController();
-    setState((prevState) => ({
-      ...prevState,
-      isFetching: true,
-      error: null,
-    }));
+  const refreshFeed = () => fetchFeedData(true);
 
-    const response = await fetchFeed({
-      did,
-      feedName,
-      limit,
-      signal: controllerRef.current?.signal,
-    });
-
-    handleFetchResponse(response);
-  };
-
-  // Initialize the feed on mount or when `did`/`feedName`/`limit` changes
   useEffect(() => {
-    initializeController();
-
-    const initializeFeed = async () => {
-      setState({
-        feed: [],
-        cursor: undefined,
-        isFetching: true,
-        hasNextPage: true,
-        error: null,
-      });
-
-      const response = await fetchFeed({
-        did,
-        feedName,
-        limit,
-        signal: controllerRef.current?.signal,
-      });
-
-      handleFetchResponse(response);
-    };
-
-    initializeFeed();
+    fetchFeedData();
 
     return () => {
-      if (controllerRef.current) {
-        controllerRef.current.abort();
-      }
+      if (controllerRef.current) controllerRef.current.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [did, feedName, limit]);
 
-  return {
-    feed: state.feed,
-    error: state.error,
-    isFetching: state.isFetching,
-    hasNextPage: state.hasNextPage,
-    fetchNextPage,
-    refreshFeed,
-  };
+  return { ...state, fetchNextPage, refreshFeed };
 };
