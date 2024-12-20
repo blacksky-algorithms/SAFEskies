@@ -1,13 +1,5 @@
 [[redirects]]
-  # Redirect /mod with query parameters stripped
-  from = "/mod"
+  from = "/oauth/callback/*"
   to = "/mod"
-  status = 200
-  query = { remove = ["iss", "state", "code"] } # Specific params to remove from the OAuth flow
-
-[[redirects]]
-  # Handle OAuth callback route to strip params or add more logic as needed
-  from = "/oauth/callback"
-  to = "/oauth/callback"
-  status = 200
-  query = { remove = ["iss", "state", "code"] } # Remove OAuth-related query parameters
+  status = 302
+  query = { remove = ["iss", "state", "code"] }  # Strip OAuth params
