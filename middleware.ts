@@ -41,5 +41,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/mod/:path*', '/admin/:path*'], // Match protected routes
+  matcher: ['/mod/:path*', '/admin/:path*'],
 };
