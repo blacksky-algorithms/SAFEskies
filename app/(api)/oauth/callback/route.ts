@@ -63,8 +63,7 @@ export async function GET(request: NextRequest) {
     cleanUrl.searchParams.delete('state');
     cleanUrl.searchParams.delete('code');
 
-    console.log('Redirecting to clean URL:', cleanUrl.toString());
-    return NextResponse.redirect(cleanUrl.toString(), { status: 200 });
+    return NextResponse.redirect(cleanUrl.toString(), { status: 302 });
   } catch (error: unknown) {
     console.error('OAuth callback error:', error);
 

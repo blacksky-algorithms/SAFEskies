@@ -1,5 +1,5 @@
 [[redirects]]
-  from = "/oauth/callback/*"
+  from = "/oauth/login/*"
   to = "/mod"
   status = 302
   query = { remove = ["iss", "state", "code"] }  # Strip OAuth params
