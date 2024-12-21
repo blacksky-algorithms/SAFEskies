@@ -5,7 +5,7 @@
   "scripts": {
     "type-check": "tsc --noEmit",
     "dev": "next dev",
-    "build": "next build && cp _redirects .next/_redirects",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "echo 'Supabase setup complete'",
