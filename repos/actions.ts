@@ -1,11 +1,11 @@
 'use server';
 
-import { createBlueskyOAuthClient } from '@/repos/auth-repo';
+import { BlueskyOAuthClient } from '@/repos/blue-sky-oauth-client';
 import { getSession } from '@/repos/iron';
 
 export async function signInWithBluesky(handle: string): Promise<string> {
   try {
-    const blueskyClient = await createBlueskyOAuthClient();
+    const blueskyClient = BlueskyOAuthClient;
 
     const url = await blueskyClient.authorize(handle);
 
@@ -13,7 +13,7 @@ export async function signInWithBluesky(handle: string): Promise<string> {
   } catch (error) {
     console.error(error);
     // TODO: Handle error
-    throw new Error('Bluesky sign-in failed');
+    return '';
   }
 }
 
@@ -24,6 +24,6 @@ export async function signOutOfBlueSky(): Promise<void> {
     await session.save(); // Persist destruction
   } catch (error) {
     console.error('Error during logout:', error);
-    throw new Error('Failed to sign out.');
+    // TODO: Handle error
   }
 }

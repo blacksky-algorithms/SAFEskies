@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { usePaginatedFeed } from '@/hooks/usePaginatedFeed';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
-// import { GenericErrorModal } from '@/components/modals/generic-error-modal';
+import { GenericErrorModal } from '@/components/modals/generic-error-modal';
 import { LiveRegion } from '@/components/live-region';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { IconButton } from '@/components/button/icon-button';
@@ -23,29 +23,25 @@ export const Feed = ({ did, feedName }: FeedProps) => {
       limit: 10,
     });
 
-  const { openModalInstance } = useModal();
+  const { openModalInstance, closeModalInstance } = useModal();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [errorHandled, setErrorHandled] = useState(false); // Prevent repeat modal triggers
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Handle error modal opening when an error occurs
+  // Automatically open the error modal if there is an error
   useEffect(() => {
-    if (error && !errorHandled) {
+    if (error) {
       openModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR, true);
-      setErrorHandled(true);
-    } else if (!error) {
-      setErrorHandled(false);
     }
-  }, [error, errorHandled, openModalInstance]);
+  }, [error, openModalInstance]);
 
+  // Infinite scrolling: Fetch next page when sentinel is visible
   const handleIntersection = useCallback(
     ([entry]: IntersectionObserverEntry[]) => {
       if (entry.isIntersecting && hasNextPage && !isFetching) {
         fetchNextPage();
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [hasNextPage, isFetching]
+    [hasNextPage, isFetching, fetchNextPage]
   );
 
   const sentinelRef = useIntersectionObserver(handleIntersection, {
@@ -66,10 +62,26 @@ export const Feed = ({ did, feedName }: FeedProps) => {
     }
   };
 
-  // Function to refetch feed when error modal is closed
-  // const handleErrorModalClose = () => {
-  //   refreshFeed();
-  // };
+  // Touch handlers for pull-to-refresh
+  const onTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    containerRef.current!.dataset.touchStartY = e.touches[0].clientY.toString();
+  };
+
+  const onTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    const touchStartY = parseFloat(
+      containerRef.current!.dataset.touchStartY || '0'
+    );
+    const deltaY = e.touches[0].clientY - touchStartY;
+    if (deltaY > 50 && containerRef.current?.scrollTop === 0) {
+      handlePullToRefresh();
+    }
+  };
+
+  // Refresh feed when error modal is closed
+  const handleErrorModalClose = () => {
+    closeModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR);
+    refreshFeed();
+  };
 
   return (
     <div className='relative max-h-page'>
@@ -78,25 +90,14 @@ export const Feed = ({ did, feedName }: FeedProps) => {
         aria-labelledby={`feed-title-${feedName}`}
       >
         <header className='w-full text-center my-4'>
-          <h2 id={`feed-title-${feedName}`} className='text-2xl font-bold '>
-            {/* {feedName} */}
-            Test Feed - Kendrick
+          <h2 id={`feed-title-${feedName}`} className='text-2xl font-bold'>
+            {feedName}
           </h2>
         </header>
         <div
           ref={containerRef}
-          onTouchStart={(e) =>
-            (containerRef.current!.dataset.touchStartY =
-              e.touches[0].clientY.toString())
-          }
-          onTouchMove={(e) => {
-            const touchStartY = parseFloat(
-              containerRef.current!.dataset.touchStartY || '0'
-            );
-            const deltaY = e.touches[0].clientY - touchStartY;
-            if (deltaY > 50 && containerRef.current?.scrollTop === 0)
-              handlePullToRefresh();
-          }}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
           className='overflow-y-auto h-screen flex flex-col items-center'
         >
           <LiveRegion>{isRefreshing && <span>Refreshing...</span>}</LiveRegion>
@@ -112,11 +113,15 @@ export const Feed = ({ did, feedName }: FeedProps) => {
             ))}
           </ul>
 
+          {isFetching && !isRefreshing && (
+            <div className='text-center py-2'>Loading more posts...</div>
+          )}
+
           <div ref={sentinelRef} className='h-10 w-full' />
         </div>
-        {/* <GenericErrorModal onClose={handleErrorModalClose}>
+        <GenericErrorModal onClose={handleErrorModalClose}>
           <p>{error || `${feedName} is unavailable`}</p>
-        </GenericErrorModal> */}
+        </GenericErrorModal>
       </section>
       <IconButton
         icon='ArrowUpCircleIcon'

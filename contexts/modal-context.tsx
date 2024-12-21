@@ -6,6 +6,8 @@ import React, {
   useState,
   ReactNode,
   useCallback,
+  useEffect,
+  useRef,
 } from 'react';
 
 type ModalState = {
@@ -42,13 +44,32 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
     new Set()
   );
 
-  const isOpen = useCallback((id: string) => !!modals[id], [modals]);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+
+    const maxModals = parseInt(
+      process.env.NEXT_PUBLIC_MAX_STACKED_MODALS || '3',
+      10
+    );
+    if (!isNaN(maxModals)) {
+      MODAL_CONFIG.MAX_STACKED_MODALS = maxModals;
+      console.debug(`Updated MAX_STACKED_MODALS to ${maxModals}`);
+    }
+
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   const logDebug = (message: string, data?: unknown) => {
     if (MODAL_CONFIG.ENABLE_DEBUG) {
       console.debug(`[ModalContext] ${message}`, data);
     }
   };
+
+  const isOpen = useCallback((id: string) => Boolean(modals[id]), [modals]);
 
   const ensureModalIsRegistered = useCallback(
     (id: string): boolean => {
@@ -85,10 +106,10 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
 
         if (!allowStacking) {
           logDebug(`Closing other modals because stacking is disabled.`);
-          return { [id]: true }; // Only keep the current modal open
+          return { [id]: true };
         }
 
-        return { ...prev, [id]: true }; // Add modal to open state
+        return { ...prev, [id]: true };
       });
 
       logDebug(`Opened modal "${id}".`, { allowStacking });
@@ -98,18 +119,18 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
 
   const closeModalInstance = useCallback(
     (id: string) => {
-      if (!ensureModalIsRegistered(id)) {
-        console.warn(`Cannot close unregistered modal "${id}".`);
-        return;
-      }
+      if (!ensureModalIsRegistered(id)) return;
 
       setModals((prev) => {
         if (!prev[id]) {
-          console.warn(`Modal "${id}" is already closed.`);
+          logDebug(`Modal "${id}" is already closed.`);
           return prev;
         }
 
-        return { ...prev, [id]: false };
+        if (isMounted.current) {
+          return { ...prev, [id]: false };
+        }
+        return prev;
       });
       logDebug(`Closed modal "${id}".`);
     },
@@ -118,6 +139,10 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
 
   const registerModal = useCallback((id: string) => {
     setRegisteredModals((prev) => {
+      if (prev.has(id)) {
+        logDebug(`Modal "${id}" is already registered.`);
+        return prev;
+      }
       const updated = new Set(prev).add(id);
       logDebug(`Registered modal "${id}".`, Array.from(updated));
       return updated;
@@ -126,19 +151,21 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
 
   const unregisterModal = useCallback((id: string) => {
     setRegisteredModals((prev) => {
+      if (!prev.has(id)) {
+        logDebug(`Attempted to unregister non-registered modal "${id}".`);
+        return prev;
+      }
       const updated = new Set(prev);
       updated.delete(id);
+      logDebug(`Unregistered modal "${id}".`);
       return updated;
     });
 
     setModals((prev) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      if (!(id in prev)) return prev;
       const { [id]: _, ...rest } = prev;
-
       return rest;
     });
-
-    logDebug(`Unregistered modal "${id}".`);
   }, []);
 
   return (

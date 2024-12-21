@@ -1,56 +1,79 @@
 import { createUser } from '@/utils/createUser';
-import { createBlueskyOAuthClient } from '@/repos/auth-repo';
 import { getSession } from '@/repos/iron';
-import { Agent } from '@atproto/api';
-import { NextRequest, NextResponse } from 'next/server';
+import { AtprotoAgent } from '@/repos/atproto-agent';
 import { saveUserProfile } from '@/repos/user';
+import { NextRequest, NextResponse } from 'next/server';
+import { BlueskyOAuthClient } from '@/repos/blue-sky-oauth-client';
 
 export async function GET(request: NextRequest) {
-  // Get the next URL from the request
-  const nextUrl = request.nextUrl;
-
   try {
-    // Create a Bluesky client using Supabase-based stores
-    const blueskyClient = await createBlueskyOAuthClient();
+    const blueskyClient = BlueskyOAuthClient;
 
-    // Get the session and state from the callback
-    const { session } = await blueskyClient.callback(nextUrl.searchParams);
+    // Get OAuth session from callback
+    const { session } = await blueskyClient.callback(
+      request.nextUrl.searchParams
+    );
 
-    // Create an agent
-    const agent = new Agent(session);
-
-    // Get the profile of the user
-    const { data } = await agent.getProfile({
-      actor: session.did,
-    });
-
-    const user = createUser(data);
-
-    // Save user profile in Supabase
-    await saveUserProfile(user);
-
-    // Create a user from the Bluesky profile
-    const ironSession = await getSession();
-
-    // Save the user to the session
-    ironSession.user = user;
-
-    // Save the session
-    await ironSession.save();
-
-    // Redirect to the private page
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}/mod`);
-  } catch (e: unknown) {
-    if (e instanceof Error) {
-      // Bluesky error
+    // Validate tokens (auto-refresh if needed)
+    const tokenInfo = await session.getTokenInfo('auto');
+    if (tokenInfo.expired) {
       return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=${e.message}`
-      );
-    } else {
-      // Unknown error
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=Unknown error`
+        `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=${encodeURIComponent(
+          'Session is expired. Please log in again.'
+        )}`
       );
     }
+
+    // Fetch user profile using the DID
+    const agentResponse = await AtprotoAgent.getProfile({
+      actor: session.did, // Use the DID from the session
+    });
+
+    if (!agentResponse.success || !agentResponse.data) {
+      return NextResponse.redirect(
+        `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=${encodeURIComponent(
+          'Failed to fetch user profile.'
+        )}`
+      );
+    }
+
+    const agentProfile = agentResponse.data;
+
+    // Normalize and save user profile
+    const user = createUser(agentProfile);
+    const saveSuccess = await saveUserProfile(user);
+
+    if (!saveSuccess) {
+      return NextResponse.redirect(
+        `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=${encodeURIComponent(
+          'Failed to save user profile.'
+        )}`
+      );
+    }
+
+    // Persist session in IronSession
+    const ironSession = await getSession();
+    ironSession.user = user;
+    await ironSession.save();
+
+    // Clean up URL and redirect to the base `/mod` path with NEXT_PUBLIC_URL
+    const cleanUrl = new URL(
+      `${process.env.NEXT_PUBLIC_URL}/mod/?redirected=true`
+    );
+
+    cleanUrl.searchParams.delete('iss');
+    cleanUrl.searchParams.delete('state');
+    cleanUrl.searchParams.delete('code');
+
+    return NextResponse.redirect(cleanUrl.toString(), { status: 302 });
+  } catch (error: unknown) {
+    console.error('OAuth callback error:', error);
+
+    // Redirect to login with an error message
+    return NextResponse.redirect(
+      `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=${encodeURIComponent(
+        'An error occurred. Please try again.'
+      )}`
+    );
   }
 }

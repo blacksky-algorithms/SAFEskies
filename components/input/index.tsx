@@ -17,12 +17,12 @@ export const Input = ({
 }: InputProps) => {
   return (
     <div className='flex flex-col space-y-2'>
-      {label && <label className='font-medium text-app-text'>{label}</label>}
+      {label && <label className='font-medium text-app'>{label}</label>}
       <input
         className={cc([
           'font-medium rounded-md transition-all duration-150 focus:outline-none focus:ring-2 p-4',
           {
-            'border border-app-border bg-app-background text-app-text focus:ring-app-primary':
+            'border border-app-border bg-app-background text-app focus:ring-app-primary':
               variant === 'default',
             'border border-app-error bg-app-error-light text-app-error focus:ring-app-error':
               variant === 'error',

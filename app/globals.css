@@ -5,20 +5,20 @@
 /* CSS Variables */
 :root {
   --background: #1c1b1b;
-  --foreground: #e4e4e4;
+  --foreground: #f2f2f2;
   --visited: #707070;
-  ---primary: #0db9d7;
-  ---primary-hover: #0ca4c3;
-  ---secondary: #585858;
-  ---secondary-hover: #4a4a4a;
-  ---error: #f56565;
-  ---error-hover: #e05353;
-  ---info: #4299e1;
-  ---info-hover: #3182ce;
-  ---success: #48bb78;
-  ---success-hover: #38a169;
-  ---text: #e5e5e5;
-  ---text-hover: #ffffff;
+  --primary: #0da5bf;
+  --primary-hover: #098cab;
+  --secondary: #707070;
+  --secondary-hover: #4a4a4a;
+  --error: #e63946;
+  --error-hover: #d62839;
+  --info: #118ab2;
+  --info-hover: #0e7b9f;
+  --success: #06d6a0;
+  --success-hover: #05b487;
+  --text: #f2f2f2;
+  --text-hover: #ffffff;
   --header-height-app: 6rem;
   --page-height-app: calc(100vh - var(--header-height-app));
   --border: #1f2937;
@@ -47,12 +47,12 @@ body {
 
 /* Link Styles */
 a {
-  color: var(---primary);
+  color: var(--primary);
   text-decoration: none;
 }
 
 a:hover {
-  color: var(---primary-hover);
+  color: var(--primary-hover);
   text-decoration: underline;
 }
 

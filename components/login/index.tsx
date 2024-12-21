@@ -1,55 +1,103 @@
 'use client';
 
 import { signInWithBluesky } from '@/repos/actions';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { Button } from '../button';
 import { Input } from '../input';
 
-// This is the login page
 export const Login = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const errorMessage = searchParams.get('error');
 
-  // This is a controlled input
-  const [handle, setHandle] = useState('');
+  const [state, setState] = useState({
+    handle: '',
+    isSubmitting: false,
+    error: null as string | null,
+  });
 
-  // Remove the @ symbol from the handle
   useEffect(() => {
-    setHandle(handle.replace('@', ''));
-  }, [handle]);
+    const sanitizedHandle = state.handle.replace('@', '').toLowerCase();
+    if (sanitizedHandle !== state.handle) {
+      setState((prevState) => ({ ...prevState, handle: sanitizedHandle }));
+    }
+  }, [state.handle]);
 
-  // Handle the form submission
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setState((prevState) => ({
+      ...prevState,
+      handle: event.target.value,
+      error: null, // Reset error when user starts typing
+    }));
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!handle) {
+    if (!state.handle.trim()) {
+      setState((prevState) => ({
+        ...prevState,
+        error: 'Handle is required',
+      }));
       return;
     }
 
-    // Sign in with Bluesky
-    const url: string = await signInWithBluesky(handle);
+    setState((prevState) => ({ ...prevState, isSubmitting: true }));
 
-    // Redirect to the Bluesky login page
-    router.push(url);
+    try {
+      const url: string = await signInWithBluesky(state.handle.trim());
+      router.push(url);
+    } catch (err) {
+      setState((prevState) => ({
+        ...prevState,
+        isSubmitting: false,
+        error: 'Failed to sign in. Please try again.',
+      }));
+      console.error(err);
+    } finally {
+      setState((prevState) => ({
+        ...prevState,
+        isSubmitting: false,
+      }));
+    }
   };
 
   return (
     <section className='w-full'>
       <form onSubmit={handleSubmit} className='space-y-5'>
         <div>
-          <label htmlFor='handle'>Bluesky Handle</label>
+          <label htmlFor='handle' className='block text-sm font-medium'>
+            Bluesky Handle
+          </label>
           <div className='mt-2'>
             <Input
               id='handle'
               name='handle'
               type='text'
               placeholder='handle.bsky.social'
-              value={handle}
-              onChange={(event) => setHandle(event.target.value)}
+              value={state.handle}
+              onChange={handleChange}
+              aria-invalid={!!state.error}
+              aria-describedby='handle-error'
             />
+            {state.error && (
+              <p id='handle-error' className='mt-1 text-sm text-red-500'>
+                {state.error}
+              </p>
+            )}
           </div>
         </div>
-        <Button type='submit'>Sign in with Bluesky</Button>
+        <Button
+          type='submit'
+          submitting={state.isSubmitting}
+          disabled={state.isSubmitting || !state.handle.trim()}
+        >
+          Sign in with Bluesky
+        </Button>
+        {errorMessage && (
+          <p style={{ color: 'red' }}>{decodeURIComponent(errorMessage)}</p>
+        )}
       </form>
     </section>
   );
