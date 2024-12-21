@@ -82,7 +82,7 @@ export const Feed = ({ uri }: FeedProps) => {
   };
 
   return (
-    <div className='relative max-h-page'>
+    <div className=' max-h-page'>
       <section
         className='flex flex-col items-center mx-auto tablet:px-10'
         // aria-labelledby={`feed-title-${feedName}`}
@@ -122,7 +122,7 @@ export const Feed = ({ uri }: FeedProps) => {
         onClick={() =>
           containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
         }
-        className='absolute bottom-4 left-4 h-20 w-20'
+        className='fixed bottom-4 left-4 h-20 w-20'
       />
     </div>
   );
