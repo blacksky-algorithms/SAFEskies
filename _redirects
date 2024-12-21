@@ -1,0 +1,1 @@
+/oauth/login/* /mod?redirect=:splat 302! QueryString=iss=:iss,state=:state,code=:code
