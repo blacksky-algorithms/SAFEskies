@@ -1,6 +1,6 @@
 import { User } from '@/types/user';
 import { BaseLayout } from './base-layout';
-import { PublicSideDrawerContent } from '../public-side-drawer-content';
+import { SideDrawerContent } from '../side-drawer/side-drawer-content';
 
 export const UserLayout = ({
   children,
@@ -10,10 +10,7 @@ export const UserLayout = ({
   user: User | null;
 }) => {
   return (
-    <BaseLayout
-      user={user}
-      sideContent={<PublicSideDrawerContent user={user} />}
-    >
+    <BaseLayout user={user} sideContent={<SideDrawerContent user={user} />}>
       {children}
     </BaseLayout>
   );
