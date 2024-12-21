@@ -80,7 +80,7 @@ export const Feed = ({ uri }: FeedProps) => {
     closeModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR);
     refreshFeed();
   };
-  console.log({ feed });
+
   return (
     <div className='relative max-h-page'>
       <section
