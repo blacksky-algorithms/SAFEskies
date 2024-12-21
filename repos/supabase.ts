@@ -1,8 +1,22 @@
-import { createClient } from '@supabase/supabase-js';
+import {
+  createClient,
+  SupabaseClient as SupabaseClientType,
+} from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+class SupabaseClientSingleton {
+  private static instance: SupabaseClientType;
 
-export default supabase;
+  private constructor() {}
+
+  public static getInstance(): SupabaseClientType {
+    if (!SupabaseClientSingleton.instance) {
+      SupabaseClientSingleton.instance = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+    }
+    return SupabaseClientSingleton.instance;
+  }
+}
+
+export const SupabaseInstance = SupabaseClientSingleton.getInstance();

@@ -1,5 +1,5 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
-import supabase from '@/repos/supabase';
+import { SupabaseInstance } from '@/repos/supabase';
 
 // Encryption Setup
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
@@ -32,8 +32,7 @@ const decrypt = ({ iv, encrypted }: { iv: string; encrypted: string }) => {
 // State Store
 export class StateStore {
   async get(key: string) {
-    const { data } = await supabase
-      .from('auth_states')
+    const { data } = await SupabaseInstance.from('auth_states')
       .select('state')
       .eq('key', key)
       .single();
@@ -43,21 +42,21 @@ export class StateStore {
 
   async set(key: string, value: object) {
     const { iv, encrypted } = encrypt(JSON.stringify(value));
-    await supabase
-      .from('auth_states')
-      .upsert({ key, state: JSON.stringify({ iv, encrypted }) });
+    await SupabaseInstance.from('auth_states').upsert({
+      key,
+      state: JSON.stringify({ iv, encrypted }),
+    });
   }
 
   async del(key: string) {
-    await supabase.from('auth_states').delete().eq('key', key);
+    await SupabaseInstance.from('auth_states').delete().eq('key', key);
   }
 }
 
 // Session Store
 export class SessionStore {
   async get(key: string) {
-    const { data } = await supabase
-      .from('auth_sessions')
+    const { data } = await SupabaseInstance.from('auth_sessions')
       .select('session')
       .eq('key', key)
       .single();
@@ -67,12 +66,13 @@ export class SessionStore {
 
   async set(key: string, value: object) {
     const { iv, encrypted } = encrypt(JSON.stringify(value));
-    await supabase
-      .from('auth_sessions')
-      .upsert({ key, session: JSON.stringify({ iv, encrypted }) });
+    await SupabaseInstance.from('auth_sessions').upsert({
+      key,
+      session: JSON.stringify({ iv, encrypted }),
+    });
   }
 
   async del(key: string) {
-    await supabase.from('auth_sessions').delete().eq('key', key);
+    await SupabaseInstance.from('auth_sessions').delete().eq('key', key);
   }
 }

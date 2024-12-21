@@ -1,4 +1,4 @@
-import { PublicSideDrawerContent } from '@/components/public-side-drawer-content';
+import { SideDrawerContent } from '@/components/side-drawer/side-drawer-content';
 import { Modal } from '@/components/modals';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { User } from '@/types/user';
@@ -14,7 +14,7 @@ export const SideDrawer = ({ user }: Props) => {
       title='Panel Content'
       size='full'
     >
-      <PublicSideDrawerContent user={user} />
+      <SideDrawerContent user={user} />
     </Modal>
   );
 };

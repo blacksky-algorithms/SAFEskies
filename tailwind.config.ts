@@ -15,11 +15,11 @@ export default {
         layout: 'repeat(12, minmax(0, 1fr))', // 12 column layout
       },
       maxWidth: {
-        screen: '100vw',
+        screen: '100dvw',
       },
       maxHeight: {
-        screen: '100vh',
-        page: 'calc(100vh - var(--header-height-app))',
+        screen: '100dvh',
+        page: 'calc(100dvh - var(--header-height-app))',
       },
       screens: {
         tablet: '640px',
@@ -47,7 +47,7 @@ export default {
         'app-post-image-multi-small': '150px',
         'app-post-image-single-small': '300px',
         'app-page-header': 'var(--header-height-app)',
-        'app-page-page': 'var(--page-height-app))',
+        'app-page-minus-header': 'var(--page-height-app))',
       },
       width: {
         'app-post-image-multi-small': '150px',

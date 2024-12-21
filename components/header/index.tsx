@@ -6,7 +6,6 @@ import { LoginButton } from '@/components/button/login-button';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { User } from '@/types/user';
-// import { useProfile } from '@/hooks/useProfile';
 
 export const Header = ({
   children,
