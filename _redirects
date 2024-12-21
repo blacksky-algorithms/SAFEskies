@@ -1,2 +1,2 @@
-/oauth/login/* /mod?redirect=:splat 302! QueryString=iss=:iss,state=:state,code=:code
-/oauth/callback/* /mod?redirect=:splat 302! QueryString=iss=:iss,state=:state,code=:code
+/oauth/callback/* /oauth/callback 200
+/mod/* /mod 200
