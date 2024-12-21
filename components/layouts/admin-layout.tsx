@@ -1,6 +1,6 @@
 import { User } from '@/types/user';
 import { BaseLayout } from './base-layout';
-import { AdminSideDrawerContent } from '../admin-side-drawer-content';
+import { AdminSideDrawerContent } from '../side-drawer/side-drawer-content/admin-side-drawer-content';
 
 export const AdminLayout = ({
   children,

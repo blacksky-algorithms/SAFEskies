@@ -1,6 +1,6 @@
 import { User } from '@/types/user';
 import { BaseLayout } from './base-layout';
-import { ModSideDrawerContent } from '../mod-side-drawer-content';
+import { ModSideDrawerContent } from '../side-drawer/side-drawer-content/mod-side-drawer-content';
 
 export const ModLayout = ({
   children,
