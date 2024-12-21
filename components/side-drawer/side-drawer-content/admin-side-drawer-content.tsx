@@ -1,13 +1,13 @@
-// app/components/admin-side-drawer-content.tsx
 import { User } from '@/types/user';
-import Link from 'next/link';
 
 interface AdminSideDrawerContentProps {
   user: User | null;
+  handleLinkClick: (path: string) => void;
 }
 
 export const AdminSideDrawerContent = ({
   user,
+  handleLinkClick,
 }: AdminSideDrawerContentProps) => {
   if (!user) return null;
 
@@ -18,36 +18,40 @@ export const AdminSideDrawerContent = ({
           Admin Controls
         </h2>
         <div className='space-y-1'>
-          <Link
+          <a
+            onClick={() => handleLinkClick('/')}
             href='/'
             className='block px-4 py-2 text-app hover:bg-app-secondary-hover rounded-lg'
           >
             Manage Feeds
-          </Link>
-          <Link
+          </a>
+          <a
+            onClick={() => handleLinkClick('/admin/moderators')}
             href='/admin/moderators'
             className='block px-4 py-2 text-app hover:bg-app-secondary-hover rounded-lg'
           >
             Manage Moderators
-          </Link>
+          </a>
         </div>
       </div>
 
       <div className='space-y-2'>
         <h2 className='text-app-secondary font-semibold px-4'>Content</h2>
         <div className='space-y-1'>
-          <Link
+          <a
+            onClick={() => handleLinkClick('/admin/reports')}
             href='/admin/reports'
             className='block px-4 py-2 text-app hover:bg-app-secondary-hover rounded-lg'
           >
             View Reports
-          </Link>
-          <Link
+          </a>
+          <a
+            onClick={() => handleLinkClick('/admin/audit-log')}
             href='/admin/audit-log'
             className='block px-4 py-2 text-app hover:bg-app-secondary-hover rounded-lg'
           >
             Audit Log
-          </Link>
+          </a>
         </div>
       </div>
     </nav>

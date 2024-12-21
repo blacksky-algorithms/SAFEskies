@@ -1,4 +1,4 @@
-import { useReducer, useEffect, useRef, startTransition } from 'react';
+import { useReducer, useEffect, useRef, useCallback } from 'react';
 import { FeedParams, fetchFeed } from '@/repos/feed-repo';
 import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
@@ -60,12 +60,16 @@ const feedReducer = (state: FeedState, action: FeedAction): FeedState => {
 };
 
 export const usePaginatedFeed = ({
-  did,
-  feedName,
   limit = 50,
+  uri,
 }: Omit<FeedParams, 'cursor' | 'signal'>) => {
   const [state, dispatch] = useReducer(feedReducer, initialState);
   const controllerRef = useRef<AbortController | null>(null);
+  const cursorRef = useRef(state.cursor);
+
+  useEffect(() => {
+    cursorRef.current = state.cursor;
+  }, [state.cursor]);
 
   const initializeController = () => {
     if (controllerRef.current) {
@@ -74,37 +78,41 @@ export const usePaginatedFeed = ({
     controllerRef.current = new AbortController();
   };
 
-  const fetchFeedData = async (refresh = false) => {
-    initializeController();
-    if (refresh) dispatch({ type: 'REFRESH_FEED' });
-    dispatch({ type: 'FETCH_START' });
+  const fetchFeedData = useCallback(
+    async (refresh = false) => {
+      initializeController();
+      if (refresh) dispatch({ type: 'REFRESH_FEED' });
+      dispatch({ type: 'FETCH_START' });
 
-    const response = await fetchFeed({
-      did,
-      feedName,
-      limit,
-      cursor: refresh ? undefined : state.cursor,
-      signal: controllerRef.current?.signal,
-    });
-
-    if ('error' in response) {
-      if (response.error !== 'AbortError') {
-        dispatch({ type: 'FETCH_ERROR', payload: response.error });
-      }
-    } else {
-      dispatch({
-        type: 'FETCH_SUCCESS',
-        payload: { feed: response.feed, cursor: response.cursor },
+      const response = await fetchFeed({
+        limit,
+        cursor: refresh ? undefined : cursorRef.current,
+        signal: controllerRef.current?.signal,
+        uri,
       });
-    }
-  };
 
-  const fetchNextPage = () => {
+      if ('error' in response) {
+        if (response.error !== 'signal is aborted without reason') {
+          dispatch({ type: 'FETCH_ERROR', payload: response.error });
+        }
+      } else {
+        dispatch({
+          type: 'FETCH_SUCCESS',
+          payload: { feed: response.feed, cursor: response.cursor },
+        });
+      }
+    },
+    [limit, uri]
+  );
+
+  const fetchNextPage = useCallback(() => {
     if (!state.hasNextPage || state.isFetching) return;
-    startTransition(() => fetchFeedData());
-  };
+    fetchFeedData();
+  }, [fetchFeedData, state.hasNextPage, state.isFetching]);
 
-  const refreshFeed = () => fetchFeedData(true);
+  const refreshFeed = useCallback(() => {
+    fetchFeedData(true);
+  }, [fetchFeedData]);
 
   useEffect(() => {
     fetchFeedData();
@@ -112,8 +120,7 @@ export const usePaginatedFeed = ({
     return () => {
       if (controllerRef.current) controllerRef.current.abort();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [did, feedName, limit]);
+  }, [fetchFeedData]);
 
   return { ...state, fetchNextPage, refreshFeed };
 };

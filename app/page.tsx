@@ -1,7 +1,19 @@
-import { Feed } from '@/components/feed/feed';
+import { Tabs } from '@/components/tab/tab';
+import { getUserFeeds } from '@/repos/user-feeds';
 
-export default async function page() {
+export default async function Page() {
+  const { userFeeds, defaultFeed } = await getUserFeeds();
+
+  const allFeeds = userFeeds.length > 0 ? userFeeds : [defaultFeed];
+
+  const tabs = allFeeds.map((feed) => ({
+    uri: feed.uri,
+    displayName: feed.displayName,
+  }));
+
   return (
-    <Feed did='did:plc:qzkrgc4ahglknwb7ymee4a6w' feedName='aaafstml2groe' />
+    <div className='container mx-auto p-4'>
+      <Tabs tabs={tabs} />
+    </div>
   );
 }
