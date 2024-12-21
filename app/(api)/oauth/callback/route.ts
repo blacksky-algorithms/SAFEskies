@@ -57,7 +57,9 @@ export async function GET(request: NextRequest) {
     await ironSession.save();
 
     // Clean up URL and redirect to the base `/mod` path with NEXT_PUBLIC_URL
-    const cleanUrl = new URL(`${process.env.NEXT_PUBLIC_URL}/mod`);
+    const cleanUrl = new URL(
+      `${process.env.NEXT_PUBLIC_URL}/mod/?redirected=true`
+    );
 
     cleanUrl.searchParams.delete('iss');
     cleanUrl.searchParams.delete('state');
