@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     const userRole = determineUserRole(existingPermissions, createdFeeds);
 
     // Save feed permissions
-    if (userRole === 'admin') {
+    if (userRole === 'admin' || userRole === 'mod') {
       const feedPermissions = buildFeedPermissions(
         user.did,
         createdFeeds,
