@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { LogoutButton } from '@/components/button/logout-button';
 import { User } from '@/types/user';
 import { UserDrawerContent } from './user-drawer-content';
 import { ModSideDrawerContent } from './mod-side-drawer-content';
@@ -37,12 +36,7 @@ export const SideDrawerContent = ({ user }: Props) => {
 
   return (
     <div className='flex flex-col h-full gap-4 p-4'>
-      <div className='flex-1 overflow-y-auto'>
-        {SIDE_DRAWER_CONTENT[user.role || 'user']}
-      </div>
-      <div className='mt-auto border-t border-app-border pt-4'>
-        <LogoutButton />
-      </div>
+      {SIDE_DRAWER_CONTENT[user.role || 'user']}
     </div>
   );
 };
