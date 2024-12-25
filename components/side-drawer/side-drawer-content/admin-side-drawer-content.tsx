@@ -1,4 +1,6 @@
+import React from 'react';
 import { User } from '@/types/user';
+import { SideDrawerLink } from '../components/side-drawer-link';
 
 interface AdminSideDrawerContentProps {
   user: User | null;
@@ -14,46 +16,28 @@ export const AdminSideDrawerContent = ({
   return (
     <nav className='p-4 space-y-4'>
       <div className='space-y-2'>
-        <h2 className='text-app-secondary font-semibold px-4'>
-          Admin Controls
-        </h2>
-        <div className='space-y-1'>
-          <a
-            onClick={() => handleLinkClick('/')}
-            href='/'
-            className='block px-4 py-2 text-app hover:bg-app-secondary-hover rounded-lg'
-          >
-            Manage Feeds
-          </a>
-          <a
-            onClick={() => handleLinkClick('/admin/moderators')}
-            href='/admin/moderators'
-            className='block px-4 py-2 text-app hover:bg-app-secondary-hover rounded-lg'
-          >
-            Manage Moderators
-          </a>
-        </div>
+        <SideDrawerLink
+          label='Moderators'
+          nestedLinks={[
+            { label: 'Add Moderator', href: '/admin/mods/add' },
+            { label: 'Manage Moderators', href: '/admin/mods/manage' },
+          ]}
+          onClick={handleLinkClick}
+        />
       </div>
 
-      <div className='space-y-2'>
-        <h2 className='text-app-secondary font-semibold px-4'>Content</h2>
-        <div className='space-y-1'>
-          <a
-            onClick={() => handleLinkClick('/admin/reports')}
-            href='/admin/reports'
-            className='block px-4 py-2 text-app hover:bg-app-secondary-hover rounded-lg'
-          >
-            View Reports
-          </a>
-          <a
-            onClick={() => handleLinkClick('/admin/audit-log')}
-            href='/admin/audit-log'
-            className='block px-4 py-2 text-app hover:bg-app-secondary-hover rounded-lg'
-          >
-            Audit Log
-          </a>
-        </div>
-      </div>
+      {/* <div className='space-y-2'>
+        <SideDrawerLink
+          label='View Reports'
+          href='/admin/reports'
+          onClick={handleLinkClick}
+        />
+        <SideDrawerLink
+          label='Audit Log'
+          href='/admin/audit-log'
+          onClick={handleLinkClick}
+        />
+      </div> */}
     </nav>
   );
 };
