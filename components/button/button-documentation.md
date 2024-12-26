@@ -30,7 +30,7 @@ The `Button` component is a reusable, theme-aware button that supports multiple 
 
 | Prop         | Type              | Default                | Description                              |
 | ------------ | ----------------- | ---------------------- | ---------------------------------------- |
-| `variant`    | `VisualIntent`    | `VisualIntent.Primary` | Defines the visual intent of the button. |
+| `intent`     | `VisualIntent`    | `VisualIntent.Primary` | Defines the visual intent of the button. |
 | `children`   | `React.ReactNode` | —                      | The button content.                      |
 | `noPadding`  | `boolean`         | `false`                | Removes default padding if `true`.       |
 | `submitting` | `boolean`         | `false`                | Displays a loading spinner.              |
@@ -41,13 +41,13 @@ The `Button` component is a reusable, theme-aware button that supports multiple 
 #### Primary Button
 
 ```tsx
-<Button variant={VisualIntent.Primary}>Submit</Button>
+<Button intent={VisualIntent.Primary}>Submit</Button>
 ```
 
 #### Error Button with Loading State
 
 ```tsx
-<Button variant={VisualIntent.Error} submitting>
+<Button intent={VisualIntent.Error} submitting>
   Saving...
 </Button>
 ```
@@ -55,7 +55,7 @@ The `Button` component is a reusable, theme-aware button that supports multiple 
 #### Text Button
 
 ```tsx
-<Button variant={VisualIntent.TextButton}>Cancel</Button>
+<Button intent={VisualIntent.TextButton}>Cancel</Button>
 ```
 
 ---
@@ -78,7 +78,7 @@ The `IconButton` component combines the `Button` and `Icon` components to create
 | -------------- | --------------------- | ---------------------- | -------------------------------------- |
 | `icon`         | `IconProps['icon']`   | —                      | The icon to render.                    |
 | `iconPosition` | `'left'` \| `'right'` | `'left'`               | Position of the icon relative to text. |
-| `variant`      | `VisualIntent`        | `VisualIntent.Primary` | Visual intent for the button.          |
+| `intent`       | `VisualIntent`        | `VisualIntent.Primary` | Visual intent for the button.          |
 | `text`         | `string`              | —                      | The button text (optional).            |
 | `noPadding`    | `boolean`             | `false`                | Removes default padding if `true`.     |
 | `submitting`   | `boolean`             | `false`                | Displays a loading spinner.            |
@@ -98,7 +98,7 @@ The `IconButton` component combines the `Button` and `Icon` components to create
 <IconButton
   icon='CheckIcon'
   text='Confirm'
-  variant={VisualIntent.Success}
+  intent={VisualIntent.Success}
   iconPosition='left'
 />
 ```
@@ -106,12 +106,7 @@ The `IconButton` component combines the `Button` and `Icon` components to create
 #### Submitting State
 
 ```tsx
-<IconButton
-  icon='loader'
-  text='Saving'
-  variant={VisualIntent.Info}
-  submitting
-/>
+<IconButton icon='loader' text='Saving' intent={VisualIntent.Info} submitting />
 ```
 
 ---

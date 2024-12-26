@@ -6,22 +6,22 @@
 :root {
   --background: #1c1b1b;
   --foreground: #f2f2f2;
-  --visited: #707070;
+  --visited: #8c8c8c;
   --primary: #0da5bf;
   --primary-hover: #098cab;
-  --secondary: #707070;
-  --secondary-hover: #4a4a4a;
+  --secondary: #a3a3a3;
+  --secondary-hover: #0b4c5880;
   --error: #e63946;
   --error-hover: #d62839;
-  --info: #118ab2;
-  --info-hover: #0e7b9f;
+  --info: #f2f2f2;
+  --info-hover: #ffffff;
   --success: #06d6a0;
   --success-hover: #05b487;
   --text: #f2f2f2;
   --text-hover: #ffffff;
   --header-height-app: 5rem;
   --page-height-app: calc(100dvh - var(--header-height-app));
-  --border: #1f2937;
+  --border: #404850;
 }
 
 /* CSS Reset */
@@ -43,21 +43,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background);
   color: var(--foreground);
-}
-
-/* Link Styles */
-a {
-  color: var(--primary);
-  text-decoration: none;
-}
-
-a:hover {
-  color: var(--primary-hover);
-  text-decoration: underline;
-}
-
-a:visited {
-  color: var(--visited);
 }
 
 input,

@@ -6,13 +6,13 @@ import { LoadingSpinner } from '@/components/loading-spinner';
 
 export interface IconProps extends React.HTMLAttributes<SVGElement> {
   icon: keyof typeof HeroIcons | 'loader';
-  variant?: Exclude<VisualIntent, VisualIntent.TextButton>;
+  intent?: Exclude<VisualIntent, VisualIntent.TextButton>;
   isButton?: boolean;
   size?: keyof typeof SharedSize;
   'aria-label'?: string;
 }
 
-const variantClasses: Record<
+const itentClasses: Record<
   Exclude<VisualIntent, VisualIntent.TextButton>,
   string
 > = {
@@ -25,7 +25,7 @@ const variantClasses: Record<
 
 export const Icon = ({
   icon,
-  variant = VisualIntent.Primary,
+  intent = VisualIntent.Primary,
   className,
   isButton = false,
   size = 'md',
@@ -43,7 +43,7 @@ export const Icon = ({
     return (
       <LoadingSpinner
         size={size}
-        variant={variant}
+        intent={intent}
         {...(defaultAriaLabel && { 'aria-label': defaultAriaLabel })}
       />
     );
@@ -62,7 +62,7 @@ export const Icon = ({
       className={cc([
         'block',
         sizeClass,
-        variantClasses[variant],
+        itentClasses[intent],
         { 'w-full h-full': isButton },
         className,
       ])}

@@ -15,7 +15,7 @@ export const UserButton = ({ user }: { user: User }) => {
 
   return (
     <Button
-      variant={VisualIntent.TextButton}
+      intent={VisualIntent.TextButton}
       className='flex items-center space-x-2'
       onClick={toggleModal}
       aria-label='Open user menu'
