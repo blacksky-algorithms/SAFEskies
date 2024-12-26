@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useState, ReactNode } from 'react';
+import { createContext, useState, ReactNode, useContext } from 'react';
 import { Toast } from '@/components/toast';
 import { VisualIntent } from '@/enums/styles';
 
@@ -50,4 +50,12 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
       />
     </ToastContext.Provider>
   );
+};
+
+export const useToast = () => {
+  const context = useContext(ToastContext);
+  if (context === undefined) {
+    throw new Error('useToast must be used within a ToastProvider');
+  }
+  return context;
 };
