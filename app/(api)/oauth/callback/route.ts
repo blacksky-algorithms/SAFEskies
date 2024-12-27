@@ -1,92 +1,165 @@
-import { createUser } from '@/utils/createUser';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { getSession } from '@/repos/iron';
 import { AtprotoAgent } from '@/repos/atproto-agent';
-import { saveUserProfile } from '@/repos/user';
 import { NextRequest, NextResponse } from 'next/server';
 import { BlueskyOAuthClient } from '@/repos/blue-sky-oauth-client';
 import { getActorFeeds } from '@/repos/actor';
 import { SupabaseInstance } from '@/repos/supabase';
-import { determineUserRole, buildFeedPermissions } from '@/utils/roles';
+import { buildFeedPermissions, determineUserRolesByFeed } from '@/utils/roles';
+import { saveUserProfile } from '@/repos/user';
+
+// Deduplicate permissions
+const deduplicateFeedPermissions = (
+  permissions: {
+    user_did: string;
+    feed_uri: string;
+    [key: string]: any;
+  }[]
+) => {
+  const uniquePermissions = new Map<string, any>();
+  permissions.forEach((permission) => {
+    const key = `${permission.user_did}-${permission.feed_uri}`;
+    if (!uniquePermissions.has(key)) {
+      uniquePermissions.set(key, permission);
+    }
+  });
+  return Array.from(uniquePermissions.values());
+};
+
+// Chunk array into smaller parts
+const chunkArray = <T>(array: T[], chunkSize: number): T[][] => {
+  const chunks: T[][] = [];
+  for (let i = 0; i < array.length; i += chunkSize) {
+    chunks.push(array.slice(i, i + chunkSize));
+  }
+  return chunks;
+};
 
 export async function GET(request: NextRequest) {
   try {
-    const blueskyClient = BlueskyOAuthClient;
-    const { session } = await blueskyClient.callback(
+    const { session } = await BlueskyOAuthClient.callback(
       request.nextUrl.searchParams
     );
 
-    const agentResponse = await AtprotoAgent.getProfile({
+    if (!session?.did) {
+      throw new Error('Invalid session: No DID found.');
+    }
+
+    const atProtoAgentResponse = await AtprotoAgent.getProfile({
       actor: session.did,
     });
 
-    if (!agentResponse.success || !agentResponse.data) {
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=${encodeURIComponent(
-          'Failed to fetch user profile.'
-        )}`
-      );
+    if (!atProtoAgentResponse.success || !atProtoAgentResponse.data) {
+      throw new Error('Failed to fetch atProtoAgentResponse.');
     }
 
-    const agentProfile = agentResponse.data;
-    const user = createUser(agentProfile);
+    const { data: agentProfileData } = atProtoAgentResponse;
 
-    // Get existing permissions and created feeds in parallel
+    // Ensure the profile exists in the database
+    const { error: profileError } = await SupabaseInstance.from('profiles')
+      .upsert({
+        did: agentProfileData.did,
+        handle: agentProfileData.handle,
+        name: agentProfileData.name,
+        avatar: agentProfileData.avatar,
+        associated: agentProfileData.associated,
+        labels: agentProfileData.labels,
+      })
+      .eq('did', agentProfileData.did);
+
+    if (profileError) {
+      console.error('Error saving agentProfileData:', profileError);
+      throw new Error('Failed to save agentProfileData.');
+    }
+
     const [permissionsResponse, feedsResponse] = await Promise.all([
       SupabaseInstance.from('feed_permissions')
         .select('*')
-        .eq('user_did', user.did),
-      getActorFeeds(user.did),
+        .eq('user_did', agentProfileData.did),
+      getActorFeeds(agentProfileData.did),
     ]);
 
     const existingPermissions = permissionsResponse.data || [];
     const createdFeeds = feedsResponse?.feeds || [];
 
-    // Determine the user's role
-    const userRole = determineUserRole(existingPermissions, createdFeeds);
+    // Log permissions for debugging
+    console.log('Existing Permissions:', existingPermissions);
+    console.log('Created Feeds:', createdFeeds);
 
-    // Save feed permissions
-    if (userRole === 'admin' || userRole === 'mod') {
-      const feedPermissions = buildFeedPermissions(
-        user.did,
-        createdFeeds,
-        existingPermissions
-      );
+    // Validate `existingPermissions` structure
+    const validPermissions = existingPermissions
+      .map((perm) => {
+        if (!perm.feed_uri || !perm.feed_name || !perm.role) {
+          console.warn('Invalid permission:', perm);
+          return null;
+        }
+        return {
+          ...perm,
+          user_did: perm.user_did || agentProfileData.did, // Provide a fallback
+        };
+      })
+      .filter((perm): perm is NonNullable<typeof perm> => perm !== null);
 
-      await SupabaseInstance.from('feed_permissions').upsert(feedPermissions, {
-        onConflict: 'user_did,feed_did',
-        ignoreDuplicates: false,
+    // Determine user roles by feed
+    const rolesByFeed = determineUserRolesByFeed(
+      validPermissions,
+      createdFeeds
+    );
+
+    // Build feed permissions
+    let feedPermissions = buildFeedPermissions(
+      agentProfileData.did,
+      createdFeeds,
+      validPermissions
+    );
+
+    // Deduplicate feed permissions
+    feedPermissions = deduplicateFeedPermissions(feedPermissions);
+
+    // Chunk permissions to prevent conflicts during upsert
+    const permissionChunks = chunkArray(feedPermissions, 50);
+
+    for (const chunk of permissionChunks) {
+      const { error: upsertError } = await SupabaseInstance.from(
+        'feed_permissions'
+      ).upsert(chunk, {
+        onConflict: 'user_did,feed_uri',
       });
+
+      if (upsertError) {
+        console.error(
+          'Error saving feed permissions (chunk):',
+          upsertError,
+          chunk
+        );
+        throw new Error('Failed to save feed permissions.');
+      }
     }
 
-    // Save the user profile
-    const saveSuccess = await saveUserProfile({
-      ...user,
-      role: userRole,
-    });
+    const saveSuccess = await saveUserProfile(
+      { ...agentProfileData, rolesByFeed },
+      createdFeeds
+    );
 
     if (!saveSuccess) {
-      return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=${encodeURIComponent(
-          'Failed to save user profile.'
-        )}`
-      );
+      throw new Error('Failed to save agentProfileData.');
     }
 
-    // Update session
     const ironSession = await getSession();
-    ironSession.user = { ...user, role: userRole };
+    ironSession.user = { ...agentProfileData, rolesByFeed };
     await ironSession.save();
 
-    // Redirect based on role
-    const redirectPath = userRole === 'user' ? '/' : `/${userRole}`;
-    const redirectUrl = `${process.env.NEXT_PUBLIC_URL}${redirectPath}/?redirected=true`;
-
-    return NextResponse.redirect(redirectUrl, { status: 302 });
+    const redirectPath = '/';
+    return NextResponse.redirect(
+      `${process.env.NEXT_PUBLIC_URL}${redirectPath}/?redirected=true`,
+      { status: 302 }
+    );
   } catch (error) {
     console.error('OAuth callback error:', error);
     return NextResponse.redirect(
       `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=${encodeURIComponent(
-        'An error occurred. Please try again.'
+        error instanceof Error ? error.message : 'An unknown error occurred.'
       )}`,
       {
         headers: {

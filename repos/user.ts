@@ -1,63 +1,68 @@
 import { SupabaseInstance } from '@/repos/supabase';
-import { User, UserRole } from '@/types/user';
-import { getSessionUser } from '@/repos/iron';
+import { UserRole } from '@/types/user';
+import { getSession } from '@/repos/iron';
 import { getActorFeeds } from './actor';
+import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
+import { determineUserRolesByFeed } from '@/utils/roles';
+import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
-export const saveUserProfile = async (userData: User): Promise<boolean> => {
+export const saveUserProfile = async (
+  blueSkyProfileData: ProfileViewBasic,
+  createdFeeds: Feed[]
+) => {
   try {
-    // First, save the basic profile information
+    // Ensure the profile exists before handling feed permissions
     const { error: profileError } = await SupabaseInstance.from('profiles')
       .upsert({
-        did: userData.did,
-        handle: userData.handle,
-        name: userData.name,
-        avatar: userData.avatar,
-        associated: userData.associated,
-        labels: userData.labels,
+        did: blueSkyProfileData.did,
+        handle: blueSkyProfileData.handle,
+        name: blueSkyProfileData.name,
+        avatar: blueSkyProfileData.avatar,
+        associated: blueSkyProfileData.associated,
+        labels: blueSkyProfileData.labels,
       })
-      .eq('did', userData.did);
+      .eq('did', blueSkyProfileData.did);
 
     if (profileError) {
       console.error('Error saving user profile:', profileError);
       return false;
     }
 
-    // Check if a role already exists for this user
-    const { data: existingRole } = await SupabaseInstance.from('user_roles')
-      .select('role')
-      .eq('user_did', userData.did)
-      .single();
-
-    if (existingRole) {
-      // If the role should be updated (e.g., user became an admin), update it
-      if (existingRole.role !== userData.role) {
-        const { error: updateError } = await SupabaseInstance.from('user_roles')
-          .update({
-            role: userData.role,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('user_did', userData.did);
-
-        if (updateError) {
-          console.error('Error updating user role:', updateError);
-          return false;
+    // Validate createdFeeds structure and fallback for missing data
+    const feedPermissions = createdFeeds
+      .map((feed) => {
+        if (!feed.uri) {
+          console.warn('Invalid feed: missing URI', feed);
+          return null;
         }
-      }
-    } else {
-      // If no role exists, insert a new one
-      const { error: insertError } = await SupabaseInstance.from(
-        'user_roles'
-      ).insert({
-        user_did: userData.did,
-        role: userData.role || 'user',
-        created_at: new Date().toISOString(),
-        created_by: userData.did,
-      });
 
-      if (insertError) {
-        console.error('Error inserting user role:', insertError);
-        return false;
-      }
+        return {
+          user_did: blueSkyProfileData.did,
+          feed_uri: feed.uri,
+          feed_name:
+            feed.displayName || feed.uri.split('/').pop() || 'Unnamed Feed',
+          role: 'admin',
+          created_at: new Date().toISOString(),
+          created_by: blueSkyProfileData.did,
+        };
+      })
+      .filter(Boolean);
+
+    if (!feedPermissions.length) {
+      console.warn('No valid feed permissions to upsert.');
+      return true;
+    }
+
+    // Upsert feed permissions
+    const { error: permissionError } = await SupabaseInstance.from(
+      'feed_permissions'
+    ).upsert(feedPermissions, {
+      onConflict: 'user_did,feed_uri',
+    });
+
+    if (permissionError) {
+      console.error('Error saving feed permissions:', permissionError);
+      return false;
     }
 
     return true;
@@ -68,19 +73,25 @@ export const saveUserProfile = async (userData: User): Promise<boolean> => {
 };
 
 // Add a function to get user's role
-export const getUserRole = async (did: string): Promise<UserRole> => {
+export const getUserRole = async (user_did: string): Promise<UserRole> => {
   try {
-    // First check if they have any feeds (which would make them an admin)
-    const feedsResponse = await getActorFeeds(did);
+    // Check if the user has created feed (which would make them an admin)
+    const feedsResponse = await getActorFeeds(user_did);
     if (feedsResponse?.feeds && feedsResponse.feeds.length > 0) {
       return 'admin';
     }
 
-    // If no feeds, check their assigned role
-    const { data: roleData } = await SupabaseInstance.from('user_roles')
+    // Check the assigned role in user_roles
+    const { data: roleData, error: roleError } = await SupabaseInstance.from(
+      'user_roles'
+    )
       .select('role')
-      .eq('user_did', did)
+      .eq('user_did', user_did)
       .single();
+
+    if (roleError) {
+      console.error('Error fetching user role:', roleError);
+    }
 
     return roleData?.role || 'user';
   } catch (error) {
@@ -90,32 +101,52 @@ export const getUserRole = async (did: string): Promise<UserRole> => {
 };
 
 export const getUserProfile = async () => {
-  const session = await getSessionUser();
+  const session = await getSession();
 
   if (!session?.user?.did) {
     return null;
   }
 
   try {
-    // Get basic profile data
+    const userDid = session.user.did;
+
+    // Fetch basic profile data
     const { data: profileData, error: profileError } =
       await SupabaseInstance.from('profiles')
         .select('*')
-        .eq('did', session.user.did)
+        .eq('did', userDid)
         .single();
 
-    if (profileError) {
+    if (profileError || !profileData) {
       console.error('Error fetching user profile:', profileError);
       return null;
     }
 
-    // Get role data
-    const role = await getUserRole(session.user.did);
+    // Fetch user's feed-specific permissions
+    const { data: permissionsData, error: permissionsError } =
+      await SupabaseInstance.from('feed_permissions')
+        .select('feed_uri, feed_name, role')
+        .eq('user_did', userDid);
 
-    // Combine profile and role data
+    if (permissionsError) {
+      console.error('Error fetching feed permissions:', permissionsError);
+      return null;
+    }
+
+    // Fetch feeds created by the user
+    const actorFeedsResponse = await getActorFeeds(userDid);
+    const createdFeeds: Feed[] = actorFeedsResponse?.feeds || [];
+
+    // Determine roles for each feed
+    const feedRoles = determineUserRolesByFeed(
+      permissionsData || [],
+      createdFeeds
+    );
+
+    // Combine profile data with feed-specific roles
     return {
       ...profileData,
-      role,
+      rolesByFeed: feedRoles,
     };
   } catch (error) {
     console.error('Error in getUserProfile:', error);
