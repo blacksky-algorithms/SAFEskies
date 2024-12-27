@@ -46,7 +46,7 @@ export function FeedSelector({
   return (
     <form className='space-y-6 mx-auto'>
       <header className='space-y-2'>
-        <h2 className='text-lg font-bold text-app flex items-center gap-1'>
+        <h2 className='text-lg font-bold text-app flex items-center flex-wrap justify-center tablet:justify-normal gap-1'>
           Promote
           <span className='p-2 flex flex-col border rounded bg-app-secondary-hover border-app-border'>
             <span>{userToPromote}</span>
