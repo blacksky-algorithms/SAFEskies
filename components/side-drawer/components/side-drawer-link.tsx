@@ -22,7 +22,7 @@ export const SideDrawerLink = ({
   };
 
   return (
-    <div className='space-y-1'>
+    <li className='space-y-1'>
       <a
         onClick={(e) => {
           if (nestedLinks) {
@@ -60,6 +60,6 @@ export const SideDrawerLink = ({
           ))}
         </div>
       )}
-    </div>
+    </li>
   );
 };

@@ -1,4 +1,3 @@
-// middleware.ts
 import { NextResponse, NextRequest } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
