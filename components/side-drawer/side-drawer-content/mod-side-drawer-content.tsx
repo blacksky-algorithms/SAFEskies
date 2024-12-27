@@ -1,4 +1,5 @@
 import { User } from '@/types/user';
+import { SideDrawerLink } from '../components/side-drawer-link';
 
 interface ModSideDrawerContentProps {
   user: User | null;
@@ -16,13 +17,11 @@ export const ModSideDrawerContent = ({
       <div className='space-y-2'>
         <h2 className='text-app-secondary font-semibold px-4'>Moderation</h2>
         <div className='space-y-1'>
-          <a
-            onClick={() => handleLinkClick('/')}
+          <SideDrawerLink
+            label='Moderation Queue'
             href='/mod/reports'
-            className='block px-4 py-2 text-app hover:bg-app-secondary-hover rounded-lg'
-          >
-            Moderation Queue
-          </a>
+            onClick={handleLinkClick}
+          />
         </div>
       </div>
     </nav>

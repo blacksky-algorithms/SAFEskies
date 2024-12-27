@@ -19,25 +19,12 @@ export const AdminSideDrawerContent = ({
         <SideDrawerLink
           label='Moderators'
           nestedLinks={[
-            { label: 'Add Moderator', href: '/admin/mods/add' },
+            { label: 'Promote User', href: '/admin/mods/promote' },
             { label: 'Manage Moderators', href: '/admin/mods/manage' },
           ]}
           onClick={handleLinkClick}
         />
       </div>
-
-      {/* <div className='space-y-2'>
-        <SideDrawerLink
-          label='View Reports'
-          href='/admin/reports'
-          onClick={handleLinkClick}
-        />
-        <SideDrawerLink
-          label='Audit Log'
-          href='/admin/audit-log'
-          onClick={handleLinkClick}
-        />
-      </div> */}
     </nav>
   );
 };

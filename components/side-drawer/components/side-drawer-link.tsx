@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { usePathname } from 'next/navigation';
 import cc from 'classcat';
 
@@ -15,22 +15,10 @@ export const SideDrawerLink = ({
   nestedLinks,
   onClick,
 }: SideDrawerLinkProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const pathname = usePathname();
-
-  // Expand the parent if the current route matches any of the nested links
-  useEffect(() => {
-    if (
-      nestedLinks &&
-      nestedLinks.some((link) => pathname.startsWith(link.href))
-    ) {
-      setIsExpanded(true);
-    }
-  }, [pathname, nestedLinks]);
 
   const handleLinkClick = (path: string) => {
     if (onClick) onClick(path);
-    if (!nestedLinks) setIsExpanded(false);
   };
 
   return (
@@ -39,20 +27,19 @@ export const SideDrawerLink = ({
         onClick={(e) => {
           if (nestedLinks) {
             e.preventDefault();
-            setIsExpanded((prev) => !prev);
           } else {
             handleLinkClick(href || '');
           }
         }}
         href={href}
         className={cc([
-          'block px-4 py-2 text-app hover:bg-app-secondary-hover rounded-lg',
-          { 'cursor-pointer': nestedLinks },
+          'block px-4 py-2 text-app rounded-lg',
+          { 'cursor-pointer hover:bg-app-secondary-hover ': !nestedLinks },
         ])}
       >
         {label}
       </a>
-      {nestedLinks && isExpanded && (
+      {nestedLinks && (
         <div className='pl-6 space-y-1'>
           {nestedLinks.map((link) => (
             <a
