@@ -4,23 +4,23 @@ import { useEffect, useState } from 'react';
 import { AtprotoAgent } from '@/repos/atproto-agent';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Input } from '@/components/input';
-import { SearchResult } from '../promote-mod-form';
 import { LoadingSpinner } from '../loading-spinner';
+import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
 export const BSUserSearch = ({
   onSelect,
 }: {
-  onSelect: (user: SearchResult) => void;
+  onSelect: (user: ProfileViewBasic) => void;
 }) => {
   const [state, setState] = useState({
     search: '',
-    results: [] as SearchResult[],
+    results: [] as ProfileViewBasic[],
     loading: false,
   });
 
   const debouncedSearch = useDebounce(state.search, 300);
 
-  const handleSelect = (user: SearchResult) => {
+  const handleSelect = (user: ProfileViewBasic) => {
     setState((prevState) => ({
       ...prevState,
       search: '',
@@ -58,13 +58,15 @@ export const BSUserSearch = ({
           setState((prevState) => ({
             ...prevState,
             loading: false,
+            error: 'Something went wrong. Please try again later.',
           }));
         }
-      } catch (error) {
-        console.error('Error searching users:', error);
+      } catch (e) {
+        console.error('Error searching users:', e);
         setState((prevState) => ({
           ...prevState,
           loading: false,
+          error: 'Something went wrong. Please try again later.',
         }));
       }
     };

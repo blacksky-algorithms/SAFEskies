@@ -80,12 +80,8 @@ export const Login = () => {
               onChange={handleChange}
               aria-invalid={!!state.error}
               aria-describedby='handle-error'
+              error={state.error || undefined}
             />
-            {state.error && (
-              <p id='handle-error' className='mt-1 text-sm text-red-500'>
-                {state.error}
-              </p>
-            )}
           </div>
         </div>
         <Button

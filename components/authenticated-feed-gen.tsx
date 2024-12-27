@@ -58,8 +58,9 @@ export const AuthenticatedFeedGen = ({ actorUri }: { actorUri: string }) => {
             displayName: string;
             creator: { handle: string };
             description: string;
+            uri: string;
           }) => (
-            <div key={feed.did}>
+            <div key={feed.uri}>
               <h2>Feed name:{feed.displayName || ''}</h2>
               <p>Created by: @{feed.creator.handle}</p>
               <p>Description: {feed.description}</p>
