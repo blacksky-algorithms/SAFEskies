@@ -73,31 +73,24 @@ export const saveUserProfile = async (
 };
 
 // Add a function to get user's role
-export const getUserRole = async (user_did: string): Promise<UserRole> => {
-  try {
-    // Check if the user has created feed (which would make them an admin)
-    const feedsResponse = await getActorFeeds(user_did);
-    if (feedsResponse?.feeds && feedsResponse.feeds.length > 0) {
-      return 'admin';
+export const getUsersHighestRole = async (
+  user_did: string
+): Promise<UserRole> => {
+  const { data, error } = await SupabaseInstance.from('feed_permissions')
+    .select('role')
+    .eq('user_did', user_did);
+
+  if (error || !data) return 'user';
+  let highestRole: UserRole = 'user';
+  data.forEach((element: { role: UserRole }) => {
+    if (element.role === 'admin') {
+      highestRole = 'admin';
     }
-
-    // Check the assigned role in user_roles
-    const { data: roleData, error: roleError } = await SupabaseInstance.from(
-      'user_roles'
-    )
-      .select('role')
-      .eq('user_did', user_did)
-      .single();
-
-    if (roleError) {
-      console.error('Error fetching user role:', roleError);
+    if (element.role === 'mod') {
+      highestRole = 'mod';
     }
-
-    return roleData?.role || 'user';
-  } catch (error) {
-    console.error('Error getting user role:', error);
-    return 'user';
-  }
+  });
+  return highestRole;
 };
 
 export const getUserProfile = async () => {
