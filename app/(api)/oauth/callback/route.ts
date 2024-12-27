@@ -9,24 +9,6 @@ import { SupabaseInstance } from '@/repos/supabase';
 import { buildFeedPermissions, determineUserRolesByFeed } from '@/utils/roles';
 import { saveUserProfile } from '@/repos/user';
 
-// Deduplicate permissions
-const deduplicateFeedPermissions = (
-  permissions: {
-    user_did: string;
-    feed_uri: string;
-    [key: string]: any;
-  }[]
-) => {
-  const uniquePermissions = new Map<string, any>();
-  permissions.forEach((permission) => {
-    const key = `${permission.user_did}-${permission.feed_uri}`;
-    if (!uniquePermissions.has(key)) {
-      uniquePermissions.set(key, permission);
-    }
-  });
-  return Array.from(uniquePermissions.values());
-};
-
 // Chunk array into smaller parts
 const chunkArray = <T>(array: T[], chunkSize: number): T[][] => {
   const chunks: T[][] = [];
@@ -108,14 +90,11 @@ export async function GET(request: NextRequest) {
     );
 
     // Build feed permissions
-    let feedPermissions = buildFeedPermissions(
+    const feedPermissions = buildFeedPermissions(
       agentProfileData.did,
       createdFeeds,
       validPermissions
     );
-
-    // Deduplicate feed permissions
-    feedPermissions = deduplicateFeedPermissions(feedPermissions);
 
     // Chunk permissions to prevent conflicts during upsert
     const permissionChunks = chunkArray(feedPermissions, 50);
