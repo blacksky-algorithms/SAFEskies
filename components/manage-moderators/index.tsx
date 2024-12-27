@@ -1,19 +1,34 @@
 'use client';
 
 import React from 'react';
+import { OptimizedImage } from '@/components/optimized-image';
+import { Button } from '@/components/button';
+import { VisualIntent } from '@/enums/styles';
+
+interface Moderator {
+  did: string;
+  handle: string;
+  role: string;
+  displayName?: string;
+  avatar?: string;
+}
+
+interface Feed {
+  uri: string;
+  displayName: string;
+}
 
 interface ManageModeratorsProps {
-  user: { name: string };
-  moderatorsByFeed: {
-    feed: { uri: string; displayName: string };
-    moderators: { did: string; handle: string; role: string }[];
-  }[];
+  moderators: Moderator[];
+  feed: Feed;
 }
 
 export const ManageModerators = ({
-  user,
-  moderatorsByFeed,
+  moderators,
+  feed,
 }: ManageModeratorsProps) => {
+  const [moderatorState, setModeratorState] =
+    React.useState<Moderator[]>(moderators);
   const handleDemote = async (modDid: string, feedUri: string) => {
     try {
       const response = await fetch('/api/admin/mods', {
@@ -32,50 +47,61 @@ export const ManageModerators = ({
         throw new Error(error.error || 'Failed to demote moderator');
       }
 
-      console.log('Moderator successfully demoted:', modDid);
+      setModeratorState((prev) => prev.filter((mod) => mod.did !== modDid));
     } catch (error) {
       console.error('Error demoting moderator:', error);
     }
   };
 
   return (
-    <section className='flex flex-col items-center h-full p-4 space-y-8'>
-      <h2 className='text-2xl font-bold'>Moderator Management</h2>
-      <p>Welcome to Admin Mod Management, {user.name}!</p>
+    <section className='p-4 space-y-6 w-full max-w-2xl mx-auto'>
+      <div className='space-y-4'>
+        {moderatorState.map((mod) => (
+          <article
+            key={mod.did}
+            className='bg-app-background border border-app-border rounded-md shadow-sm p-4 flex'
+          >
+            <div className='mr-4'>
+              {mod.avatar ? (
+                <OptimizedImage
+                  src={mod.avatar}
+                  alt={`${mod.displayName || mod.handle}'s avatar`}
+                  className='w-12 h-12 rounded-full'
+                />
+              ) : (
+                <div className='w-12 h-12 bg-app-secondary rounded-full' />
+              )}
+            </div>
 
-      <div className='w-full max-w-2xl space-y-8'>
-        <div className='space-y-4'>
-          <h3 className='text-xl'>Current Moderators</h3>
-          {moderatorsByFeed.length > 0 ? (
-            moderatorsByFeed.map(({ feed, moderators }) => (
-              <div key={feed.uri} className='space-y-2'>
-                <h4 className='text-lg font-semibold'>{feed.displayName}</h4>
-                {moderators.length > 0 ? (
-                  <ul className='list-disc pl-5'>
-                    {moderators.map((mod) => (
-                      <li
-                        key={mod.did}
-                        className='flex justify-between items-center'
-                      >
-                        <span>@{mod.handle}</span>
-                        <button
-                          className='text-red-500 hover:underline'
-                          onClick={() => handleDemote(mod.did, feed.uri)}
-                        >
-                          Demote
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>No moderators found for this feed.</p>
-                )}
+            <div className='flex w-full flex-col  tablet:flex-row justify-between flex-grow items-start'>
+              <div>
+                <h3 className='text-sm font-semibold text-app'>
+                  {mod.displayName || mod.handle}
+                </h3>
+                <p className='text-xs text-app-secondary'>@{mod.handle}</p>
               </div>
-            ))
-          ) : (
-            <p>No admin feeds found.</p>
-          )}
-        </div>
+
+              <div className='flex justify-between tablet:justify-end w-full space-x-4 mt-6 tablet:mt-0'>
+                <div>
+                  <Button
+                    intent={VisualIntent.Secondary}
+                    onClick={() => alert('TODO: View logs')}
+                  >
+                    View Logs
+                  </Button>
+                </div>
+                <div>
+                  <Button
+                    intent={VisualIntent.Error}
+                    onClick={() => handleDemote(mod.did, feed.uri)}
+                  >
+                    Demote
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </article>
+        ))}
       </div>
     </section>
   );

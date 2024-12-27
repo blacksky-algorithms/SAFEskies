@@ -1,6 +1,6 @@
 import { PromoteModForm } from '@/components/promote-mod-form';
 import { getActorFeeds } from '@/repos/actor';
-import { getUserProfile } from '@/repos/user';
+import { getUserProfile } from '@/repos/profile';
 
 export default async function Page() {
   const profile = await getUserProfile();

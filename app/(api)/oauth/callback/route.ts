@@ -6,7 +6,7 @@ import { BlueskyOAuthClient } from '@/repos/blue-sky-oauth-client';
 import { getActorFeeds } from '@/repos/actor';
 import { SupabaseInstance } from '@/repos/supabase';
 import { buildFeedPermissions, determineUserRolesByFeed } from '@/utils/roles';
-import { saveUserProfile } from '@/repos/user';
+import { saveUserProfile } from '@/repos/profile';
 import { FeedRoleInfo, User, UserRole } from '@/types/user';
 
 class AuthenticationHandler {

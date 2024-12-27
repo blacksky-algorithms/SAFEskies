@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 import { type Session } from '@/repos/iron';
-import { getUsersHighestRole } from '@/repos/user';
+import { getUsersHighestRole } from '@/repos/profile';
 
 export async function middleware(req: NextRequest) {
   const publicPaths = [

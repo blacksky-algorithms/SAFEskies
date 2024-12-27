@@ -1,4 +1,4 @@
-import { getUserProfile } from '@/repos/user';
+import { getUserProfile } from '@/repos/profile';
 import { User } from '@/types/user';
 import { useEffect, useState } from 'react';
 export const useProfile = () => {

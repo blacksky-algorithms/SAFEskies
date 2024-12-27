@@ -16,7 +16,7 @@ interface TabsProps {
 
 export function Tabs({ tabs }: TabsProps) {
   return (
-    <TabGroup>
+    <TabGroup className='w-full'>
       <TabList className='flex space-x-1 bg-app-background p-1'>
         {tabs.map((tab, index) => (
           <Tab
