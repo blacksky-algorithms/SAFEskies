@@ -30,20 +30,12 @@ export const IconButton = ({
   const isIconOnly = !text;
   const isDisabled = disabled || submitting;
 
-  const iconSize = SharedSize[size];
-
-  // Accessibility: Set aria-label if the button has no text
   const accessibleLabel =
     props['aria-label'] || (isIconOnly ? icon : undefined);
 
   // Icon rendering
   const renderIcon = () => (
-    <Icon
-      icon={icon}
-      intent={intent}
-      isButton={!text}
-      size={size} // Pass the size to match SharedSize
-    />
+    <Icon icon={icon} intent={intent} isButton={!text} size={size} />
   );
 
   if (isIconOnly) {
@@ -52,7 +44,6 @@ export const IconButton = ({
       <button
         className={cc([
           'flex items-center justify-center rounded-full focus:outline-none focus:ring-2 transition-all duration-150',
-          iconSize,
           {
             'opacity-50 cursor-not-allowed': isDisabled,
             'p-2': !noPadding,
