@@ -64,7 +64,7 @@ export const Login = () => {
   };
 
   return (
-    <section className='w-full'>
+    <section className='w-full max-w-2xl'>
       <form onSubmit={handleSubmit} className='space-y-5'>
         <div>
           <label htmlFor='handle' className='block text-sm font-medium'>
