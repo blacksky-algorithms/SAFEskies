@@ -1,4 +1,3 @@
-// app/components/layouts/base-layout.tsx
 import { Header } from '@/components/header';
 import { SideDrawer } from '@/components/side-drawer';
 import { User } from '@/types/user';
@@ -14,8 +13,7 @@ export const BaseLayout = ({
   children,
   user,
   sideContent,
-}: // rightContent,
-PropsWithChildren<BaseLayoutProps>) => {
+}: PropsWithChildren<BaseLayoutProps>) => {
   return (
     <div className='grid grid-rows-layout min-h-screen'>
       <header className='row-start-1 row-end-2 col-span-full sticky top-0 h-app-page-header bg-app-background z-10 border-b border-b-app-border'>
