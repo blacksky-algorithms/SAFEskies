@@ -1,29 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
+import { NextRequest, NextResponse } from 'next/server';
+import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { getSession } from '@/repos/iron';
 import { AtprotoAgent } from '@/repos/atproto-agent';
-import { NextRequest, NextResponse } from 'next/server';
 import { BlueskyOAuthClient } from '@/repos/blue-sky-oauth-client';
 import { getActorFeeds } from '@/repos/actor';
 import { SupabaseInstance } from '@/repos/supabase';
 import { buildFeedPermissions, determineUserRolesByFeed } from '@/utils/roles';
 import { saveUserProfile } from '@/repos/user';
+import { FeedRoleInfo, User, UserRole } from '@/types/user';
 
-// Chunk array into smaller parts
-const chunkArray = <T>(array: T[], chunkSize: number): T[][] => {
-  const chunks: T[][] = [];
-  for (let i = 0; i < array.length; i += chunkSize) {
-    chunks.push(array.slice(i, i + chunkSize));
-  }
-  return chunks;
-};
-
-export async function GET(request: NextRequest) {
-  try {
-    const { session } = await BlueskyOAuthClient.callback(
-      request.nextUrl.searchParams
-    );
-
+class AuthenticationHandler {
+  private static async getBlueskyProfile(
+    oAuthCallbackParams: URLSearchParams
+  ): Promise<ProfileViewBasic> {
+    const { session } = await BlueskyOAuthClient.callback(oAuthCallbackParams);
     if (!session?.did) {
       throw new Error('Invalid session: No DID found.');
     }
@@ -36,40 +26,20 @@ export async function GET(request: NextRequest) {
       throw new Error('Failed to fetch atProtoAgentResponse.');
     }
 
-    const { data: agentProfileData } = atProtoAgentResponse;
+    return atProtoAgentResponse.data;
+  }
 
-    // Ensure the profile exists in the database
-    const { error: profileError } = await SupabaseInstance.from('profiles')
-      .upsert({
-        did: agentProfileData.did,
-        handle: agentProfileData.handle,
-        name: agentProfileData.name,
-        avatar: agentProfileData.avatar,
-        associated: agentProfileData.associated,
-        labels: agentProfileData.labels,
-      })
-      .eq('did', agentProfileData.did);
-
-    if (profileError) {
-      console.error('Error saving agentProfileData:', profileError);
-      throw new Error('Failed to save agentProfileData.');
-    }
-
+  private static async getFeedData(userDid: string) {
     const [permissionsResponse, feedsResponse] = await Promise.all([
       SupabaseInstance.from('feed_permissions')
         .select('*')
-        .eq('user_did', agentProfileData.did),
-      getActorFeeds(agentProfileData.did),
+        .eq('user_did', userDid),
+      getActorFeeds(userDid),
     ]);
 
     const existingPermissions = permissionsResponse.data || [];
     const createdFeeds = feedsResponse?.feeds || [];
 
-    // Log permissions for debugging
-    console.log('Existing Permissions:', existingPermissions);
-    console.log('Created Feeds:', createdFeeds);
-
-    // Validate `existingPermissions` structure
     const validPermissions = existingPermissions
       .map((perm) => {
         if (!perm.feed_uri || !perm.feed_name || !perm.role) {
@@ -78,74 +48,114 @@ export async function GET(request: NextRequest) {
         }
         return {
           ...perm,
-          user_did: perm.user_did || agentProfileData.did, // Provide a fallback
+          user_did: perm.user_did || userDid,
         };
       })
       .filter((perm): perm is NonNullable<typeof perm> => perm !== null);
 
-    // Determine user roles by feed
-    const rolesByFeed = determineUserRolesByFeed(
-      validPermissions,
-      createdFeeds
-    );
+    return { validPermissions, createdFeeds };
+  }
 
-    // Build feed permissions
+  private static async saveFeedPermissions(
+    userDid: string,
+    validPermissions: Array<{
+      role: UserRole;
+      feed_uri: string;
+      feed_name: string;
+    }>,
+    createdFeeds: Array<{ uri: string; displayName?: string }>
+  ) {
     const feedPermissions = buildFeedPermissions(
-      agentProfileData.did,
+      userDid,
       createdFeeds,
       validPermissions
     );
 
-    // Chunk permissions to prevent conflicts during upsert
-    const permissionChunks = chunkArray(feedPermissions, 50);
-
-    for (const chunk of permissionChunks) {
+    for (const permission of feedPermissions) {
       const { error: upsertError } = await SupabaseInstance.from(
         'feed_permissions'
-      ).upsert(chunk, {
+      ).upsert(permission, {
         onConflict: 'user_did,feed_uri',
       });
 
       if (upsertError) {
         console.error(
-          'Error saving feed permissions (chunk):',
+          'Error saving feed permissions:',
           upsertError,
-          chunk
+          permission
         );
         throw new Error('Failed to save feed permissions.');
       }
     }
 
-    const saveSuccess = await saveUserProfile(
-      { ...agentProfileData, rolesByFeed },
-      createdFeeds
-    );
+    return feedPermissions;
+  }
+
+  private static async saveUserData(
+    profileData: ProfileViewBasic,
+    rolesByFeed: Record<string, FeedRoleInfo>,
+    createdFeeds: Array<{ uri: string; displayName?: string }>
+  ) {
+    const userData: User = { ...profileData, rolesByFeed };
+    const saveSuccess = await saveUserProfile(userData, createdFeeds);
 
     if (!saveSuccess) {
-      throw new Error('Failed to save agentProfileData.');
+      throw new Error('Failed to save user profile data.');
     }
 
     const ironSession = await getSession();
-    ironSession.user = { ...agentProfileData, rolesByFeed };
+    ironSession.user = userData;
     await ironSession.save();
-
-    const redirectPath = '/';
-    return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_URL}${redirectPath}/?redirected=true`,
-      { status: 302 }
-    );
-  } catch (error) {
-    console.error('OAuth callback error:', error);
-    return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=${encodeURIComponent(
-        error instanceof Error ? error.message : 'An unknown error occurred.'
-      )}`,
-      {
-        headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate',
-          Pragma: 'no-cache',
-        },
-      }
-    );
   }
+
+  static async handleOAuthCallback(request: NextRequest) {
+    try {
+      // 1. Get Bluesky profile data
+      const profileData = await this.getBlueskyProfile(
+        request.nextUrl.searchParams
+      );
+
+      // 2. Get and validate feed data
+      const { validPermissions, createdFeeds } = await this.getFeedData(
+        profileData.did
+      );
+
+      // 3. Determine roles and save permissions
+      const rolesByFeed = determineUserRolesByFeed(
+        validPermissions,
+        createdFeeds
+      );
+      await this.saveFeedPermissions(
+        profileData.did,
+        validPermissions,
+        createdFeeds
+      );
+
+      // 4. Save user profile and session
+      await this.saveUserData(profileData, rolesByFeed, createdFeeds);
+
+      // 5. Redirect to home page
+      return NextResponse.redirect(
+        `${process.env.NEXT_PUBLIC_URL}/?redirected=true`,
+        { status: 302 }
+      );
+    } catch (error) {
+      console.error('OAuth callback error:', error);
+      return NextResponse.redirect(
+        `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=${encodeURIComponent(
+          error instanceof Error ? error.message : 'An unknown error occurred.'
+        )}`,
+        {
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate',
+            Pragma: 'no-cache',
+          },
+        }
+      );
+    }
+  }
+}
+
+export async function GET(request: NextRequest) {
+  return AuthenticationHandler.handleOAuthCallback(request);
 }

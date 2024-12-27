@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides a comprehensive overview of the role management system implemented in the application. It outlines the purpose, behavior, implementation details, test coverage, and potential future improvements for managing roles within feeds. The system uses a feed-centric permission model to determine and manage user roles such as `admin`, `mod`, and `user` at a granular level.
+This document provides a comprehensive overview of the updated role management system implemented in the application. It explains the purpose, behavior, implementation details, and test coverage for managing roles within feeds. The system is feed-centric and assigns roles such as `admin`, `mod`, and `user` to users at a granular level, while ensuring scalability, validation, and robust error handling.
 
 ---
 
@@ -10,24 +10,27 @@ This document provides a comprehensive overview of the role management system im
 
 ### Role Management Goals
 
-1. **Feed-Centric Permissions**: Each user’s role is defined per feed.
+1. **Feed-Centric Permissions**: Each user's role is scoped to a specific feed.
 2. **Prioritized Roles**: Role hierarchy ensures `admin > mod > user`.
 3. **Input Validation**: Guards ensure data integrity for roles and permissions.
-4. **Consistency**: Duplicate roles are resolved by retaining the highest-priority role.
-5. **Sorting**: Permissions are consistently sorted by `feed_did`.
+4. **Consistency**: Conflicts are resolved by retaining the highest-priority role.
+5. **Session Integration**: User roles and feed permissions are saved in the session.
 
 ### Key Components
 
 1. **Role Determination**:
 
-   - **`determineUserRole`**: Determines the user’s overall role based on created feeds and existing permissions.
+   - **`determineUserRolesByFeed`**: Determines feed-specific roles for a user based on created feeds and existing permissions.
+   - **`determineUserRole`**: Determines a user’s overall role (`admin`, `mod`, or `user`).
 
-2. **Permission Building**:
+2. **Permission Management**:
 
-   - **`buildFeedPermissions`**: Combines created feed permissions with existing permissions while prioritizing roles and handling duplicates.
+   - **`buildFeedPermissions`**: Generates feed permissions for a user by combining created feeds with existing permissions while applying role prioritization and ensuring data integrity.
+   - **`PermissionsManager`**: Handles permission checks and role assignments for feeds.
 
 3. **Validation Guards**:
-   - Ensure input data validity and prevent invalid or duplicate permissions.
+   - Ensure input data validity.
+   - Prevent invalid or duplicate permissions.
 
 ---
 
@@ -47,173 +50,146 @@ const ROLE_PRIORITY: Record<UserRole, number> = {
 
 ### Key Functions
 
-#### 1. `determineUserRole`
+#### 1. `determineUserRolesByFeed`
 
-- Determines the user’s overall role based on:
-  - Created feeds (‘admin’ takes precedence).
-  - Existing permissions (‘mod’ takes precedence over ‘user’).
+- Assigns feed-specific roles for a user based on created feeds and existing permissions.
+- Ensures the highest-priority role is assigned when conflicts arise.
+- Uses the following logic:
+  - **Created Feeds**: Assigns `admin` role to feeds created by the user.
+  - **Existing Permissions**: Updates roles based on existing permissions.
 
 #### 2. `buildFeedPermissions`
 
-- Combines and prioritizes permissions for created feeds and existing permissions.
-- Key operations:
-  - **Validation Guards**: Checks for valid input data.
-  - **Admin Permissions**: Grants `admin` role for created feeds.
-  - **Permissions Map**: Resolves duplicate roles by retaining the highest-priority role.
-  - **Sorting**: Ensures consistent output order by `feed_did`.
+- Combines feed permissions for a user by:
+  - Assigning `admin` role for created feeds.
+  - Merging with existing permissions.
+  - Resolving conflicts using `ROLE_PRIORITY`.
+
+#### 3. `PermissionsManager`
+
+- Provides utility functions to:
+  - Check if a user can perform an action on a feed (e.g., `create_mod`, `remove_mod`).
+  - Retrieve the user’s role for a specific feed.
+  - Set or update feed roles for a user.
 
 ---
 
-## Test Coverage
+## Integration
 
-### Test Suites
+### Authentication and Role Assignment
 
-#### 1. `determineUserRole`
+Role assignments are integrated into the authentication process using the following steps:
 
-- **Purpose**: Verifies role determination logic.
-- **Test Cases**:
-  - Returns `admin` if the user has created feeds.
-  - Returns `mod` if the user has no created feeds but has `mod` permissions.
-  - Returns `user` if the user has no created feeds or `mod` permissions.
+1. **Profile Retrieval**:
 
-#### 2. `buildFeedPermissions`
+   - Fetches the user’s profile using `getUserProfile`.
+   - Validates session data and fetches the user’s feed-specific permissions and created feeds.
 
-##### Basic Functionality
+2. **Role Determination**:
 
-- Combines created feed permissions with existing permissions.
-- Returns an empty array when there are no inputs.
+   - Uses `determineUserRolesByFeed` to assign roles for each feed.
 
-##### Role Prioritization
+3. **Permission Saving**:
 
-- Assigns `admin` for created feeds.
-- Ensures `mod` and `user` roles do not override `admin`.
-- Resolves duplicates by retaining the highest-priority role.
+   - Saves the feed permissions to the database using `SupabaseInstance`.
 
-##### Error Handling
+4. **Session Update**:
+   - Stores the user’s profile and feed roles in the session using `iron-session`.
 
-- Throws errors for:
-  - Invalid user ID.
-  - Malformed feed data in created feeds.
-  - Malformed permission data in existing permissions.
-  - Invalid role values in existing permissions.
+### Permissions Workflow
 
-##### Complex Role Combinations
+#### Adding a Moderator
 
-- Handles scenarios with overlapping permissions and multiple created feeds.
-- Ensures consistent role prioritization and sorting.
+- **Endpoint**: `/api/admin/mods` (POST)
+- **Workflow**:
+  1. Validate input (user DID, feed URI, etc.).
+  2. Check if the current user is an `admin` for the feed.
+  3. Assign the `mod` role to the target user for the specified feed.
+  4. Save the updated permissions to the database.
+
+#### Removing a Moderator
+
+- **Endpoint**: `/api/admin/mods` (DELETE)
+- **Workflow**:
+  1. Validate input (user DID, feed URI, etc.).
+  2. Check if the current user is an `admin` for the feed.
+  3. Revoke the `mod` role from the target user for the specified feed.
+  4. Log the demotion in the database.
 
 ---
 
 ## Example Scenarios
 
-### Input Validation
+### Assigning Roles
 
 ```typescript
-// Invalid user ID
-expect(() => buildFeedPermissions('', [], [])).toThrow(
-  'Invalid user ID provided.'
-);
-
-// Malformed created feed data
-expect(() =>
-  buildFeedPermissions('user123', [{ did: '', uri: '' }], [])
-).toThrow('Invalid feed data: Each feed must have a valid "did" and "uri".');
+const rolesByFeed = determineUserRolesByFeed(existingPermissions, createdFeeds);
+console.log(rolesByFeed);
+/* Output:
+{
+  'at://feed/123': { role: 'admin', displayName: 'Feed 123', feedUri: 'at://feed/123' },
+  'at://feed/456': { role: 'mod', displayName: 'Feed 456', feedUri: 'at://feed/456' }
+}
+*/
 ```
 
-### Role Prioritization
+### Adding a Moderator
 
 ```typescript
-// Admin overrides mod
-const createdFeeds = [{ did: 'feed123', uri: 'at://feed/123' }];
-const existingPermissions = [
-  { role: 'mod', feed_did: 'feed123', feed_name: '123' },
-];
-
-const permissions = buildFeedPermissions(
-  'user123',
-  createdFeeds,
-  existingPermissions
+await PermissionsManager.setFeedRole(
+  'targetUserDid',
+  'at://feed/123',
+  'mod',
+  'adminUserDid',
+  'Feed 123'
 );
-expect(permissions).toEqual([
-  {
-    user_did: 'user123',
-    feed_did: 'feed123',
-    feed_name: '123',
-    role: 'admin',
-    created_by: 'user123',
-    created_at: expect.any(String),
-  },
-]);
 ```
 
-### Sorting and Duplicates
+### Removing a Moderator
 
 ```typescript
-// Sorted output
-const createdFeeds = [
-  { did: 'feed789', uri: 'at://feed/789' },
-  { did: 'feed123', uri: 'at://feed/123' },
-];
-const existingPermissions = [
-  { role: 'mod', feed_did: 'feed456', feed_name: '456' },
-];
-
-const permissions = buildFeedPermissions(
-  'user123',
-  createdFeeds,
-  existingPermissions
+await PermissionsManager.canPerformAction(
+  'adminUserDid',
+  'remove_mod',
+  'at://feed/123'
 );
-expect(permissions).toEqual([
-  {
-    user_did: 'user123',
-    feed_did: 'feed123',
-    feed_name: '123',
-    role: 'admin',
-    created_by: 'user123',
-    created_at: expect.any(String),
-  },
-  {
-    role: 'mod',
-    feed_did: 'feed456',
-    feed_name: '456',
-  },
-  {
-    user_did: 'user123',
-    feed_did: 'feed789',
-    feed_name: '789',
-    role: 'admin',
-    created_by: 'user123',
-    created_at: expect.any(String),
-  },
-]);
 ```
+
+---
+
+## Test Coverage
+
+### `determineUserRolesByFeed`
+
+- **Test Cases**:
+  - Assigns `admin` for created feeds.
+  - Prioritizes `mod` over `user` roles.
+  - Resolves duplicate roles using `ROLE_PRIORITY`.
+
+### `buildFeedPermissions`
+
+- **Test Cases**:
+  - Combines created and existing permissions.
+  - Handles invalid input data gracefully.
+  - Deduplicates roles and ensures consistent output order.
 
 ---
 
 ## Future Considerations
 
-1. **Audit Logging**:
+1. **Bulk Operations**:
 
-   - Track changes to permissions for debugging and accountability.
+   - Add support for bulk role assignment and revocation.
 
-2. **Extended Role Types**:
+2. **Performance Optimization**:
 
-   - Support for additional roles (e.g., `viewer`, `contributor`).
-   - Update `ROLE_PRIORITY` and related logic.
+   - Optimize database queries for large datasets.
 
-3. **Synchronization**:
-
-   - Regularly audit and synchronize feed permissions with the database state to prevent drift.
-
-4. **Performance Optimization**:
-
-   - Optimize the sorting and duplicate resolution logic for large datasets.
-
-5. **Error Handling**:
-   - Improve error messages for better developer and user clarity.
+3. **Error Messaging**:
+   - Improve error messages for better debugging and user experience.
 
 ---
 
 ## Summary
 
-This role management system provides a robust foundation for feed-centric permission handling. By combining role prioritization, validation, and test coverage, it ensures reliability and consistency while offering scalability for future enhancements.
+The role management system is feed-centric, prioritizes roles, and ensures robust validation. It is designed for scalability and provides a clear foundation for managing permissions in a growing application.

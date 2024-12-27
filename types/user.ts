@@ -1,4 +1,3 @@
-import { AppBskyActorDefs, ComAtprotoLabelDefs } from '@atproto/api';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
 export interface FeedRoleInfo {

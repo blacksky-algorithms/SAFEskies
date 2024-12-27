@@ -7,34 +7,6 @@ const ROLE_PRIORITY: Record<UserRole, number> = {
   user: 1,
 };
 
-export const determineUserRole = (
-  existingPermissions: { role: UserRole }[],
-  createdFeeds: { uri: string }[]
-): UserRole => {
-  if (createdFeeds.length > 0) {
-    return 'admin';
-  }
-  if (existingPermissions.some((p) => p.role === 'mod')) {
-    return 'mod';
-  }
-  return 'user';
-};
-
-const validateInputData = (
-  userDid: string,
-  createdFeeds: { uri: string }[],
-  existingPermissions: { role: UserRole; feed_uri: string; feed_name: string }[]
-) => {
-  if (!userDid || typeof userDid !== 'string') {
-    throw new Error('Invalid user ID provided.');
-  }
-  if (!Array.isArray(createdFeeds) || !Array.isArray(existingPermissions)) {
-    throw new Error(
-      'Invalid input data: createdFeeds and existingPermissions must be arrays.'
-    );
-  }
-};
-
 export const buildFeedPermissions = (
   userDid: string,
   createdFeeds: { uri: string; displayName?: string }[],
@@ -114,37 +86,10 @@ export const determineUserRolesByFeed = (
         ROLE_PRIORITY[permission.role] > ROLE_PRIORITY[currentEntry.role]
           ? permission.role
           : currentEntry.role,
-      displayName: currentEntry.displayName, // Preserve displayName
+      displayName: currentEntry.displayName,
       feedUri: permission.feed_uri,
     };
   });
 
   return rolesByFeed;
 };
-
-// export const determineUserRolesByFeed = (
-//   existingPermissions: {
-//     role: UserRole;
-//     feed_uri: string;
-//     feed_name: string;
-//   }[],
-//   createdFeeds: { uri: string }[]
-// ) => {
-//   const rolesByFeed: Record<string, UserRole> = {};
-
-//   // Assign admin role to feeds the user created
-//   createdFeeds.forEach((feed) => {
-//     rolesByFeed[feed.uri] = 'admin';
-//   });
-
-//   // Update roles based on permissions
-//   existingPermissions.forEach((permission) => {
-//     const currentRole = rolesByFeed[permission.feed_uri] || 'user';
-//     rolesByFeed[permission.feed_uri] =
-//       ROLE_PRIORITY[permission.role] > ROLE_PRIORITY[currentRole]
-//         ? permission.role
-//         : currentRole;
-//   });
-
-//   return rolesByFeed;
-// };
