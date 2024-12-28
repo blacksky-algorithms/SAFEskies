@@ -1,5 +1,5 @@
 import { ProfileManager } from '@/services/profile-manager';
-import { FeedManager } from '@/services/feed-manager';
+import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 import { ModManagementCard } from '@/components/mod-management-card';
 import { FeedRoleInfo } from '@/types/user';
 import { Tabs } from '@/components/tab/tab';
@@ -23,7 +23,9 @@ export default async function Page() {
       displayName: (roleInfo as FeedRoleInfo).displayName || 'Unnamed Feed',
     }));
 
-  const moderatorsByFeed = await FeedManager.getModeratorsByFeeds(adminFeeds);
+  const moderatorsByFeed = await FeedPermissionManager.getModeratorsByFeeds(
+    adminFeeds
+  );
 
   const tabs = moderatorsByFeed.map(({ feed, moderators }) => ({
     title: (feed.displayName as string) || '',

@@ -16,13 +16,13 @@ export const ModSideDrawerContent = ({
     <nav className='p-4 space-y-4'>
       <div className='space-y-2'>
         <h2 className='text-app-secondary font-semibold px-4'>Moderation</h2>
-        <div className='space-y-1'>
+        <ul className='space-y-1'>
           <SideDrawerLink
             label='Moderation Queue'
             href='/mod/reports'
             onClick={handleLinkClick}
           />
-        </div>
+        </ul>
       </div>
     </nav>
   );

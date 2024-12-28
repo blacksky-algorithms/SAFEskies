@@ -3,9 +3,9 @@ import '@/styles/globals.css';
 
 import { Providers } from '@/contexts';
 import { preferredLanguages } from '@/utils/todo';
-import { getSession } from '@/repos/iron';
 import { BaseLayout } from '@/components/layouts/base-layout';
 import { SideDrawerContent } from '@/components/side-drawer/side-drawer-content';
+import { ProfileManager } from '@/services/profile-manager';
 
 export const metadata: Metadata = {
   title: 'OnlyFeeds',
@@ -16,7 +16,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { user } = await getSession();
+  const user = await ProfileManager.getProfile();
 
   return (
     <html lang={preferredLanguages}>

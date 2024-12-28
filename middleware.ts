@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 import { type Session } from '@/repos/iron';
-import { ProfileManager } from '@/services/profile-manager';
+import { FeedPermissionManager } from './services/feed-permissions-manager';
 
 export async function middleware(req: NextRequest) {
   const publicPaths = [
@@ -42,7 +42,7 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/oauth/login', req.url));
     }
 
-    const userHighestRole = await ProfileManager.getHighestRole(
+    const userHighestRole = await FeedPermissionManager.getHighestRoleForUser(
       session.user.did
     );
 

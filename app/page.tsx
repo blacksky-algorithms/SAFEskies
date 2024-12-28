@@ -2,20 +2,19 @@
 import { Feed } from '@/components/feed/feed';
 import { Tabs } from '@/components/tab/tab';
 import { ProfileManager } from '@/services/profile-manager';
-import { FeedManager } from '@/services/feed-manager';
+import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 import cc from 'classcat';
-import { UserRole } from '@/types/user';
 
 export default async function FeedsPage() {
   const profile = await ProfileManager.getProfile();
 
-  const { feeds, defaultFeed } = await FeedManager.getUserFeeds(profile?.did);
+  const { feeds, defaultFeed } = await FeedPermissionManager.getUserFeeds(
+    profile?.did
+  );
 
-  // Now feeds include type information (admin/mod/created/subscribed)
   const allFeeds = feeds.length > 0 ? feeds : [defaultFeed];
 
   const tabs = allFeeds.map((feed) => {
-    const styles = getFeedTypeBadgeStyles(feed?.type);
     return {
       title: (
         <div
@@ -29,8 +28,9 @@ export default async function FeedsPage() {
             className={cc([
               '',
               {
-                [styles]: !!feed.type,
-                hidden: !feed?.type,
+                'bg-app-primary rounded-full px-2 py-1 text-xs':
+                  !!feed.type && feed.type !== 'user',
+                hidden: !feed?.type || feed.type === 'user',
               },
             ])}
           >
@@ -47,15 +47,4 @@ export default async function FeedsPage() {
       <Tabs tabs={tabs} />
     </div>
   );
-}
-
-function getFeedTypeBadgeStyles(type: UserRole) {
-  switch (type) {
-    case 'admin':
-      return 'bg-red-100 text-red-800 rounded-full px-2 py-1 text-xs';
-    case 'mod':
-      return 'bg-blue-100 text-blue-800 rounded-full px-2 py-1 text-xs';
-    default:
-      return '';
-  }
 }

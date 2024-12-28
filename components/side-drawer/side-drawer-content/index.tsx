@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
-import { User } from '@/types/user';
+import React, { useEffect } from 'react';
+import { User, UserRole } from '@/types/user';
 import { UserDrawerContent } from './user-drawer-content';
 import { ModSideDrawerContent } from './mod-side-drawer-content';
 import { AdminSideDrawerContent } from './admin-side-drawer-content';
 import { useModal } from '@/contexts/modal-context';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useRouter } from 'next/navigation';
+import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 
 interface Props {
   user: User | null;
@@ -16,14 +17,24 @@ interface Props {
 export const SideDrawerContent = ({ user }: Props) => {
   const router = useRouter();
   const { closeModalInstance } = useModal();
+  const [highestRole, setHighestRole] = React.useState<UserRole | null>(null);
 
-  // Map feeds to include displayName and role from the updated rolesByFeed structure
-  const feeds = Object.values(user?.rolesByFeed || {});
+  useEffect(() => {
+    const getHighestRole = async () => {
+      if (user) {
+        const data = await FeedPermissionManager.getHighestRoleForUser(
+          user.did
+        );
 
-  const [
-    selectedFeedUri,
-    // setSelectedFeedUri
-  ] = useState<string | null>(feeds.length > 0 ? feeds[0].feedUri : null);
+        setHighestRole(data);
+      } else {
+        setHighestRole('user');
+      }
+    };
+
+    getHighestRole();
+  }, [user]);
+
   if (!user || !user.rolesByFeed) {
     return null;
   }
@@ -35,14 +46,6 @@ export const SideDrawerContent = ({ user }: Props) => {
       router.push(href);
     };
 
-  // const handleFeedSelection = (feedUri: string) => {
-  //   setSelectedFeedUri(feedUri);
-  // };
-
-  const currentRole = selectedFeedUri
-    ? feeds.find((feed) => feed.feedUri === selectedFeedUri)?.role || 'user'
-    : 'user';
-
   const SIDE_DRAWER_CONTENT = {
     admin: (
       <AdminSideDrawerContent user={user} handleLinkClick={handleLinkClick} />
@@ -51,26 +54,13 @@ export const SideDrawerContent = ({ user }: Props) => {
     user: <UserDrawerContent user={user} />,
   };
 
+  if (!highestRole) {
+    return null;
+  }
+
   return (
     <div className='flex flex-col h-full gap-4 p-4'>
-      {/* <div className='mb-4'>
-        <label htmlFor='feed-select'>Select Feed:</label>
-        <select
-          id='feed-select'
-          className='w-full p-2 border border-gray-300 rounded'
-          value={selectedFeedUri || ''}
-          onChange={(e) => handleFeedSelection(e.target.value)}
-        >
-          {feeds.map((feed) => {
-            return (
-              <option key={feed.feedUri} value={feed.feedUri}>
-                {feed.displayName}
-              </option>
-            );
-          })}
-        </select>
-      </div> */}
-      {SIDE_DRAWER_CONTENT[currentRole || 'user']}
+      {SIDE_DRAWER_CONTENT[highestRole]}
     </div>
   );
 };

@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Button } from '@/components/button';
 import { OptimizedImage } from '@/components/optimized-image';
 import Link from 'next/link';
-import { FeedManager } from '@/services/feed-manager';
+import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 
@@ -89,7 +89,7 @@ export const ModManagementCard = ({
 
   const handleDemote = async (modDid: string) => {
     try {
-      const success = await FeedManager.setFeedRole(
+      const success = await FeedPermissionManager.setFeedRole(
         modDid,
         feed.uri,
         'user',

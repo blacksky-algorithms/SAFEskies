@@ -12,7 +12,7 @@ import { VisualIntent } from '@/enums/styles';
 export const UserButton = ({ user }: { user: User }) => {
   const { openModalInstance } = useModal();
   const toggleModal = () => openModalInstance(MODAL_INSTANCE_IDS.SIDE_DRAWER);
-
+  console.log('user did', user.did);
   return (
     <Button
       intent={VisualIntent.TextButton}
@@ -36,7 +36,7 @@ export const UserButton = ({ user }: { user: User }) => {
         </>
       )}
       <span className='hidden sm:block text-sm font-medium'>
-        {user.displayName || 'User'}
+        {(user.name as string) || 'User'}
       </span>
     </Button>
   );
