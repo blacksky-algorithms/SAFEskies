@@ -1,7 +1,7 @@
 import { getUserProfile } from '@/repos/profile';
 import { SupabaseInstance } from '@/repos/supabase';
 import { AtprotoAgent } from '@/repos/atproto-agent';
-import { ManageModerators } from '@/components/manage-moderators';
+import { ModManagementCard } from '@/components/mod-management-card';
 import { FeedRoleInfo } from '@/types/user';
 import { Tabs } from '@/components/tab/tab';
 import Link from 'next/link';
@@ -60,7 +60,7 @@ export default async function Page() {
         <span>
           {moderators.length > 0 ? (
             <div className='mt-6'>
-              <ManageModerators moderators={moderators} feed={feed} />
+              <ModManagementCard moderators={moderators} feed={feed} />
             </div>
           ) : (
             <span className='flex flex-col items-center space-y-4 p-6 bg-app-secondary-light rounded-md border border-app-border max-w-2xl mx-auto mt-6'>

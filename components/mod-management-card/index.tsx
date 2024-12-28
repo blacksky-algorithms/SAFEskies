@@ -23,7 +23,7 @@ interface ManageModeratorsProps {
   feed: Feed;
 }
 
-export const ManageModerators = ({
+export const ModManagementCard = ({
   moderators,
   feed,
 }: ManageModeratorsProps) => {
