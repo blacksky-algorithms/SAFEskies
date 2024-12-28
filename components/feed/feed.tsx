@@ -83,10 +83,7 @@ export const Feed = ({ uri }: FeedProps) => {
 
   return (
     <div className=' max-h-page'>
-      <section
-        className='flex flex-col items-center mx-auto tablet:px-10'
-        // aria-labelledby={`feed-title-${feedName}`}
-      >
+      <section className='flex flex-col items-center mx-auto tablet:px-10'>
         <div
           ref={containerRef}
           onTouchStart={onTouchStart}

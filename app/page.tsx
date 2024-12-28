@@ -1,11 +1,10 @@
-// pages/feeds.tsx
 import { Feed } from '@/components/feed/feed';
 import { Tabs } from '@/components/tab/tab';
 import { ProfileManager } from '@/services/profile-manager';
 import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 import cc from 'classcat';
 
-export default async function FeedsPage() {
+export default async function Page() {
   const profile = await ProfileManager.getProfile();
 
   const { feeds, defaultFeed } = await FeedPermissionManager.getUserFeeds(
