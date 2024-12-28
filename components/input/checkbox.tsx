@@ -15,6 +15,7 @@ export const Checkbox = ({
   intent = VisualIntent.Primary,
   checkboxSize = 'sm',
   id = 'checkbox',
+  disabled = false,
   ...props
 }: CheckboxProps) => {
   const intentColors = {
@@ -52,7 +53,7 @@ export const Checkbox = ({
     lg: 'text-lg',
     xl: 'text-xl',
   };
-
+  const computedIntent = disabled ? VisualIntent.Secondary : intent;
   return (
     <label htmlFor={id} className='flex items-center space-x-2 cursor-pointer'>
       <div
@@ -60,27 +61,31 @@ export const Checkbox = ({
           'relative flex items-center justify-center bg-app-background transition-all duration-150',
           sizeClasses[checkboxSize],
           roundedClasses[checkboxSize],
-          intentColors[intent],
+          intentColors[computedIntent],
           paddingClasses[checkboxSize],
         ])}
       >
         <input
           id={id}
           type='checkbox'
-          className='absolute w-full h-full opacity-0 cursor-pointer'
+          className={cc([
+            'absolute w-full h-full opacity-0 ',
+            { 'cursor-pointer': !disabled },
+          ])}
+          disabled={disabled}
           {...props}
         />
         <span
           className={cc([
             'absolute inset-0 flex items-center justify-center transition-all duration-150',
             roundedClasses[checkboxSize],
-            intentColors[intent],
+            intentColors[computedIntent],
           ])}
         >
           {props.checked && (
             <Icon
               icon='CheckIcon'
-              intent={intent}
+              intent={computedIntent}
               isButton={false}
               size={checkboxSize}
             />

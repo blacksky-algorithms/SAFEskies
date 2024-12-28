@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 import { type Session } from '@/repos/iron';
-import { getUsersHighestRole } from '@/repos/profile';
+import { ProfileManager } from '@/services/profile-manager';
 
 export async function middleware(req: NextRequest) {
   const publicPaths = [
@@ -42,7 +42,9 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/oauth/login', req.url));
     }
 
-    const userHighestRole = await getUsersHighestRole(session.user.did);
+    const userHighestRole = await ProfileManager.getHighestRole(
+      session.user.did
+    );
 
     if (req.nextUrl.pathname.startsWith('/admin')) {
       if (userHighestRole !== 'admin') {

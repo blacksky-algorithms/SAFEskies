@@ -1,61 +1,43 @@
 'use client';
 
+import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 import { Checkbox } from '../input/checkbox';
-import { GeneratorView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { PromoteModState } from '../promote-mod-form';
 
 interface FeedSelectorProps {
-  feeds: GeneratorView[];
-  onSelect: (selectedFeeds: GeneratorView[]) => void;
-  userToPromote: string;
-  selectedFeeds: GeneratorView[];
+  feeds: Feed[];
+  state: PromoteModState;
+  onToggleFeed: (feed: Feed) => void;
+  onSelectAll: () => void;
 }
 
 export function FeedSelector({
   feeds,
-  onSelect,
-  userToPromote,
-  selectedFeeds,
+  state,
+  onToggleFeed,
+  onSelectAll,
 }: FeedSelectorProps) {
-  const isFeedSelected = (item: GeneratorView) => {
-    return selectedFeeds.some((selected) => selected.uri === item.uri);
-  };
+  const isFeedSelected = (item: Feed) =>
+    state.selectedFeeds.some((selected) => selected.uri === item.uri);
 
-  const handleToggle = (item: GeneratorView) => {
-    const isAlreadySelected = selectedFeeds.some(
-      (selected) => selected.uri === item.uri
-    );
+  const isFeedDisabled = (item: Feed) => state.disabledFeeds.includes(item.uri);
 
-    const updatedFeeds = isAlreadySelected
-      ? selectedFeeds.filter((feed) => feed.uri !== item.uri)
-      : [...selectedFeeds, item];
-
-    onSelect(updatedFeeds);
-  };
-
-  const handleSelectAll = () => {
-    if (selectedFeeds.length < feeds.length) {
-      onSelect(feeds);
-    } else {
-      onSelect([]);
-    }
-  };
-
+  const availableFeeds = feeds.filter((feed) => !isFeedDisabled(feed));
   const isAllSelected =
-    selectedFeeds.length === feeds.length && feeds.length > 0;
+    state.selectedFeeds.length === availableFeeds.length &&
+    availableFeeds.length > 0;
+
+  if (!state.selectedUser) return null;
 
   return (
     <form className='space-y-6 mx-auto'>
       <header className='space-y-2'>
         <h2 className='text-lg font-bold text-app flex items-center flex-wrap justify-center tablet:justify-normal gap-1'>
-          Promote
-          <span className='p-2 flex flex-col border rounded bg-app-secondary-hover border-app-border'>
-            <span>{userToPromote}</span>
-          </span>
-          to Moderator
+          Promote {state.selectedUser.handle} to Moderator
         </h2>
         <p className='text-sm text-app-secondary'>
-          Select the feeds where this user should be promoted to moderator. Use
-          &quot;Select All Feeds&quot; for bulk selection.
+          Select the feeds where this user should be promoted to moderator.
+          Feeds where they are already a moderator or admin are disabled.
         </p>
       </header>
 
@@ -63,20 +45,30 @@ export function FeedSelector({
         <legend className='font-semibold text-app mb-2'>Feeds Selection</legend>
         <div className='flex flex-col space-y-6'>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-            {feeds.map((item) => (
-              <Checkbox
-                id={`select-feed-${item.cid}`}
-                key={item.cid}
-                label={item.displayName || 'Feed has no display name'}
-                checked={isFeedSelected(item)}
-                onChange={() => handleToggle(item)}
-              />
-            ))}
+            {feeds.map((item) => {
+              const isDisabled = isFeedDisabled(item);
+              return (
+                <div key={item.cid as string} className='flex flex-col gap-1'>
+                  <Checkbox
+                    id={`select-feed-${item.cid}`}
+                    label={(item.displayName as string) || 'Unnamed Feed'}
+                    checked={
+                      isDisabled === true ? isDisabled : isFeedSelected(item)
+                    }
+                    onChange={() => onToggleFeed(item)}
+                    disabled={isDisabled}
+                  />
+                  {isDisabled && (
+                    <span className='text-xs'>Already authorized</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
           <Checkbox
-            label='Select All Feeds'
+            label={`Select All Available Feeds (${availableFeeds.length})`}
             checked={isAllSelected}
-            onChange={handleSelectAll}
+            onChange={onSelectAll}
             id='select-all-feeds'
           />
         </div>

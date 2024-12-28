@@ -6,7 +6,7 @@ import cc from 'classcat';
 import { ReactNode } from 'react';
 
 interface TabItem {
-  title: string;
+  title: string | ReactNode;
   TabContent: ReactNode;
 }
 

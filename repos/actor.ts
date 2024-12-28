@@ -1,4 +1,4 @@
-import { AtprotoAgent } from './atproto-agent';
+import { AtprotoAgent } from '@/repos/atproto-agent';
 
 export const getActorFeeds = async (actor: string) => {
   try {

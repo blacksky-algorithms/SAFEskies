@@ -1,4 +1,4 @@
-import { getUserProfile } from '@/repos/profile';
+import { ProfileManager } from '@/services/profile-manager';
 import { User } from '@/types/user';
 import { useEffect, useState } from 'react';
 export const useProfile = () => {
@@ -11,7 +11,7 @@ export const useProfile = () => {
       try {
         setLoading(true);
 
-        const profile = await getUserProfile();
+        const profile = await ProfileManager.getProfile();
         setProfile(profile);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {

@@ -6,7 +6,7 @@ import { BlueskyOAuthClient } from '@/repos/blue-sky-oauth-client';
 import { getActorFeeds } from '@/repos/actor';
 import { SupabaseInstance } from '@/repos/supabase';
 import { buildFeedPermissions, determineUserRolesByFeed } from '@/utils/roles';
-import { saveUserProfile } from '@/repos/profile';
+import { ProfileManager } from '@/services/profile-manager';
 import { FeedRoleInfo, User, UserRole } from '@/types/user';
 
 class AuthenticationHandler {
@@ -97,7 +97,10 @@ class AuthenticationHandler {
     createdFeeds: Array<{ uri: string; displayName?: string }>
   ) {
     const userData: User = { ...profileData, rolesByFeed };
-    const saveSuccess = await saveUserProfile(userData, createdFeeds);
+    const saveSuccess = await ProfileManager.saveProfile(
+      userData,
+      createdFeeds
+    );
 
     if (!saveSuccess) {
       throw new Error('Failed to save user profile data.');

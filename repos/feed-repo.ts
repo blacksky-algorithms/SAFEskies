@@ -4,7 +4,7 @@ import { AtprotoAgent } from './atproto-agent';
 export interface FeedParams {
   limit?: number;
   cursor?: string;
-  signal?: AbortSignal; // Allow signal for cancellation
+  signal?: AbortSignal;
   uri: string;
 }
 
