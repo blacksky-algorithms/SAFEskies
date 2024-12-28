@@ -25,7 +25,8 @@ export function Tabs({ tabs }: TabsProps) {
               cc([
                 'w-full text-center my-4 p-2 cursor-pointer',
                 {
-                  'border-b-4 border-b-app-primary': selected,
+                  'border-b-4 border-b-app-primary':
+                    selected && tabs.length > 1,
                 },
               ])
             }
