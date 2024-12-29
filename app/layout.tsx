@@ -6,6 +6,7 @@ import { preferredLanguages } from '@/utils/todo';
 import { BaseLayout } from '@/components/layouts/base-layout';
 import { SideDrawerContent } from '@/components/side-drawer/side-drawer-content';
 import { ProfileManager } from '@/services/profile-manager';
+import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 
 export const metadata: Metadata = {
   title: 'OnlyFeeds',
@@ -17,6 +18,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await ProfileManager.getProfile();
+  const highestRole = await FeedPermissionManager.getHighestRoleForUser(
+    user?.did
+  );
 
   return (
     <html lang={preferredLanguages}>
@@ -24,7 +28,10 @@ export default async function RootLayout({
         <Providers>
           <BaseLayout
             user={user}
-            sideContent={<SideDrawerContent user={user} />}
+            highestRole={highestRole}
+            sideContent={
+              <SideDrawerContent user={user} highestRole={highestRole} />
+            }
           >
             {children}
           </BaseLayout>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { User, UserRole } from '@/types/user';
 import { UserDrawerContent } from './user-drawer-content';
 import { ModSideDrawerContent } from './mod-side-drawer-content';
@@ -8,32 +8,15 @@ import { AdminSideDrawerContent } from './admin-side-drawer-content';
 import { useModal } from '@/contexts/modal-context';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useRouter } from 'next/navigation';
-import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 
 interface Props {
   user: User | null;
+  highestRole: UserRole | null;
 }
 
-export const SideDrawerContent = ({ user }: Props) => {
+export const SideDrawerContent = ({ user, highestRole }: Props) => {
   const router = useRouter();
   const { closeModalInstance } = useModal();
-  const [highestRole, setHighestRole] = React.useState<UserRole | null>(null);
-
-  useEffect(() => {
-    const getHighestRole = async () => {
-      if (user) {
-        const data = await FeedPermissionManager.getHighestRoleForUser(
-          user.did
-        );
-
-        setHighestRole(data);
-      } else {
-        setHighestRole('user');
-      }
-    };
-
-    getHighestRole();
-  }, [user]);
 
   if (!user || !user.rolesByFeed) {
     return null;

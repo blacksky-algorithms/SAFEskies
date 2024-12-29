@@ -1,18 +1,20 @@
 import { Header } from '@/components/header';
 import { SideDrawer } from '@/components/side-drawer';
-import { User } from '@/types/user';
+import { User, UserRole } from '@/types/user';
 import { PropsWithChildren } from 'react';
 
 interface BaseLayoutProps {
   user: User | null;
   sideContent: React.ReactNode;
   rightContent?: React.ReactNode;
+  highestRole: UserRole | null;
 }
 
 export const BaseLayout = ({
   children,
   user,
   sideContent,
+  highestRole,
 }: PropsWithChildren<BaseLayoutProps>) => {
   return (
     <div className='grid grid-rows-layout min-h-screen'>
@@ -27,7 +29,7 @@ export const BaseLayout = ({
           {children}
         </main>
       </div>
-      <SideDrawer user={user} />
+      <SideDrawer user={user} highestRole={highestRole} />
     </div>
   );
 };
