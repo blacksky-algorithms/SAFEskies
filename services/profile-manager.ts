@@ -109,17 +109,6 @@ const getProfile = async () => {
 
 const getProfileDetails = async (userDid: string) => {
   try {
-    // First try to get from our database
-    const { data: profileData } = await SupabaseInstance.from('profiles')
-      .select('*')
-      .eq('did', userDid)
-      .single();
-
-    if (profileData) {
-      return profileData;
-    }
-
-    // If not in database, fetch from Bluesky
     const response = await AtprotoAgent.app.bsky.actor.getProfile({
       actor: userDid,
     });
