@@ -1,7 +1,8 @@
 import { SupabaseInstance } from '@/repos/supabase';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 import { FeedRoleInfo, UserRole } from '@/types/user';
-import { ProfileManager } from './profile-manager';
+import { ProfileManager } from '@/services/profile-manager';
+import { ModerationLogs } from '@/services/moderation-logs';
 
 const DEFAULT_FEED = {
   uri: 'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot',
@@ -156,6 +157,14 @@ const setFeedRole = async (
       console.error('Error upserting feed role:', error);
       return false;
     }
+
+    await ModerationLogs.createModerationLog({
+      feed_uri: feedUri,
+      performed_by: setByUserDid,
+      action: role === 'mod' ? 'mod_promote' : 'mod_demote',
+      target_user_did: targetUserDid,
+      metadata: { role, feed_name: feedName },
+    });
 
     return true;
   } catch (error) {
