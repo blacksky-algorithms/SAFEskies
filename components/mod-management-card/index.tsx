@@ -3,12 +3,11 @@
 import { useToast } from '@/contexts/toast-context';
 import { VisualIntent } from '@/enums/styles';
 import { useState } from 'react';
-import { Button } from '@/components/button';
-import { OptimizedImage } from '@/components/optimized-image';
 import Link from 'next/link';
 import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
+import { ModActionCard } from './components/mod-action-card';
 
 interface ModManagementState {
   moderators: ProfileViewBasic[];
@@ -17,58 +16,6 @@ interface ModManagementState {
   pendingDemotions: Set<string>;
 }
 
-interface ModCardProps {
-  moderator: ProfileViewBasic;
-  isBeingDemoted: boolean;
-  onDemote: (modDid: string) => void;
-}
-
-const ModCard = ({ moderator, isBeingDemoted, onDemote }: ModCardProps) => (
-  <article className='bg-app-background border border-app-border rounded-md shadow-sm p-4 flex'>
-    <div className='mr-4'>
-      {moderator.avatar ? (
-        <OptimizedImage
-          src={moderator.avatar}
-          alt={`${moderator.name || moderator.handle}'s avatar`}
-          className='w-12 h-12 rounded-full'
-        />
-      ) : (
-        <div className='w-12 h-12 bg-app-secondary rounded-full' />
-      )}
-    </div>
-
-    <div className='flex w-full flex-col tablet:flex-row justify-between flex-grow items-start'>
-      <div>
-        <h3 className='text-sm font-semibold text-app'>
-          {(moderator.name as string) || moderator.handle}
-        </h3>
-        <p className='text-xs text-app-secondary'>@{moderator.handle}</p>
-      </div>
-
-      <div className='flex justify-between tablet:justify-end w-full space-x-4 mt-6 tablet:mt-0'>
-        <div>
-          <Button
-            intent={VisualIntent.Secondary}
-            onClick={() => alert('TODO: View logs')}
-          >
-            View Logs
-          </Button>
-        </div>
-        <div>
-          <Button
-            intent={VisualIntent.Error}
-            onClick={() => onDemote(moderator.did)}
-            disabled={isBeingDemoted}
-          >
-            {isBeingDemoted ? 'Demoting...' : 'Demote'}
-          </Button>
-        </div>
-      </div>
-    </div>
-  </article>
-);
-
-// components/mod-management/mod-management-card.tsx
 export const ModManagementCard = ({
   moderators: initialModerators,
   feed,
@@ -142,11 +89,12 @@ export const ModManagementCard = ({
     <section className='p-4 space-y-6 w-full max-w-2xl mx-auto'>
       <div className='space-y-4'>
         {state.moderators.map((mod) => (
-          <ModCard
+          <ModActionCard
             key={mod.did}
             moderator={mod}
             isBeingDemoted={state.pendingDemotions.has(mod.did)}
             onDemote={handleDemote}
+            feedUri={feed.uri as string}
           />
         ))}
       </div>
