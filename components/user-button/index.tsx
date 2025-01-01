@@ -36,7 +36,7 @@ export const UserButton = ({ user }: { user: User }) => {
         </>
       )}
       <span className='hidden sm:block text-sm font-medium'>
-        {(user.name as string) || 'User'}
+        {(user.displayName as string) || `@${user.handle}` || 'User'}
       </span>
     </Button>
   );

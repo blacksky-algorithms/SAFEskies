@@ -16,7 +16,7 @@ const saveProfile = async (
       .upsert({
         did: blueSkyProfileData.did,
         handle: blueSkyProfileData.handle,
-        displayName: blueSkyProfileData.displayName,
+        name: blueSkyProfileData.displayName,
         avatar: blueSkyProfileData.avatar,
         associated: blueSkyProfileData.associated,
         labels: blueSkyProfileData.labels,
