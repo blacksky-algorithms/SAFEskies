@@ -16,10 +16,6 @@ export const LogFilters = ({
   onDateFilterChange,
   onActionFilterChange,
 }: Props) => {
-  const getLocalDate = (date: Date) => {
-    return date.toLocaleDateString('en-CA');
-  };
-
   return (
     <div className='flex flex-col justify-evenly space-y-4'>
       <Select
@@ -42,36 +38,7 @@ export const LogFilters = ({
         label='Filter By Date'
         value={filters.dateRange || { fromDate: '', toDate: '' }}
         onChange={onDateFilterChange}
-        presets={[
-          {
-            label: 'Today',
-            range: {
-              fromDate: getLocalDate(new Date()),
-              toDate: getLocalDate(new Date()),
-            },
-          },
-          {
-            label: 'Yesterday',
-            range: {
-              fromDate: getLocalDate(new Date(Date.now() - 86400000)),
-              toDate: getLocalDate(new Date(Date.now() - 86400000)),
-            },
-          },
-          {
-            label: 'Last 7 Days',
-            range: {
-              fromDate: getLocalDate(new Date(Date.now() - 604800000)),
-              toDate: getLocalDate(new Date()),
-            },
-          },
-          {
-            label: 'Last Month',
-            range: {
-              fromDate: getLocalDate(new Date(Date.now() - 2592000000)),
-              toDate: getLocalDate(new Date()),
-            },
-          },
-        ]}
+        presets
       />
     </div>
   );

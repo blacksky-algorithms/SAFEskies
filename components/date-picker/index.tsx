@@ -17,16 +17,51 @@ export interface DatePickerProps {
   label?: string;
   value: { fromDate: string; toDate: string };
   onChange: (value: { fromDate: string; toDate: string }) => void;
-  presets?: { label: string; range: { fromDate: string; toDate: string } }[];
+  presets?: boolean;
   error?: string;
 }
+
+const getLocalDate = (date: Date) => {
+  return date.toLocaleDateString('en-CA');
+};
+
+const PRESETS = [
+  {
+    label: 'Today',
+    range: {
+      fromDate: getLocalDate(new Date()),
+      toDate: getLocalDate(new Date()),
+    },
+  },
+  {
+    label: 'Yesterday',
+    range: {
+      fromDate: getLocalDate(new Date(Date.now() - 86400000)),
+      toDate: getLocalDate(new Date(Date.now() - 86400000)),
+    },
+  },
+  {
+    label: 'Last 7 Days',
+    range: {
+      fromDate: getLocalDate(new Date(Date.now() - 604800000)),
+      toDate: getLocalDate(new Date()),
+    },
+  },
+  {
+    label: 'Last Month',
+    range: {
+      fromDate: getLocalDate(new Date(Date.now() - 2592000000)),
+      toDate: getLocalDate(new Date()),
+    },
+  },
+];
 
 export const DatePicker = ({
   id,
   label,
   value,
   onChange,
-  presets = [],
+  presets = false,
   error,
 }: DatePickerProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -126,22 +161,24 @@ export const DatePicker = ({
                     error={error}
                   />
                 </div>
-                <div className='flex flex-col space-y-2'>
-                  <span className='text-sm font-medium'>Quick Presets</span>
-                  <div className='flex flex-wrap gap-2'>
-                    {presets.map((preset) => (
-                      <div key={preset.label}>
-                        <Button
-                          intent={VisualIntent.TextButton}
-                          className='text-sm border border-app-border'
-                          onClick={() => handlePreset(preset.range)}
-                        >
-                          {preset.label}
-                        </Button>
-                      </div>
-                    ))}
+                {presets ? (
+                  <div className='flex flex-col space-y-2'>
+                    <span className='text-sm font-medium'>Quick Presets</span>
+                    <div className='flex flex-wrap gap-2'>
+                      {PRESETS.map((preset) => (
+                        <div key={preset.label}>
+                          <Button
+                            intent={VisualIntent.TextButton}
+                            className='text-sm border border-app-border'
+                            onClick={() => handlePreset(preset.range)}
+                          >
+                            {preset.label}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                ) : null}
                 <div className='flex justify-end space-x-2'>
                   <Button intent={VisualIntent.Secondary} onClick={closePanel}>
                     Cancel
