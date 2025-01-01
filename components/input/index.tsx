@@ -40,7 +40,7 @@ export const Input = ({
           name={id}
           type={type}
           className={cc([
-            'font-medium rounded-md transition-all duration-150 focus:outline-none focus:ring-2',
+            'font-medium rounded-md transition-all duration-150 focus:outline-none focus:ring-2 w-full',
             sizeClasses[inputSize],
             {
               'border border-app-border bg-app-background text-app focus:ring-app-primary':

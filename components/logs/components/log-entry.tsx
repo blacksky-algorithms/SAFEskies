@@ -1,33 +1,7 @@
 'use client';
 import { ModAction } from '@/services/moderation-logs';
 import { format } from 'date-fns';
-import cc from 'classcat';
-import { Log } from '..';
-
-const Card = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => (
-  <div
-    className={cc([
-      'rounded-lg border border-app-border bg-app-background shadow-sm',
-      className,
-    ])}
-  >
-    {children}
-  </div>
-);
-
-const CardContent = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => <div className={cc(['px-6 py-4', className])}>{children}</div>;
+import { Log } from '@/types/logs';
 
 const ActionLabel: Record<ModAction, string> = {
   post_delete: 'Post Deleted',
@@ -39,9 +13,9 @@ const ActionLabel: Record<ModAction, string> = {
 };
 
 export const LogEntry = ({ log }: { log: Log }) => (
-  <Card className='mb-4'>
-    <CardContent className='pt-6'>
-      <div className='flex justify-between mb-2'>
+  <div className='rounded-lg border border-app-border bg-app-background shadow-sm mb-4'>
+    <div className='pt-6 px-6 py-4'>
+      <div className='flex flex-col tablet:flex-row justify-between mb-2'>
         <span className='font-semibold'>{ActionLabel[log.action]}</span>
         <span className='text-app-secondary text-sm'>
           {format(new Date(log.created_at), 'MMM d, yyyy h:mm a')}
@@ -69,6 +43,6 @@ export const LogEntry = ({ log }: { log: Log }) => (
           {JSON.stringify(log.metadata, null, 2)}
         </pre>
       )}
-    </CardContent>
-  </Card>
+    </div>
+  </div>
 );

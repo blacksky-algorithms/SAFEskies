@@ -106,7 +106,7 @@ export const DatePicker = ({
           >
             <PopoverPanel className='absolute z-10 mt-2 bg-app-background rounded-md shadow-lg p-4 w-full'>
               <div className='flex flex-col space-y-4'>
-                <div className='flex space-x-2'>
+                <div className='flex flex-col tablet:flex-row space-y-4 tablet:space-y-0 tablet:space-x-4'>
                   <Input
                     id={`${id}-from`}
                     label='From Date'
@@ -116,7 +116,6 @@ export const DatePicker = ({
                       updateLocalValue('fromDate', e.target.value)
                     }
                     error={error}
-                    className='w-full'
                   />
                   <Input
                     id={`${id}-to`}
@@ -125,7 +124,6 @@ export const DatePicker = ({
                     value={localValue.toDate}
                     onChange={(e) => updateLocalValue('toDate', e.target.value)}
                     error={error}
-                    className='w-full'
                   />
                 </div>
                 <div className='flex flex-col space-y-2'>

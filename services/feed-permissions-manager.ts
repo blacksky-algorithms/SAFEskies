@@ -3,6 +3,7 @@ import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedG
 import { FeedRoleInfo, UserRole } from '@/types/user';
 import { ProfileManager } from '@/services/profile-manager';
 import { ModerationLogs } from '@/services/moderation-logs';
+import { getActorFeeds } from '@/repos/actor';
 
 const DEFAULT_FEED = {
   uri: 'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot',
@@ -275,24 +276,66 @@ const getUserModFeeds = async (userDid: string) => {
   }
 };
 
-const getUserFeeds = async (userDid: string) => {
+const getUserFeeds = async (userDid?: string) => {
+  if (!userDid) return { feeds: [], defaultFeed: DEFAULT_FEED };
   try {
+    // 1. Get feed permissions from our database
     const [modFeeds, adminFeeds] = await Promise.all([
       getUserModFeeds(userDid),
       getUserAdminFeeds(userDid),
     ]);
 
-    const modFeedsList = modFeeds.map((feed) => ({
-      uri: feed.feed_uri,
-      displayName: feed.feed_name,
-      type: 'mod' as UserRole,
-    }));
+    // 2. Get latest feed data from Bluesky
+    const blueskyFeedsResponse = await getActorFeeds(userDid);
+    const blueskyFeeds = blueskyFeedsResponse?.feeds || [];
 
-    const adminFeedsList = adminFeeds.map((feed) => ({
-      uri: feed.feed_uri,
-      displayName: feed.feed_name,
-      type: 'admin' as UserRole,
-    }));
+    // 3. Create a map of feed URIs to their latest Bluesky data
+    const blueskyFeedsMap = new Map(
+      blueskyFeeds.map((feed) => [feed.uri, feed])
+    );
+
+    // 4. Merge database permissions with latest Bluesky feed data
+    const modFeedsList = modFeeds.map((feed) => {
+      const blueskyFeed = blueskyFeedsMap.get(feed.feed_uri);
+      return {
+        uri: feed.feed_uri,
+        displayName: blueskyFeed?.displayName || feed.feed_name,
+        description: blueskyFeed?.description,
+        type: 'mod' as UserRole,
+      };
+    });
+
+    const adminFeedsList = adminFeeds.map((feed) => {
+      const blueskyFeed = blueskyFeedsMap.get(feed.feed_uri);
+      return {
+        uri: feed.feed_uri,
+        displayName: blueskyFeed?.displayName || feed.feed_name,
+        description: blueskyFeed?.description,
+        type: 'admin' as UserRole,
+      };
+    });
+
+    // 5. Update our database with latest feed data if needed
+    await Promise.all([
+      ...modFeeds.map(async (feed) => {
+        const blueskyFeed = blueskyFeedsMap.get(feed.feed_uri);
+        if (blueskyFeed && blueskyFeed.displayName !== feed.feed_name) {
+          await SupabaseInstance.from('feed_permissions')
+            .update({ feed_name: blueskyFeed.displayName })
+            .eq('feed_uri', feed.feed_uri)
+            .eq('user_did', userDid);
+        }
+      }),
+      ...adminFeeds.map(async (feed) => {
+        const blueskyFeed = blueskyFeedsMap.get(feed.feed_uri);
+        if (blueskyFeed && blueskyFeed.displayName !== feed.feed_name) {
+          await SupabaseInstance.from('feed_permissions')
+            .update({ feed_name: blueskyFeed.displayName })
+            .eq('feed_uri', feed.feed_uri)
+            .eq('user_did', userDid);
+        }
+      }),
+    ]);
 
     const allFeeds = [...adminFeedsList, ...modFeedsList];
     const uniqueFeeds = Array.from(
@@ -312,7 +355,10 @@ const getUserFeeds = async (userDid: string) => {
   }
 };
 
-const getHighestRoleForUser = async (userDid: string): Promise<UserRole> => {
+const getHighestRoleForUser = async (
+  userDid: string | undefined
+): Promise<UserRole> => {
+  if (!userDid) return 'user';
   const { data, error } = await SupabaseInstance.from('feed_permissions')
     .select('role')
     .eq('user_did', userDid);

@@ -18,7 +18,7 @@ export const LoadingSpinner = ({
   return (
     <div
       className={cc([
-        'flex items-center justify-center',
+        'flex items-center justify-center ',
         sizeClass,
         {
           'text-app-primary': intent === VisualIntent.Primary,

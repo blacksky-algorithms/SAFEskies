@@ -4,8 +4,12 @@ import { ProfileManager } from '@/services/profile-manager';
 
 export default async function Page() {
   const profile = await ProfileManager.getProfile();
-  const feedsResponse = await getActorFeeds(profile.did);
+  const feedsResponse = await getActorFeeds(profile?.did);
   const feeds = feedsResponse?.feeds || [];
+
+  if (!profile || !feedsResponse) {
+    return null;
+  }
 
   return (
     <section className='flex flex-col items-center h-full p-4 space-y-8'>

@@ -36,7 +36,7 @@ const handleOAuthCallback = async (request: NextRequest) => {
     const ironSession = await getSession();
     const initialUser: User = {
       ...profileData,
-      rolesByFeed: {}, // Initialize with empty rolesByFeed
+      rolesByFeed: {},
     };
     ironSession.user = initialUser;
     await ironSession.save();

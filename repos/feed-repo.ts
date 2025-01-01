@@ -28,6 +28,7 @@ export const fetchFeed = async ({
       },
       { signal }
     );
+
     return { feed: data.feed, cursor: data.cursor };
   } catch (error: unknown) {
     if (error instanceof Error) {

@@ -16,7 +16,7 @@ const saveProfile = async (
       .upsert({
         did: blueSkyProfileData.did,
         handle: blueSkyProfileData.handle,
-        name: blueSkyProfileData.name,
+        displayName: blueSkyProfileData.displayName,
         avatar: blueSkyProfileData.avatar,
         associated: blueSkyProfileData.associated,
         labels: blueSkyProfileData.labels,
@@ -54,6 +54,60 @@ const saveProfile = async (
   }
 };
 
+const getProfileDetails = async (
+  userDid: string
+): Promise<ProfileViewBasic> => {
+  let typedCachedProfile: ProfileViewBasic | null = null;
+
+  try {
+    // 1. First check our database
+    const { data: cachedProfile, error: dbError } = await SupabaseInstance.from(
+      'profiles'
+    )
+      .select('*')
+      .eq('did', userDid)
+      .single();
+
+    if (dbError) {
+      console.error('Error fetching cached profile:', dbError);
+    }
+
+    typedCachedProfile = cachedProfile as ProfileViewBasic | null;
+
+    // 2. Get fresh data from Bluesky
+    const response = await AtprotoAgent.app.bsky.actor.getProfile({
+      actor: userDid,
+    });
+
+    if (!response.success) {
+      return typedCachedProfile || { did: userDid, handle: userDid };
+    }
+
+    // 3. Compare and update if needed
+    if (shouldUpdateProfile(typedCachedProfile, response.data)) {
+      const { error: upsertError } = await SupabaseInstance.from('profiles')
+        .upsert({
+          did: response.data.did,
+          handle: response.data.handle,
+          name: response.data.displayName,
+          avatar: response.data.avatar,
+          associated: response.data.associated,
+          labels: response.data.labels,
+        })
+        .eq('did', userDid);
+
+      if (upsertError) {
+        console.error('Error updating profile:', upsertError);
+      }
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching profile details:', error);
+    return typedCachedProfile || { did: userDid, handle: userDid };
+  }
+};
+
 const getProfile = async () => {
   const session = await getSession();
   if (!session.user) {
@@ -63,19 +117,11 @@ const getProfile = async () => {
   try {
     const userDid = session.user.did;
 
-    // Fetch basic profile data
-    const { data: profileData, error: profileError } =
-      await SupabaseInstance.from('profiles')
-        .select('*')
-        .eq('did', userDid)
-        .single();
+    // Get profile with potential updates
+    const profileData = await getProfileDetails(userDid);
+    if (!profileData) return null;
 
-    if (profileError || !profileData) {
-      console.error('Error fetching user profile:', profileError);
-      return null;
-    }
-
-    // Fetch user's feed-specific permissions and created feeds
+    // Fetch and sync feed data
     const [permissionsResponse, actorFeedsResponse] = await Promise.all([
       SupabaseInstance.from('feed_permissions')
         .select('feed_uri, feed_name, role')
@@ -92,6 +138,20 @@ const getProfile = async () => {
     }
 
     const createdFeeds = actorFeedsResponse?.feeds || [];
+
+    // Update feed permissions if needed
+    if (createdFeeds.length > 0) {
+      const feedPermissions = FeedPermissionManager.buildFeedPermissions(
+        userDid,
+        createdFeeds,
+        permissionsResponse.data || []
+      );
+
+      await SupabaseInstance.from('feed_permissions').upsert(feedPermissions, {
+        onConflict: 'user_did,feed_uri',
+      });
+    }
+
     const feedRoles = FeedPermissionManager.determineUserRolesByFeed(
       permissionsResponse.data || [],
       createdFeeds
@@ -107,17 +167,22 @@ const getProfile = async () => {
   }
 };
 
-const getProfileDetails = async (userDid: string) => {
-  try {
-    const response = await AtprotoAgent.app.bsky.actor.getProfile({
-      actor: userDid,
-    });
+const getBulkProfileDetails = async (
+  userDids: string[]
+): Promise<ProfileViewBasic[]> => {
+  // Deduplicate DIDs
+  const uniqueDids = [...new Set(userDids)];
 
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching profile details:', error);
-    return { did: userDid, handle: userDid };
-  }
+  // Get all profiles in parallel
+  const profiles = await Promise.all(
+    uniqueDids.map((did) => getProfileDetails(did))
+  );
+
+  // Map back to original order
+  return userDids.map(
+    (did) =>
+      profiles.find((profile) => profile.did === did) || { did, handle: did }
+  );
 };
 
 const getDisplayNameByDID = async (did: string): Promise<string> => {
@@ -130,8 +195,21 @@ const getDisplayNameByDID = async (did: string): Promise<string> => {
   }
 };
 
-const getBulkProfileDetails = async (userDids: string[]) => {
-  return await Promise.all(userDids.map((did) => getProfileDetails(did)));
+const shouldUpdateProfile = (
+  cached: ProfileViewBasic | null,
+  fresh: ProfileViewBasic
+): boolean => {
+  if (!cached) return true;
+
+  return (
+    cached.handle !== fresh.handle ||
+    cached.displayName !== fresh.displayName ||
+    cached.avatar !== fresh.avatar ||
+    cached.banner !== fresh.banner ||
+    cached.description !== fresh.description ||
+    JSON.stringify(cached.associated) !== JSON.stringify(fresh.associated) ||
+    JSON.stringify(cached.labels) !== JSON.stringify(fresh.labels)
+  );
 };
 
 export const ProfileManager = {
