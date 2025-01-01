@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { ModerationLogs, ModAction } from '@/services/moderation-logs';
+import { LogsManager, ModAction } from '@/services/logs-manager';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { Log } from '@/types/logs';
 import { Logs } from '../logs';
@@ -40,10 +40,7 @@ export const ModeratorLogs = ({
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const data = await ModerationLogs.getFeedModerationLogs(
-          feedUri,
-          filters
-        );
+        const data = await LogsManager.getFeedModerationLogs(feedUri, filters);
         setState((prevState) => ({ ...prevState, logs: data }));
       } catch (err) {
         console.error(err);
@@ -70,14 +67,6 @@ export const ModeratorLogs = ({
   };
 
   const onDateFilterChange = (range: { fromDate: string; toDate: string }) => {
-    setState((prev) => ({
-      ...prev,
-      filters: {
-        ...prev.filters,
-        dateRange: range,
-      },
-    }));
-
     setFilters((prev) => ({
       ...prev,
       dateRange: range || undefined,
@@ -86,21 +75,15 @@ export const ModeratorLogs = ({
 
   const onActionFilterChange = (val: string) => {
     if (!val) {
-      setState((prev) => ({
+      setFilters((prev) => ({
         ...prev,
-        filters: {
-          ...prev.filters,
-          actions: [],
-        },
+        actions: [],
       }));
       return;
     }
-    setState((prev) => ({
+    setFilters((prev) => ({
       ...prev,
-      filters: {
-        ...prev.filters,
-        actions: [val as ModAction],
-      },
+      actions: [val as ModAction],
     }));
   };
 
@@ -110,7 +93,7 @@ export const ModeratorLogs = ({
       categories={categories}
       onActionFilterChange={onActionFilterChange}
       onDateFilterChange={onDateFilterChange}
-      filters={state.filters}
+      filters={filters}
       isLoading={state.isLoading}
       error={state.error}
     />
