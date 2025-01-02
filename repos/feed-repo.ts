@@ -4,7 +4,6 @@ import { AtprotoAgent } from './atproto-agent';
 export interface FeedParams {
   limit?: number;
   cursor?: string;
-  signal?: AbortSignal;
   uri: string;
 }
 
@@ -16,18 +15,14 @@ export interface FeedResponse {
 export const fetchFeed = async ({
   limit = 50,
   cursor,
-  signal,
   uri,
 }: FeedParams): Promise<FeedResponse | { error: Error['message'] }> => {
   try {
-    const { data } = await AtprotoAgent.app.bsky.feed.getFeed(
-      {
-        feed: uri,
-        limit,
-        cursor,
-      },
-      { signal }
-    );
+    const { data } = await AtprotoAgent.app.bsky.feed.getFeed({
+      feed: uri,
+      limit,
+      cursor,
+    });
 
     return { feed: data.feed, cursor: data.cursor };
   } catch (error: unknown) {

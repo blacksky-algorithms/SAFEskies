@@ -80,7 +80,7 @@ export const Feed = ({ uri }: FeedProps) => {
     closeModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR);
     refreshFeed();
   };
-  console.log('Feed: ', feed, uri);
+
   return (
     <div className=' max-h-page'>
       <section className='flex flex-col items-center mx-auto tablet:px-10'>
