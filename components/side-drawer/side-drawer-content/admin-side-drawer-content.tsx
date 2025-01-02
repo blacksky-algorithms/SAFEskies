@@ -24,6 +24,11 @@ export const AdminSideDrawerContent = ({
           ]}
           onClick={handleLinkClick}
         />
+        <SideDrawerLink
+          label='Logs'
+          href='/admin/logs'
+          onClick={handleLinkClick}
+        />
       </ul>
     </nav>
   );

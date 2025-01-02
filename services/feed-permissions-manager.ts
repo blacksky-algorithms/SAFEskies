@@ -2,8 +2,9 @@ import { SupabaseInstance } from '@/repos/supabase';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 import { FeedRoleInfo, UserRole } from '@/types/user';
 import { ProfileManager } from '@/services/profile-manager';
-import { ModerationLogs } from '@/services/moderation-logs';
+import { LogsManager } from '@/services/logs-manager';
 import { getActorFeeds } from '@/repos/actor';
+import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
 const DEFAULT_FEED = {
   uri: 'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot',
@@ -159,7 +160,7 @@ const setFeedRole = async (
       return false;
     }
 
-    await ModerationLogs.createModerationLog({
+    await LogsManager.createModerationLog({
       feed_uri: feedUri,
       performed_by: setByUserDid,
       action: role === 'mod' ? 'mod_promote' : 'mod_demote',
@@ -238,7 +239,8 @@ const groupModeratorsByFeed = (permissions: any[]) => {
   }, {} as Record<string, any[]>);
 };
 
-const getUserAdminFeeds = async (userDid: string) => {
+const getUserAdminFeeds = async (userDid: string | undefined) => {
+  if (!userDid) return [];
   try {
     const { data, error } = await SupabaseInstance.from('feed_permissions')
       .select('feed_uri, feed_name')
@@ -370,6 +372,71 @@ const getHighestRoleForUser = async (
   return 'user';
 };
 
+const getAllModeratorsForAdmin = async (adminDid: string) => {
+  try {
+    const { data: adminFeeds, error: feedsError } = await SupabaseInstance.from(
+      'feed_permissions'
+    )
+      .select('feed_uri')
+      .eq('user_did', adminDid)
+      .eq('role', 'admin');
+
+    if (feedsError) throw feedsError;
+
+    if (!adminFeeds?.length) return [];
+
+    const { data: moderators, error: modsError } = (await SupabaseInstance.from(
+      'feed_permissions'
+    )
+      .select(
+        `
+        user_did,
+        feed_uri,
+        feed_name,
+        role,
+        profiles!feed_permissions_user_did_fkey (
+          did,
+          handle,
+          name,
+          avatar
+        )
+      `
+      )
+      .in(
+        'feed_uri',
+        adminFeeds.map((f) => f.feed_uri)
+      )
+      .in('role', ['mod', 'admin'])) as unknown as {
+      data: Array<{
+        user_did: string;
+        feed_uri: string;
+        feed_name: string;
+        role: UserRole;
+        profiles: ProfileViewBasic;
+      }>;
+      error: any;
+    };
+
+    if (modsError) throw modsError;
+    if (!moderators) return [];
+
+    return Array.from(
+      new Map(
+        moderators.map((mod) => [
+          mod.profiles.did,
+          {
+            ...mod.profiles,
+            role: mod.role,
+          },
+        ])
+      ).values()
+    );
+  } catch (error) {
+    console.error('Error fetching moderators for admin:', error);
+    throw error;
+  }
+};
+
 export const FeedPermissionManager = {
   canPerformAction,
   buildFeedPermissions,
@@ -382,4 +449,5 @@ export const FeedPermissionManager = {
   getUserModFeeds,
   getUserFeeds,
   getHighestRoleForUser,
+  getAllModeratorsForAdmin,
 };

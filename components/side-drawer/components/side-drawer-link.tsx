@@ -23,22 +23,29 @@ export const SideDrawerLink = ({
 
   return (
     <li className='space-y-1'>
-      <a
-        onClick={(e) => {
-          if (nestedLinks) {
-            e.preventDefault();
-          } else {
+      {nestedLinks ? (
+        <p
+          className={cc([
+            'block px-4 py-2 text-app rounded-lg',
+            { 'cursor-pointer hover:bg-app-secondary-hover ': !nestedLinks },
+          ])}
+        >
+          {label}
+        </p>
+      ) : (
+        <a
+          onClick={() => {
             handleLinkClick(href || '');
-          }
-        }}
-        href={href}
-        className={cc([
-          'block px-4 py-2 text-app rounded-lg',
-          { 'cursor-pointer hover:bg-app-secondary-hover ': !nestedLinks },
-        ])}
-      >
-        {label}
-      </a>
+          }}
+          href={href || ''}
+          className={cc([
+            'block px-4 py-2 text-app rounded-lg',
+            { 'cursor-pointer hover:bg-app-secondary-hover ': !nestedLinks },
+          ])}
+        >
+          {label}
+        </a>
+      )}
       {nestedLinks && (
         <div className='pl-6 space-y-1'>
           {nestedLinks.map((link) => (

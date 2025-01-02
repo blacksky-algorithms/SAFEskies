@@ -10,8 +10,9 @@ type ModeratorLogState = {
   isLoading: boolean;
   error: string | null;
   filters: {
-    actions: ModAction[];
+    action: ModAction | null;
     dateRange: { fromDate: string; toDate: string };
+    sortBy: 'ascending' | 'descending';
   };
 };
 
@@ -23,8 +24,9 @@ export const ModeratorLogs = ({
   targetedProfile?: ProfileViewBasic;
 }) => {
   const [filters, setFilters] = useState<{
-    actions?: ModAction[];
+    action?: ModAction | null;
     dateRange?: { fromDate: string; toDate: string };
+    sortBy?: 'ascending' | 'descending';
   }>({});
 
   const [state, setState] = useState<ModeratorLogState>({
@@ -32,8 +34,9 @@ export const ModeratorLogs = ({
     isLoading: true,
     error: null,
     filters: {
-      actions: [],
+      action: null,
       dateRange: { fromDate: '', toDate: '' },
+      sortBy: 'descending',
     },
   });
 
@@ -73,18 +76,33 @@ export const ModeratorLogs = ({
     }));
   };
 
-  const onActionFilterChange = (val: string) => {
+  const onActionFilterChange = (val: ModAction) => {
     if (!val) {
       setFilters((prev) => ({
         ...prev,
-        actions: [],
+        action: null,
       }));
       return;
     }
     setFilters((prev) => ({
       ...prev,
-      actions: [val as ModAction],
+      action: val,
     }));
+  };
+
+  const onSortByFilterChange = (val: 'ascending' | 'descending') => {
+    setFilters((prev) => ({
+      ...prev,
+      sortBy: val,
+    }));
+  };
+
+  const onClearFilters = () => {
+    setFilters({
+      action: null,
+      dateRange: { fromDate: '', toDate: '' },
+      sortBy: 'descending',
+    });
   };
 
   return (
@@ -93,6 +111,8 @@ export const ModeratorLogs = ({
       categories={categories}
       onActionFilterChange={onActionFilterChange}
       onDateFilterChange={onDateFilterChange}
+      onSortByFilterChange={onSortByFilterChange}
+      onClearFilters={onClearFilters}
       filters={filters}
       isLoading={state.isLoading}
       error={state.error}

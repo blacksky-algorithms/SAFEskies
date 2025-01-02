@@ -1,5 +1,5 @@
 'use client';
-import { ModAction } from '@/services/moderation-logs';
+import { ModAction } from '@/services/logs-manager';
 import { format } from 'date-fns';
 import { Log } from '@/types/logs';
 

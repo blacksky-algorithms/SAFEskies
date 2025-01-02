@@ -1,6 +1,6 @@
 'use client';
 
-import { ModAction } from '@/services/moderation-logs';
+import { ModAction } from '@/services/logs-manager';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { Tabs } from '@/components/tab/tab';
 import { OptimizedImage } from '../optimized-image';
@@ -21,19 +21,34 @@ export const Logs = ({
   filters,
   isLoading,
   error,
-  onActionFilterChange = () => {},
-  onDateFilterChange = () => {},
+  onActionFilterChange,
+  onDateFilterChange,
+  onPerformedByFilterChange,
+  onTargetUserFilterChange,
+  onTargetPostFilterChange,
+  onSortByFilterChange,
+  onClearFilters,
+  moderators,
 }: {
   targetedProfile?: ProfileViewBasic;
   categories: Record<string, Log[]>;
   filters: {
     actions?: ModAction[];
+    performedBy?: string;
+    targetUser?: string;
+    targetPost?: string;
     dateRange?: { fromDate: string; toDate: string };
   };
   isLoading: boolean;
   error: string | null;
-  onActionFilterChange?: (action: string) => void;
+  onActionFilterChange?: (action: ModAction) => void;
   onDateFilterChange?: (range: { fromDate: string; toDate: string }) => void;
+  onPerformedByFilterChange?: (performedBy: string) => void;
+  onTargetUserFilterChange?: (targetUser: string) => void;
+  onTargetPostFilterChange?: (targetPost: string) => void;
+  onSortByFilterChange?: (sortBy: 'ascending' | 'descending') => void;
+  onClearFilters?: () => void;
+  moderators?: ProfileViewBasic[];
 }) => {
   const { toast } = useToast();
   const { openModalInstance, closeModalInstance } = useModal();
@@ -69,8 +84,8 @@ export const Logs = ({
       ),
   }));
 
-  const handleActionFilterModalChange = (action: string) => {
-    onActionFilterChange(action);
+  const handleActionFilterModalChange = (action: ModAction) => {
+    onActionFilterChange?.(action);
     closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
   };
 
@@ -78,7 +93,34 @@ export const Logs = ({
     fromDate: string;
     toDate: string;
   }) => {
-    onDateFilterChange(range);
+    onDateFilterChange?.(range);
+    closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+  };
+
+  const handlePerformedByFilterModalChange = (performedBy: string) => {
+    onPerformedByFilterChange?.(performedBy);
+    closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+  };
+
+  const handleTargetUserFilterModalChange = (targetUser: string) => {
+    onTargetUserFilterChange?.(targetUser);
+    closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+  };
+
+  const handleTargetPostFilterModalChange = (targetPost: string) => {
+    onTargetPostFilterChange?.(targetPost);
+    closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+  };
+
+  const handleSortByFilterModalChange = (
+    sortBy: 'ascending' | 'descending'
+  ) => {
+    onSortByFilterChange?.(sortBy);
+    closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+  };
+
+  const handleOnClearFilters = () => {
+    onClearFilters?.();
     closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
   };
 
@@ -86,7 +128,7 @@ export const Logs = ({
     <>
       <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
         <div className='col-span-2 '>
-          <section className='flex tablet:flex-col items-center justify-center tablet:jusify-between w-full pr-4'>
+          <section className='flex tablet:flex-col items-center justify-end tablet:jusify-between w-full pr-4'>
             {targetedProfile && (
               <article className='bg-app-background shadow-sm p-4 flex w-full items-center '>
                 <div className='mr-4'>
@@ -115,7 +157,7 @@ export const Logs = ({
                 </div>
               </article>
             )}
-            <div className='flex tablet:hidden justify-center'>
+            <div className='flex tablet:hidden  '>
               <IconButton
                 className='h-10 w-10'
                 icon='AdjustmentsHorizontalIcon'
@@ -130,8 +172,14 @@ export const Logs = ({
         <div className='hidden tablet:flex flex-col space-y-4 p-4 border-l border-l-app-border'>
           <LogFilters
             filters={filters}
-            onActionFilterChange={onActionFilterChange}
-            onDateFilterChange={onDateFilterChange}
+            onActionFilterChange={handleActionFilterModalChange}
+            onDateFilterChange={handleDateFilterModalChange}
+            onTargetUserFilterChange={handleTargetUserFilterModalChange}
+            onTargetPostFilterChange={handleTargetPostFilterModalChange}
+            onPerformedByFilterChange={handlePerformedByFilterModalChange}
+            onSortByFilterChange={handleSortByFilterModalChange}
+            onClearFilters={handleOnClearFilters}
+            moderators={moderators}
           />
         </div>
       </div>
@@ -140,11 +188,17 @@ export const Logs = ({
         title='Filter Logs'
         size='full'
       >
-        <div className='flex flex-col space-y-4 p-4'>
+        <div className='flex flex-col space-y-4 p-4 overflow-auto max-h-page'>
           <LogFilters
             filters={filters}
             onActionFilterChange={handleActionFilterModalChange}
             onDateFilterChange={handleDateFilterModalChange}
+            onTargetUserFilterChange={handleTargetUserFilterModalChange}
+            onTargetPostFilterChange={handleTargetPostFilterModalChange}
+            onPerformedByFilterChange={handlePerformedByFilterModalChange}
+            onSortByFilterChange={handleSortByFilterModalChange}
+            onClearFilters={handleOnClearFilters}
+            moderators={moderators}
           />
         </div>
       </Modal>

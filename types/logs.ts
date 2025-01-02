@@ -1,4 +1,4 @@
-import { ModAction } from '@/services/moderation-logs';
+import { ModAction } from '@/services/logs-manager';
 
 export interface Log {
   id: string;
