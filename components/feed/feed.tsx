@@ -12,9 +12,10 @@ import { Post } from '@/components/post';
 
 interface FeedProps {
   uri: string;
+  onRefreshComplete?: () => void; // Callback to notify the parent that refresh is complete
 }
 
-export const Feed = ({ uri }: FeedProps) => {
+export const Feed = ({ uri, onRefreshComplete }: FeedProps) => {
   const { feed, error, isFetching, hasNextPage, fetchNextPage, refreshFeed } =
     usePaginatedFeed({
       limit: 10,
@@ -25,14 +26,12 @@ export const Feed = ({ uri }: FeedProps) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Automatically open the error modal if there is an error
   useEffect(() => {
     if (error) {
       openModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR, true);
     }
   }, [error, openModalInstance]);
 
-  // Infinite scrolling: Fetch next page when sentinel is visible
   const handleIntersection = useCallback(
     ([entry]: IntersectionObserverEntry[]) => {
       if (entry.isIntersecting && hasNextPage && !isFetching) {
@@ -48,19 +47,18 @@ export const Feed = ({ uri }: FeedProps) => {
     threshold: 0.1,
   });
 
-  // Pull-to-refresh functionality
   const handlePullToRefresh = async () => {
     if (isRefreshing) return;
 
     setIsRefreshing(true);
     try {
       await refreshFeed();
+      onRefreshComplete?.(); // Notify parent when refresh is done
     } finally {
       setIsRefreshing(false);
     }
   };
 
-  // Touch handlers for pull-to-refresh
   const onTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     containerRef.current!.dataset.touchStartY = e.touches[0].clientY.toString();
   };
@@ -75,7 +73,6 @@ export const Feed = ({ uri }: FeedProps) => {
     }
   };
 
-  // Refresh feed when error modal is closed
   const handleErrorModalClose = () => {
     closeModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR);
     refreshFeed();
