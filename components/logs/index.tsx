@@ -172,13 +172,13 @@ export const Logs = ({
         <div className='hidden tablet:flex flex-col space-y-4 p-4 border-l border-l-app-border'>
           <LogFilters
             filters={filters}
-            onActionFilterChange={handleActionFilterModalChange}
-            onDateFilterChange={handleDateFilterModalChange}
-            onTargetUserFilterChange={handleTargetUserFilterModalChange}
-            onTargetPostFilterChange={handleTargetPostFilterModalChange}
-            onPerformedByFilterChange={handlePerformedByFilterModalChange}
-            onSortByFilterChange={handleSortByFilterModalChange}
-            onClearFilters={handleOnClearFilters}
+            onActionFilterChange={onActionFilterChange}
+            onDateFilterChange={onDateFilterChange}
+            onTargetUserFilterChange={onTargetUserFilterChange}
+            onTargetPostFilterChange={onTargetPostFilterChange}
+            onPerformedByFilterChange={onPerformedByFilterChange}
+            onSortByFilterChange={onSortByFilterChange}
+            onClearFilters={onClearFilters}
             moderators={moderators}
           />
         </div>
