@@ -71,23 +71,14 @@ export const usePaginatedFeed = ({
     cursorRef.current = state.cursor;
   }, [state.cursor]);
 
-  const initializeController = () => {
-    if (controllerRef.current) {
-      controllerRef.current.abort();
-    }
-    controllerRef.current = new AbortController();
-  };
-
   const fetchFeedData = useCallback(
     async (refresh = false) => {
-      initializeController();
       if (refresh) dispatch({ type: 'REFRESH_FEED' });
       dispatch({ type: 'FETCH_START' });
 
       const response = await fetchFeed({
         limit,
         cursor: refresh ? undefined : cursorRef.current,
-        signal: controllerRef.current?.signal,
         uri,
       });
 

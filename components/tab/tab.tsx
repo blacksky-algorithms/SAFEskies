@@ -1,8 +1,13 @@
 'use client';
 
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
+import {
+  Tab as HeadlessTab,
+  TabGroup,
+  TabList,
+  TabPanel,
+  TabPanels,
+} from '@headlessui/react';
 import cc from 'classcat';
-
 import { ReactNode } from 'react';
 
 interface TabItem {
@@ -12,14 +17,20 @@ interface TabItem {
 
 interface TabsProps {
   tabs: TabItem[];
+  activeTab?: number;
+  onTabChange?: (index: number) => void;
 }
 
-export function Tabs({ tabs }: TabsProps) {
+export function Tabs({ tabs, activeTab, onTabChange }: TabsProps) {
   return (
-    <TabGroup className='w-full'>
+    <TabGroup
+      selectedIndex={activeTab}
+      onChange={onTabChange}
+      className='w-full'
+    >
       <TabList className='flex space-x-1 bg-app-background p-1 overflow-auto'>
         {tabs.map((tab, index) => (
-          <Tab
+          <HeadlessTab
             key={index}
             className={({ selected }) =>
               cc([
@@ -37,7 +48,7 @@ export function Tabs({ tabs }: TabsProps) {
             >
               {tab.title}
             </h2>
-          </Tab>
+          </HeadlessTab>
         ))}
       </TabList>
       <TabPanels>
