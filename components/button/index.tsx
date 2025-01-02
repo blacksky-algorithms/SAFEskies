@@ -5,7 +5,7 @@ import { VisualIntent } from '@/enums/styles';
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: VisualIntent;
+  intent?: VisualIntent;
   children: React.ReactNode;
   noPadding?: boolean;
   submitting?: boolean;
@@ -27,7 +27,7 @@ const variantClasses = {
 };
 
 export const Button = ({
-  variant = VisualIntent.Primary,
+  intent = VisualIntent.Primary,
   children,
   className,
   noPadding,
@@ -41,7 +41,7 @@ export const Button = ({
     <button
       className={cc([
         'font-medium rounded-md transition-all duration-150 focus:outline-none focus:ring-2 w-full',
-        variantClasses[variant],
+        variantClasses[intent],
         {
           'opacity-50 cursor-not-allowed': isDisabled,
           'p-2': !noPadding,
@@ -54,7 +54,7 @@ export const Button = ({
     >
       {submitting ? (
         <span className='flex items-center justify-center'>
-          <LoadingSpinner size='sm' variant={variant} />
+          <LoadingSpinner size='sm' intent={intent} />
           <span className='ml-2'>Loading...</span>
         </span>
       ) : (

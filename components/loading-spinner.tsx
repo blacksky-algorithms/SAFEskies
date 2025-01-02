@@ -4,13 +4,13 @@ import { VisualIntent, SharedSize } from '@/enums/styles';
 
 interface LoadingSpinnerProps {
   size?: keyof typeof SharedSize;
-  variant?: VisualIntent;
+  intent?: VisualIntent;
   'aria-label'?: string;
 }
 
 export const LoadingSpinner = ({
   size = 'md',
-  variant = VisualIntent.Primary,
+  intent = VisualIntent.Primary,
   'aria-label': ariaLabel = 'Loading...',
 }: LoadingSpinnerProps) => {
   const sizeClass = SharedSize[size];
@@ -18,14 +18,14 @@ export const LoadingSpinner = ({
   return (
     <div
       className={cc([
-        'flex items-center justify-center',
+        'flex items-center justify-center ',
         sizeClass,
         {
-          'text-app-primary': variant === VisualIntent.Primary,
-          'text-app-secondary': variant === VisualIntent.Secondary,
-          'text-app-error': variant === VisualIntent.Error,
-          'text-app-info': variant === VisualIntent.Info,
-          'text-app-success': variant === VisualIntent.Success,
+          'text-app-primary': intent === VisualIntent.Primary,
+          'text-app-secondary': intent === VisualIntent.Secondary,
+          'text-app-error': intent === VisualIntent.Error,
+          'text-app-info': intent === VisualIntent.Info,
+          'text-app-success': intent === VisualIntent.Success,
         },
       ])}
       role='status' // Announces the loading state

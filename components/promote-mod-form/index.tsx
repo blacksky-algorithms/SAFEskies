@@ -1,0 +1,195 @@
+'use client';
+
+import { useCallback, useState } from 'react';
+
+import { FeedSelector } from '../feed-selector';
+import { BSUserSearch } from '../bs-user-search/bs-user-search';
+import { Button } from '../button';
+import { VisualIntent } from '@/enums/styles';
+import { useToast } from '@/contexts/toast-context';
+import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { LoadingSpinner } from '@/components/loading-spinner';
+import { FeedPermissionManager } from '@/services/feed-permissions-manager';
+import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
+
+export interface PromoteModState {
+  selectedUser: ProfileViewBasic | null;
+  selectedFeeds: Feed[];
+  disabledFeeds: string[];
+  isLoading: boolean;
+  error: string | null;
+}
+
+export const PromoteModForm = ({
+  feeds,
+  currentUserDid,
+}: {
+  feeds: Feed[];
+  currentUserDid: string;
+}) => {
+  const [state, setState] = useState<PromoteModState>({
+    selectedUser: null,
+    selectedFeeds: [],
+    disabledFeeds: [],
+    isLoading: false,
+    error: null,
+  });
+
+  const { toast } = useToast();
+
+  const checkExistingRoles = useCallback(
+    async (user: ProfileViewBasic) => {
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+      try {
+        const disabledFeedUris: string[] = [];
+        for (const feed of feeds) {
+          const role = await FeedPermissionManager.getFeedRole(
+            user.did,
+            feed.uri
+          );
+          if (role === 'mod' || role === 'admin') {
+            disabledFeedUris.push(feed.uri);
+          }
+        }
+
+        setState((prev) => ({
+          ...prev,
+          disabledFeeds: disabledFeedUris,
+          isLoading: false,
+        }));
+      } catch (error) {
+        console.error('Error promoting moderator:', error);
+        setState((prev) => ({
+          ...prev,
+          error: 'Failed to check user roles',
+          isLoading: false,
+        }));
+      }
+    },
+    [feeds]
+  );
+
+  const handleSelectUser = async (user: ProfileViewBasic) => {
+    setState((prev) => ({
+      ...prev,
+      selectedUser: user,
+      selectedFeeds: [],
+      disabledFeeds: [],
+    }));
+    await checkExistingRoles(user);
+  };
+
+  const handleToggleFeed = (feed: Feed) => {
+    if (state.disabledFeeds.includes(feed.uri)) return;
+
+    setState((prev) => {
+      const isSelected = prev.selectedFeeds.some((f) => f.uri === feed.uri);
+      const selectedFeeds = isSelected
+        ? prev.selectedFeeds.filter((f) => f.uri !== feed.uri)
+        : [...prev.selectedFeeds, feed];
+
+      return { ...prev, selectedFeeds };
+    });
+  };
+
+  const handleSelectAll = () => {
+    setState((prev) => {
+      const availableFeeds = feeds.filter(
+        (feed) => !prev.disabledFeeds.includes(feed.uri)
+      );
+      const selectedFeeds =
+        prev.selectedFeeds.length < availableFeeds.length ? availableFeeds : [];
+
+      return { ...prev, selectedFeeds };
+    });
+  };
+
+  const handlePromote = async () => {
+    if (!state.selectedUser || state.selectedFeeds.length === 0) return;
+
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+    try {
+      const results = await Promise.all(
+        state.selectedFeeds.map((feed) =>
+          FeedPermissionManager.setFeedRole(
+            state.selectedUser!.did,
+            feed.uri,
+            'mod',
+            currentUserDid,
+            (feed.displayName as string) || ''
+          )
+        )
+      );
+
+      if (results.some((result) => !result)) {
+        throw new Error('Failed to promote moderator for some feeds');
+      }
+
+      toast({
+        title: 'Success',
+        message: 'Successfully promoted user to moderator',
+        intent: VisualIntent.Success,
+      });
+
+      setState({
+        selectedUser: null,
+        selectedFeeds: [],
+        disabledFeeds: [],
+        isLoading: false,
+        error: null,
+      });
+    } catch (error) {
+      console.error('Error promoting moderator:', error);
+      setState((prev) => ({
+        ...prev,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to promote moderator',
+        isLoading: false,
+      }));
+
+      toast({
+        title: 'Error',
+        message: state.error || 'An error occurred',
+        intent: VisualIntent.Error,
+      });
+    }
+  };
+
+  return (
+    <div className='space-y-6 w-full max-w-2xl mx-auto'>
+      {state.isLoading && <LoadingSpinner />}
+
+      {state.error && <div className='text-red-500 text-sm'>{state.error}</div>}
+
+      <div className='space-y-2'>
+        {!state.selectedUser ? (
+          <BSUserSearch onSelect={handleSelectUser} />
+        ) : (
+          <FeedSelector
+            feeds={feeds}
+            state={state}
+            onToggleFeed={handleToggleFeed}
+            onSelectAll={handleSelectAll}
+          />
+        )}
+      </div>
+
+      {state.selectedUser && (
+        <Button
+          onClick={handlePromote}
+          disabled={
+            !state.selectedUser ||
+            state.selectedFeeds.length === 0 ||
+            state.isLoading
+          }
+        >
+          {state.isLoading ? 'Promoting...' : 'Promote User'}
+        </Button>
+      )}
+    </div>
+  );
+};

@@ -28,7 +28,7 @@ export const Login = () => {
     setState((prevState) => ({
       ...prevState,
       handle: event.target.value,
-      error: null, // Reset error when user starts typing
+      error: null,
     }));
   };
 
@@ -64,30 +64,20 @@ export const Login = () => {
   };
 
   return (
-    <section className='w-full'>
+    <section className='w-full max-w-2xl'>
       <form onSubmit={handleSubmit} className='space-y-5'>
-        <div>
-          <label htmlFor='handle' className='block text-sm font-medium'>
-            Bluesky Handle
-          </label>
-          <div className='mt-2'>
-            <Input
-              id='handle'
-              name='handle'
-              type='text'
-              placeholder='handle.bsky.social'
-              value={state.handle}
-              onChange={handleChange}
-              aria-invalid={!!state.error}
-              aria-describedby='handle-error'
-            />
-            {state.error && (
-              <p id='handle-error' className='mt-1 text-sm text-red-500'>
-                {state.error}
-              </p>
-            )}
-          </div>
-        </div>
+        <Input
+          id='handle'
+          name='handle'
+          type='text'
+          placeholder='handle.bsky.social'
+          value={state.handle}
+          onChange={handleChange}
+          aria-invalid={!!state.error}
+          aria-describedby='handle-error'
+          error={state.error || undefined}
+          label='Bluesky Handle'
+        />
         <Button
           type='submit'
           submitting={state.isSubmitting}

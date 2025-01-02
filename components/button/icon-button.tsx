@@ -2,14 +2,15 @@ import React from 'react';
 import cc from 'classcat';
 import { Icon, IconProps } from '@/components/icon';
 import { Button } from '@/components/button';
-import { VisualIntent } from '@/enums/styles';
+import { VisualIntent, SharedSize } from '@/enums/styles';
 
 interface IconButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon: IconProps['icon'];
   iconPosition?: 'left' | 'right';
-  variant?: VisualIntent;
+  intent?: Exclude<VisualIntent, VisualIntent.TextButton>;
   text?: string;
+  size?: keyof typeof SharedSize;
   noPadding?: boolean;
   submitting?: boolean;
 }
@@ -17,7 +18,8 @@ interface IconButtonProps
 export const IconButton = ({
   icon,
   iconPosition = 'left',
-  variant = VisualIntent.Primary,
+  intent = VisualIntent.Primary,
+  size = 'md',
   text,
   className,
   noPadding,
@@ -28,27 +30,23 @@ export const IconButton = ({
   const isIconOnly = !text;
   const isDisabled = disabled || submitting;
 
-  // Narrow the variant for the Icon to exclude TextButton
-  const iconVariant: Exclude<VisualIntent, VisualIntent.TextButton> =
-    variant === VisualIntent.TextButton ? VisualIntent.Primary : variant;
+  const accessibleLabel =
+    props['aria-label'] || (isIconOnly ? icon : undefined);
 
   // Icon rendering
   const renderIcon = () => (
-    <Icon icon={icon} variant={iconVariant} isButton={!text} />
+    <Icon icon={icon} intent={intent} isButton={!text} size={size} />
   );
-
-  // Accessibility: Set aria-label if the button has no text
-  const accessibleLabel =
-    props['aria-label'] || (isIconOnly ? icon : undefined);
 
   if (isIconOnly) {
     // Icon-only button
     return (
       <button
         className={cc([
-          'flex items-center justify-center rounded-full p-2 focus:outline-none focus:ring-1 transition-all duration-150',
+          'flex items-center justify-center rounded-full focus:outline-none focus:ring-2 transition-all duration-150',
           {
             'opacity-50 cursor-not-allowed': isDisabled,
+            'p-2': !noPadding,
           },
           className,
         ])}
@@ -59,7 +57,7 @@ export const IconButton = ({
       >
         {submitting ? (
           <span className='flex items-center'>
-            <Icon icon='loader' variant={iconVariant} isButton />
+            <Icon icon='loader' intent={intent} isButton size={size} />
           </span>
         ) : (
           renderIcon()
@@ -71,7 +69,7 @@ export const IconButton = ({
   // Icon with text: Render a full button
   return (
     <Button
-      variant={variant}
+      intent={intent}
       noPadding={noPadding}
       submitting={submitting}
       disabled={isDisabled}

@@ -30,7 +30,7 @@ The `Icon` component renders **HeroIcons** or a custom `loader` spinner. It supp
 | Prop       | Type                                             | Default                | Description                         |
 | ---------- | ------------------------------------------------ | ---------------------- | ----------------------------------- |
 | `icon`     | `keyof typeof HeroIcons` \| `'loader'`           | —                      | The icon to render or a `loader`.   |
-| `variant`  | `Exclude<VisualIntent, VisualIntent.TextButton>` | `VisualIntent.Primary` | The visual intent for the icon.     |
+| `intent`   | `Exclude<VisualIntent, VisualIntent.TextButton>` | `VisualIntent.Primary` | The visual intent for the icon.     |
 | `size`     | `sm` \| `md` \| `lg` \| `xl`                     | `md`                   | Sets the icon size.                 |
 | `isButton` | `boolean`                                        | `false`                | Makes the icon fill a button space. |
 
@@ -39,13 +39,13 @@ The `Icon` component renders **HeroIcons** or a custom `loader` spinner. It supp
 #### Default Icon
 
 ```tsx
-<Icon icon='CheckIcon' variant={VisualIntent.Success} size='lg' />
+<Icon icon='CheckIcon' intent={VisualIntent.Success} size='lg' />
 ```
 
 #### Loading Spinner
 
 ```tsx
-<Icon icon='loader' variant={VisualIntent.Info} size='xl' />
+<Icon icon='loader' intent={VisualIntent.Info} size='xl' />
 ```
 
 ---
@@ -89,7 +89,7 @@ Add a new icon if:
 
 3. **State Management:**
 
-   - Use `variant` to apply theme-aware colors dynamically.
+   - Use `intent` to apply theme-aware colors dynamically.
    - Ensure interactive icons (e.g., those in buttons) reflect states like `hover` and `focus` through the parent component.
 
 4. **Design Tokens:**

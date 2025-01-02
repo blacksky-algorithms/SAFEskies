@@ -31,7 +31,7 @@ describe('Icon Component', () => {
     render(
       <Icon
         icon='CheckIcon'
-        variant={VisualIntent.Error}
+        intent={VisualIntent.Error}
         aria-label='Error Icon'
       />
     );

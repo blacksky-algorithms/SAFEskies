@@ -1,6 +1,9 @@
-import { AtprotoAgent } from './atproto-agent';
+import { AtprotoAgent } from '@/repos/atproto-agent';
 
-export const getActorFeeds = async (actor: string) => {
+export const getActorFeeds = async (actor?: string) => {
+  if (!actor) {
+    return;
+  }
   try {
     const response = await AtprotoAgent.app.bsky.feed.getActorFeeds({
       actor,

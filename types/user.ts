@@ -1,24 +1,13 @@
-import { AppBskyActorDefs, ComAtprotoLabelDefs } from '@atproto/api';
+import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
-// types/user.ts
-export type UserRole = 'admin' | 'mod' | 'user';
-
-export interface UserPermissions {
-  globalRole: UserRole;
-  feedPermissions: {
-    feedDid: string;
-    feedName: string;
-    role: UserRole;
-  }[];
+export interface FeedRoleInfo {
+  role: UserRole;
+  displayName: string;
+  feedUri: string;
 }
 
-export interface User {
-  did: string;
-  handle: string;
-  name: string;
-  avatar: string | null;
-  associated?: AppBskyActorDefs.ProfileAssociated;
-  labels?: ComAtprotoLabelDefs.Label[];
-  permissions?: UserPermissions;
-  role?: UserRole;
+export type UserRole = 'admin' | 'mod' | 'user';
+
+export interface User extends ProfileViewBasic {
+  rolesByFeed: Record<string, FeedRoleInfo>;
 }

@@ -4,7 +4,7 @@ import { AtprotoAgent } from './atproto-agent';
 export interface FeedParams {
   limit?: number;
   cursor?: string;
-  signal?: AbortSignal; // Allow signal for cancellation
+  signal?: AbortSignal;
   uri: string;
 }
 
@@ -28,6 +28,7 @@ export const fetchFeed = async ({
       },
       { signal }
     );
+
     return { feed: data.feed, cursor: data.cursor };
   } catch (error: unknown) {
     if (error instanceof Error) {

@@ -15,7 +15,7 @@ export const UserButton = ({ user }: { user: User }) => {
 
   return (
     <Button
-      variant={VisualIntent.TextButton}
+      intent={VisualIntent.TextButton}
       className='flex items-center space-x-2'
       onClick={toggleModal}
       aria-label='Open user menu'
@@ -23,7 +23,7 @@ export const UserButton = ({ user }: { user: User }) => {
       {user?.avatar ? (
         <OptimizedImage
           src={user.avatar}
-          alt={`Avatar of ${user?.name}`}
+          alt={`Avatar of ${user.handle}`}
           className={cc([
             'w-8 h-8 rounded-full mr-2',
             // { 'blur-[1.5px]': user?.labels?.length > 0 }, // TODO
@@ -36,7 +36,7 @@ export const UserButton = ({ user }: { user: User }) => {
         </>
       )}
       <span className='hidden sm:block text-sm font-medium'>
-        {user?.name || 'User'}
+        {(user.displayName as string) || `@${user.handle}` || 'User'}
       </span>
     </Button>
   );

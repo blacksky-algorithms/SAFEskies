@@ -15,19 +15,19 @@ describe('Button Component', () => {
   });
 
   it('renders a primary variant button', () => {
-    render(<Button variant={VisualIntent.Primary}>Test</Button>);
+    render(<Button intent={VisualIntent.Primary}>Test</Button>);
     const button = screen.getByRole('button', { name: /test/i });
     expect(button).toHaveClass('bg-app-primary');
   });
 
   it('renders an error variant button', () => {
-    render(<Button variant={VisualIntent.Error}>Test</Button>);
+    render(<Button intent={VisualIntent.Error}>Test</Button>);
     const button = screen.getByRole('button', { name: /test/i });
     expect(button).toHaveClass('bg-app-error');
   });
 
   it('renders an info variant button', () => {
-    render(<Button variant={VisualIntent.Info}>Test</Button>);
+    render(<Button intent={VisualIntent.Info}>Test</Button>);
     const button = screen.getByRole('button', { name: /test/i });
     expect(button).toHaveClass('bg-app-info');
   });

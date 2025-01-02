@@ -20,13 +20,3 @@ export const getSession = async (): Promise<IronSession<Session>> => {
   );
   return session;
 };
-
-export const getSessionUser = async (): Promise<
-  IronSession<Session> | Session
-> => {
-  const ironSession = await getSession();
-
-  return {
-    user: ironSession.user ? { ...ironSession.user } : null,
-  };
-};

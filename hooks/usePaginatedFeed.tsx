@@ -105,6 +105,16 @@ export const usePaginatedFeed = ({
     [limit, uri]
   );
 
+  // Reset and fetch when uri changes
+  useEffect(() => {
+    dispatch({ type: 'REFRESH_FEED' });
+    fetchFeedData(true);
+
+    return () => {
+      if (controllerRef.current) controllerRef.current.abort();
+    };
+  }, [uri, fetchFeedData]); // Add uri to dependencies
+
   const fetchNextPage = useCallback(() => {
     if (!state.hasNextPage || state.isFetching) return;
     fetchFeedData();
@@ -112,14 +122,6 @@ export const usePaginatedFeed = ({
 
   const refreshFeed = useCallback(() => {
     fetchFeedData(true);
-  }, [fetchFeedData]);
-
-  useEffect(() => {
-    fetchFeedData();
-
-    return () => {
-      if (controllerRef.current) controllerRef.current.abort();
-    };
   }, [fetchFeedData]);
 
   return { ...state, fetchNextPage, refreshFeed };
