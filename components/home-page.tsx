@@ -12,9 +12,10 @@ interface Props {
     type: string;
     uri: string;
   }[];
+  userDID?: string;
 }
 
-export const HomePage = ({ feeds }: Props) => {
+export const HomePage = ({ feeds, userDID }: Props) => {
   const [activeTab, setActiveTab] = useState<number>(() => {
     const storedTab = localStorage.getItem('activeTab');
     return storedTab ? parseInt(storedTab, 10) : 0;
@@ -52,6 +53,7 @@ export const HomePage = ({ feeds }: Props) => {
         uri={feed.uri}
         key={feed.uri}
         onRefreshComplete={() => setActiveTab(index)}
+        userDID={userDID}
       />
     ),
   }));

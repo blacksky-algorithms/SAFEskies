@@ -21,6 +21,7 @@ export const Modal = ({
   size = 'medium',
   className = '',
   onClose,
+  noContentPadding,
 }: ModalProps) => {
   const { isOpen, closeModalInstance, registerModal, unregisterModal } =
     useModal();
@@ -79,13 +80,7 @@ export const Modal = ({
               ])}
             >
               <IconButton
-                className={cc([
-                  'absolute p-2 h-10 w-10',
-                  {
-                    'top-4 right-4': size !== 'full',
-                    'top-6 right-6': size === 'full',
-                  },
-                ])}
+                className={cc([' p-2 h-12 w-12 self-end'])}
                 onClick={handleClose}
                 aria-label='Close modal'
                 icon='XMarkIcon'
@@ -96,7 +91,7 @@ export const Modal = ({
                   'w-full h-full',
                   'flex flex-col',
                   {
-                    'px-6': size === 'full',
+                    'px-6': size === 'full' && !noContentPadding,
                   },
                 ])}
               >

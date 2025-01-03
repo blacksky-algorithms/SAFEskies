@@ -1,5 +1,6 @@
 import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AtprotoAgent } from './atproto-agent';
+import { AppBskyFeedNS } from '@atproto/api';
 
 export interface FeedParams {
   limit?: number;

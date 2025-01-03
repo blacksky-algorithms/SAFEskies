@@ -5,6 +5,8 @@ import { ProfileManager } from '@/services/profile-manager';
 import { LogsManager } from '@/services/logs-manager';
 import { getActorFeeds } from '@/repos/actor';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { AtprotoAgent } from '@/repos/atproto-agent';
+import { isThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 const DEFAULT_FEED = {
   uri: 'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot',
@@ -23,6 +25,7 @@ const canPerformAction = async (
   action: 'create_mod' | 'remove_mod' | 'delete_post' | 'ban_user',
   feedUri: string
 ): Promise<boolean> => {
+  if (!userDid) return false;
   const feedRole = await getFeedRole(userDid, feedUri);
 
   switch (action) {
@@ -293,7 +296,10 @@ const getUserFeeds = async (userDid?: string) => {
 
     // 3. Create a map of feed URIs to their latest Bluesky data
     const blueskyFeedsMap = new Map(
-      blueskyFeeds.map((feed) => [feed.uri, feed])
+      blueskyFeeds.map((feed) => {
+        console.log({ feed });
+        return [feed.uri, feed];
+      })
     );
 
     // 4. Merge database permissions with latest Bluesky feed data
@@ -303,6 +309,7 @@ const getUserFeeds = async (userDid?: string) => {
         uri: feed.feed_uri,
         displayName: blueskyFeed?.displayName || feed.feed_name,
         description: blueskyFeed?.description,
+        did: blueskyFeed?.did,
         type: 'mod' as UserRole,
       };
     });
@@ -313,6 +320,7 @@ const getUserFeeds = async (userDid?: string) => {
         uri: feed.feed_uri,
         displayName: blueskyFeed?.displayName || feed.feed_name,
         description: blueskyFeed?.description,
+        did: blueskyFeed?.did,
         type: 'admin' as UserRole,
       };
     });
@@ -437,6 +445,44 @@ const getAllModeratorsForAdmin = async (adminDid: string) => {
   }
 };
 
+const getPostThread = async (uri: string) => {
+  try {
+    const response = await AtprotoAgent.app.bsky.feed.getPostThread({
+      uri,
+    });
+
+    if (isThreadViewPost(response.data.thread)) {
+      return response.data.thread;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching post thread:', error);
+    return null;
+  }
+};
+
+const deletePostFromFeed = async (
+  userDid: string,
+  postId: string
+): Promise<void> => {
+  // try {
+  //   const endpoint = `/queue/posts/delete`;
+  //   const options: RequestInit = {
+  //     method: 'DELETE',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify({ postId }),
+  //   };
+  //   const response = await makeAuthenticatedRequest(userDid, endpoint, options);
+  //   if (!response.ok) {
+  //     throw new Error(`Failed to delete post: ${response.statusText}`);
+  //   }
+  //   console.log(`Post ${postId} deleted successfully.`);
+  // } catch (error) {
+  //   console.error('Error deleting post from feed:', error);
+  // }
+};
 export const FeedPermissionManager = {
   canPerformAction,
   buildFeedPermissions,
@@ -450,4 +496,6 @@ export const FeedPermissionManager = {
   getUserFeeds,
   getHighestRoleForUser,
   getAllModeratorsForAdmin,
+  getPostThread,
+  deletePostFromFeed,
 };

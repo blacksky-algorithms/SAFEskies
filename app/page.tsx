@@ -11,5 +11,5 @@ export default async function Page() {
 
   const allFeeds = feeds.length > 0 ? feeds : [defaultFeed];
 
-  return <HomePage feeds={allFeeds} />;
+  return <HomePage feeds={allFeeds} userDID={profile?.did} />;
 }
