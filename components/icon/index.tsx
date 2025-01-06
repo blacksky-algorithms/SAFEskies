@@ -1,15 +1,17 @@
 import React from 'react';
-import * as HeroIcons from '@heroicons/react/24/outline';
+import * as HeroIconsOutline from '@heroicons/react/24/outline';
+import * as HeroIconsSolid from '@heroicons/react/24/solid';
 import cc from 'classcat';
 import { VisualIntent, SharedSize } from '@/enums/styles';
 import { LoadingSpinner } from '@/components/loading-spinner';
 
 export interface IconProps extends React.HTMLAttributes<SVGElement> {
-  icon: keyof typeof HeroIcons | 'loader';
+  icon: keyof typeof HeroIconsOutline | 'loader';
   intent?: Exclude<VisualIntent, VisualIntent.TextButton>;
   isButton?: boolean;
   size?: keyof typeof SharedSize;
   'aria-label'?: string;
+  type?: 'outline' | 'solid';
 }
 
 const itentClasses: Record<
@@ -29,6 +31,7 @@ export const Icon = ({
   className,
   isButton = false,
   size = 'md',
+  type = 'outline',
   'aria-label': ariaLabel,
   ...props
 }: IconProps) => {
@@ -49,7 +52,9 @@ export const Icon = ({
     );
   }
 
-  const IconComponent = HeroIcons[icon];
+  // refactor so that IconComponent can be either HeroIconsOutline or HeroIconsSolid
+  const IconComponent =
+    type === 'solid' ? HeroIconsSolid[icon] : HeroIconsOutline[icon];
 
   if (!IconComponent) {
     console.error(`Heroicon "${icon}" not found.`);
