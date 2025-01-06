@@ -69,7 +69,7 @@ export const Modal = ({
           <TransitionChild>
             <DialogPanel
               className={cc([
-                'bg-gray-900 shadow-lg relative flex flex-col',
+                'bg-app-background shadow-lg relative flex flex-col',
                 {
                   'w-screen h-screen rounded-none overflow-hidden':
                     size === 'full',
