@@ -126,7 +126,7 @@ export const Logs = ({
 
   return (
     <>
-      <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-3 h-full'>
         <div className='col-span-2 '>
           <section className='flex tablet:flex-col items-center justify-end tablet:jusify-between w-full pr-4'>
             {targetedProfile && (

@@ -460,28 +460,6 @@ const getPostThread = async (uri: string) => {
   }
 };
 
-const deletePostFromFeed = async (
-  userDid: string,
-  postId: string
-): Promise<void> => {
-  // try {
-  //   const endpoint = `/queue/posts/delete`;
-  //   const options: RequestInit = {
-  //     method: 'DELETE',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify({ postId }),
-  //   };
-  //   const response = await makeAuthenticatedRequest(userDid, endpoint, options);
-  //   if (!response.ok) {
-  //     throw new Error(`Failed to delete post: ${response.statusText}`);
-  //   }
-  //   console.log(`Post ${postId} deleted successfully.`);
-  // } catch (error) {
-  //   console.error('Error deleting post from feed:', error);
-  // }
-};
 export const FeedPermissionManager = {
   canPerformAction,
   buildFeedPermissions,
@@ -496,5 +474,4 @@ export const FeedPermissionManager = {
   getHighestRoleForUser,
   getAllModeratorsForAdmin,
   getPostThread,
-  deletePostFromFeed,
 };
