@@ -8,6 +8,7 @@ interface IconButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon: IconProps['icon'];
   iconPosition?: 'left' | 'right';
+  iconType?: 'solid' | 'outline';
   intent?: Exclude<VisualIntent, VisualIntent.TextButton>;
   text?: string;
   size?: keyof typeof SharedSize;
@@ -18,6 +19,7 @@ interface IconButtonProps
 export const IconButton = ({
   icon,
   iconPosition = 'left',
+  iconType = 'outline',
   intent = VisualIntent.Primary,
   size = 'md',
   text,
@@ -35,7 +37,13 @@ export const IconButton = ({
 
   // Icon rendering
   const renderIcon = () => (
-    <Icon icon={icon} intent={intent} isButton={!text} size={size} />
+    <Icon
+      icon={icon}
+      intent={intent}
+      isButton={!text}
+      size={size}
+      type={iconType}
+    />
   );
 
   if (isIconOnly) {
@@ -57,7 +65,13 @@ export const IconButton = ({
       >
         {submitting ? (
           <span className='flex items-center'>
-            <Icon icon='loader' intent={intent} isButton size={size} />
+            <Icon
+              type={iconType}
+              icon='loader'
+              intent={intent}
+              isButton
+              size={size}
+            />
           </span>
         ) : (
           renderIcon()

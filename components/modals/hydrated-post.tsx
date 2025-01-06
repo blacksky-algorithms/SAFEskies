@@ -9,13 +9,11 @@ import { LoadingSpinner } from '@/components/loading-spinner';
 import { Button } from '@/components/button';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { VisualIntent } from '@/enums/styles';
+import cc from 'classcat';
 
 interface HydratedPostModalProps {
   uri: string | null;
-  feedUri: string;
-  userDID: string;
   onClose?: () => void;
-  onDelete?: () => void;
 }
 
 interface HydratedPostState {
@@ -25,14 +23,7 @@ interface HydratedPostState {
   showReplies: Record<string, boolean>;
 }
 
-export const HydratedPostModal = ({
-  uri,
-  // feedUri,
-  // userDID,
-  onClose,
-}: // onDelete,
-// feedData,
-HydratedPostModalProps) => {
+export const HydratedPostModal = ({ uri, onClose }: HydratedPostModalProps) => {
   const [state, setState] = useState<HydratedPostState>({
     thread: null,
     isLoading: false,
@@ -80,12 +71,16 @@ HydratedPostModalProps) => {
     const isExpanded = state.showReplies[reply.post.uri];
 
     return (
-      <div key={reply.post.uri} className='ml-4 w-full'>
+      <div key={reply.post.uri} className='w-full'>
         <div className='flex'>
-          {depth > 0 && (
-            <div className='w-px bg-gray-300 self-stretch mr-4'></div>
-          )}
-          <div className='flex-1'>
+          <div
+            className={cc([
+              'flex-1',
+              {
+                'pl-4': depth > 0,
+              },
+            ])}
+          >
             <div className='flex items-center justify-center flex-col'>
               <Post post={reply.post} />
               {reply.replies && reply.replies?.length > 0 && (
@@ -101,7 +96,6 @@ HydratedPostModalProps) => {
                 </div>
               )}
             </div>
-
             {isExpanded && (
               <div className='mt-2 w-full'>
                 {reply.replies?.map((subReply) =>

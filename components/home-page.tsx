@@ -12,10 +12,9 @@ interface Props {
     type: string;
     uri: string;
   }[];
-  userDID?: string;
 }
 
-export const HomePage = ({ feeds, userDID }: Props) => {
+export const HomePage = ({ feeds }: Props) => {
   const tabRef = useRef<number | null>(null);
   const [activeTab, setActiveTab] = useState<number>(tabRef.current ?? 0);
 
@@ -47,7 +46,6 @@ export const HomePage = ({ feeds, userDID }: Props) => {
         uri={feed.uri}
         key={feed.uri}
         onRefreshComplete={() => setActiveTab(index)}
-        userDID={userDID}
       />
     ),
   }));

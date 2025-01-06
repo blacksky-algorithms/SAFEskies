@@ -11,14 +11,14 @@ import { IconButton } from '@/components/button/icon-button';
 import { Post } from '@/components/post';
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { HydratedPostModal } from '../modals/hydrated-post';
+import { VisualIntent } from '@/enums/styles';
 
 interface FeedProps {
   uri: string;
   onRefreshComplete?: () => void;
-  userDID?: string;
 }
 
-export const Feed = ({ uri, onRefreshComplete, userDID }: FeedProps) => {
+export const Feed = ({ uri, onRefreshComplete }: FeedProps) => {
   const { feed, error, isFetching, hasNextPage, fetchNextPage, refreshFeed } =
     usePaginatedFeed({
       limit: 10,
@@ -124,19 +124,19 @@ export const Feed = ({ uri, onRefreshComplete, userDID }: FeedProps) => {
           </GenericErrorModal>
         </section>
         <IconButton
+          intent={VisualIntent.Info}
           icon='ArrowUpCircleIcon'
           aria-label='Return to Top'
           onClick={() =>
             containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
           }
-          className='fixed bottom-4 left-4 h-20 w-20'
+          className='fixed bottom-4 left-4 h-14 w-14 bg-app-secondary-hover'
+          iconType='solid'
         />
       </div>
       <HydratedPostModal
         uri={selectedPostUri}
         onClose={() => setSelectedPostUri(null)}
-        feedUri={uri}
-        userDID={userDID || ''}
       />
     </>
   );

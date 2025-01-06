@@ -12,6 +12,7 @@ export interface IconProps extends React.HTMLAttributes<SVGElement> {
   size?: keyof typeof SharedSize;
   'aria-label'?: string;
   type?: 'outline' | 'solid';
+  stroke?: string;
 }
 
 const itentClasses: Record<
