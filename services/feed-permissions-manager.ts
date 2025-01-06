@@ -297,7 +297,6 @@ const getUserFeeds = async (userDid?: string) => {
     // 3. Create a map of feed URIs to their latest Bluesky data
     const blueskyFeedsMap = new Map(
       blueskyFeeds.map((feed) => {
-        console.log({ feed });
         return [feed.uri, feed];
       })
     );

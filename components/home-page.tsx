@@ -3,7 +3,7 @@
 import { Feed } from '@/components/feed/feed';
 import { Tabs } from '@/components/tab/tab';
 import cc from 'classcat';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface Props {
   feeds: {
@@ -16,14 +16,12 @@ interface Props {
 }
 
 export const HomePage = ({ feeds, userDID }: Props) => {
-  const [activeTab, setActiveTab] = useState<number>(() => {
-    const storedTab = localStorage.getItem('activeTab');
-    return storedTab ? parseInt(storedTab, 10) : 0;
-  });
+  const tabRef = useRef<number | null>(null);
+  const [activeTab, setActiveTab] = useState<number>(tabRef.current ?? 0);
 
   useEffect(() => {
-    localStorage.setItem('activeTab', String(activeTab));
-  }, [activeTab]);
+    setActiveTab(tabRef.current ?? 0);
+  }, [tabRef.current]);
 
   const tabs = feeds.map((feed, index) => ({
     title: (
