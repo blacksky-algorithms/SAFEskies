@@ -18,3 +18,4 @@ export const BLUE_SKY_CLIENT_META_DATA: OAuthClientMetadataInput = {
 };
 
 export const CONTENT_LABELS = ['porn', 'sexual', 'nudity', 'graphic-media'];
+export const preferredLanguages = 'en-US, en';
