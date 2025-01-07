@@ -1,5 +1,5 @@
 import { HomePage } from '@/components/home-page';
-import { getUserFeeds } from '@/repos/feed-repo';
+import { getUserFeeds } from '@/repos/feeds';
 import { getProfile } from '@/repos/profile';
 
 export default async function Page() {

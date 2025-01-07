@@ -1,5 +1,5 @@
 import { useReducer, useEffect, useRef, useCallback } from 'react';
-import { FeedParams, fetchFeed } from '@/repos/feed-repo';
+import { FeedParams, fetchFeed } from '@/repos/feeds';
 import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 type FeedState = {

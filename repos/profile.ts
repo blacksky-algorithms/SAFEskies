@@ -6,7 +6,7 @@ import { SupabaseInstance } from '@/repos/supabase';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { AtprotoAgent } from '@/repos/atproto-agent';
 import { shouldUpdateProfile } from '@/lib/utils/profile';
-import { getActorFeeds } from '@/repos/feed-repo';
+import { getActorFeeds } from '@/repos/feeds';
 import { getSession } from '@/repos/iron';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 
