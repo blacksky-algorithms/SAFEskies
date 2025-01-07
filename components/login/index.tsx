@@ -1,6 +1,5 @@
 'use client';
 
-import { signInWithBluesky } from '@/repos/auth';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { Button } from '../button';
@@ -35,34 +34,43 @@ export const Login = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!state.handle.trim()) {
-      setState((prevState) => ({
-        ...prevState,
-        error: 'Handle is required',
-      }));
+    const trimmedHandle = state.handle.trim();
+    if (!trimmedHandle) {
+      setState((prev) => ({ ...prev, error: 'Handle is required' }));
       return;
     }
 
-    setState((prevState) => ({ ...prevState, isSubmitting: true }));
+    setState((prev) => ({ ...prev, isSubmitting: true }));
 
     try {
-      const url: string = await signInWithBluesky(state.handle.trim());
+      const response = await fetch('/api/auth/sign-in', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ handle: trimmedHandle }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to sign in');
+      }
+
+      const { url } = await response.json();
       router.push(url);
-    } catch (err) {
-      setState((prevState) => ({
-        ...prevState,
-        isSubmitting: false,
-        error: 'Failed to sign in. Please try again.',
+    } catch (error) {
+      console.error('Login error:', error);
+      setState((prev) => ({
+        ...prev,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to sign in. Please try again.',
       }));
-      console.error(err);
     } finally {
-      setState((prevState) => ({
-        ...prevState,
-        isSubmitting: false,
-      }));
+      setState((prev) => ({ ...prev, isSubmitting: false }));
     }
   };
-
   return (
     <section className='w-full max-w-2xl'>
       <form onSubmit={handleSubmit} className='space-y-5'>
