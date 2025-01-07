@@ -1,13 +1,14 @@
 'use client';
 
 import React from 'react';
-import { User, UserRole } from '@/lib/types/user';
+import { User } from '@/lib/types/user';
 import { UserDrawerContent } from './user-drawer-content';
 import { ModSideDrawerContent } from './mod-side-drawer-content';
 import { AdminSideDrawerContent } from './admin-side-drawer-content';
 import { useModal } from '@/contexts/modal-context';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useRouter } from 'next/navigation';
+import { UserRole } from '@/lib/types/permission';
 
 interface Props {
   user: User | null;

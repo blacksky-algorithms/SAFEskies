@@ -1,8 +1,5 @@
-import {
-  buildFeedPermissions,
-  determineUserRolesByFeed,
-} from '@/lib/utils/roles';
-import { UserRole } from '@/lib/types/user';
+import { UserRole } from '@/lib/types/permission';
+import { buildFeedPermissions, determineUserRolesByFeed } from '../permission';
 
 describe('buildFeedPermissions', () => {
   it('combines created feed permissions with existing mod permissions', () => {

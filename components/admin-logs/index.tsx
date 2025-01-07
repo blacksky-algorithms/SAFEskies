@@ -1,11 +1,11 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 import { Logs } from '../logs';
 import { User } from '@/lib/types/user';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { useLogs } from '@/hooks/useLogs';
 import { LogsManager } from '@/services/logs-manager';
+import { getAllModeratorsForAdmin } from '@/repos/permission';
 
 interface AdminLogsProps {
   user: User | null;
@@ -33,9 +33,7 @@ export const AdminLogs = ({ user }: AdminLogsProps) => {
       if (!user?.did) return;
 
       try {
-        const mods = await FeedPermissionManager.getAllModeratorsForAdmin(
-          user.did
-        );
+        const mods = await getAllModeratorsForAdmin(user.did);
         setModerators(mods);
       } catch (err) {
         console.error('Error fetching moderators:', err);

@@ -1,17 +1,57 @@
-import { FeedRoleInfo, UserRole } from '@/lib/types/user';
+import { ActionType } from '@/lib/types/actions';
+import { FeedPermission, FeedRoleInfo, UserRole } from '@/lib/types/permission';
+import { ROLE_PRIORITY } from '../constants';
 
-// Centralized role priority system
-const ROLE_PRIORITY: Record<UserRole, number> = {
-  admin: 3,
-  mod: 2,
-  user: 1,
+export function canPerformWithRole(
+  role: UserRole,
+  action: ActionType
+): boolean {
+  switch (action) {
+    case 'create_mod':
+    case 'remove_mod':
+      return role === 'admin';
+    case 'delete_post':
+    case 'ban_user':
+      return role === 'mod' || role === 'admin';
+    default:
+      return false;
+  }
+}
+
+export const groupModeratorsByFeed = (
+  permissions: {
+    feed_uri: string;
+    user_did: string;
+    role: UserRole;
+  }[]
+) => {
+  return permissions.reduce(
+    (acc, perm) => {
+      if (!acc[perm.feed_uri]) {
+        acc[perm.feed_uri] = [];
+      }
+      acc[perm.feed_uri].push(perm);
+      return acc;
+    },
+    {} as Record<
+      string,
+      {
+        feed_uri: string;
+        user_did: string;
+        role: UserRole;
+      }[]
+    >
+  );
 };
 
-export const buildFeedPermissions = (
+export function buildFeedPermissions(
   userDid: string,
   createdFeeds: { uri: string; displayName?: string }[],
-  existingPermissions: { role: UserRole; feed_uri: string; feed_name: string }[]
-) => {
+  existingPermissions: Omit<
+    FeedPermission,
+    'user_did' | 'created_by' | 'created_at'
+  >[] = []
+): FeedPermission[] {
   const permissionsMap = new Map<
     string,
     {
@@ -46,12 +86,12 @@ export const buildFeedPermissions = (
     }
     const existing = permissionsMap.get(perm.feed_uri);
     if (!existing || ROLE_PRIORITY[perm.role] > ROLE_PRIORITY[existing.role]) {
-      permissionsMap.set(perm.feed_uri, { ...perm, user_did: userDid }); // Ensure user_did
+      permissionsMap.set(perm.feed_uri, { ...perm, user_did: userDid });
     }
   });
 
   return Array.from(permissionsMap.values());
-};
+}
 
 export const determineUserRolesByFeed = (
   existingPermissions: {
@@ -63,7 +103,6 @@ export const determineUserRolesByFeed = (
 ): Record<string, FeedRoleInfo> => {
   const rolesByFeed: Record<string, FeedRoleInfo> = {};
 
-  // Assign admin role to feeds the user created
   createdFeeds.forEach((feed) => {
     rolesByFeed[feed.uri] = {
       role: 'admin',
@@ -73,7 +112,6 @@ export const determineUserRolesByFeed = (
     };
   });
 
-  // Update roles based on permissions
   existingPermissions.forEach((permission) => {
     const currentEntry = rolesByFeed[permission.feed_uri] || {
       role: 'user',

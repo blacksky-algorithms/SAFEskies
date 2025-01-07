@@ -4,12 +4,12 @@ import { Modal } from '@/components/modals';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { Post } from '@/components/post';
 import { useEffect, useState } from 'react';
-import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { Button } from '@/components/button';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { VisualIntent } from '@/enums/styles';
 import cc from 'classcat';
+import { getPostThread } from '@/repos/post';
 
 interface HydratedPostModalProps {
   uri: string | null;
@@ -38,7 +38,7 @@ export const HydratedPostModal = ({ uri, onClose }: HydratedPostModalProps) => {
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       try {
-        const thread = await FeedPermissionManager.getPostThread(uri);
+        const thread = await getPostThread(uri);
         setState((prev) => ({
           ...prev,
           thread,

@@ -4,10 +4,10 @@ import { useToast } from '@/contexts/toast-context';
 import { VisualIntent } from '@/enums/styles';
 import { useState } from 'react';
 import Link from 'next/link';
-import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 import { ModActionCard } from './components/mod-action-card';
+import { setFeedRole } from '@/repos/permission';
 
 interface ModManagementState {
   moderators: ProfileViewBasic[];
@@ -36,7 +36,7 @@ export const ModManagementCard = ({
 
   const handleDemote = async (modDid: string) => {
     try {
-      const success = await FeedPermissionManager.setFeedRole(
+      const success = await setFeedRole(
         modDid,
         feed.uri,
         'user',

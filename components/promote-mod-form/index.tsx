@@ -9,8 +9,8 @@ import { VisualIntent } from '@/enums/styles';
 import { useToast } from '@/contexts/toast-context';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { LoadingSpinner } from '@/components/loading-spinner';
-import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
+import { getFeedRole, setFeedRole } from '@/repos/permission';
 
 export interface PromoteModState {
   selectedUser: ProfileViewBasic | null;
@@ -44,10 +44,7 @@ export const PromoteModForm = ({
       try {
         const disabledFeedUris: string[] = [];
         for (const feed of feeds) {
-          const role = await FeedPermissionManager.getFeedRole(
-            user.did,
-            feed.uri
-          );
+          const role = await getFeedRole(user.did, feed.uri);
           if (role === 'mod' || role === 'admin') {
             disabledFeedUris.push(feed.uri);
           }
@@ -113,7 +110,7 @@ export const PromoteModForm = ({
     try {
       const results = await Promise.all(
         state.selectedFeeds.map((feed) =>
-          FeedPermissionManager.setFeedRole(
+          setFeedRole(
             state.selectedUser!.did,
             feed.uri,
             'mod',

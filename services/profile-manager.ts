@@ -3,8 +3,11 @@ import { AtprotoAgent } from '@/repos/atproto-agent';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 import { getSession } from '@/repos/iron';
-import { FeedPermissionManager } from './feed-permissions-manager';
 import { getActorFeeds } from '@/repos/actor';
+import {
+  buildFeedPermissions,
+  determineUserRolesByFeed,
+} from '@/lib/utils/permission';
 
 const saveProfile = async (
   blueSkyProfileData: ProfileViewBasic,
@@ -28,8 +31,7 @@ const saveProfile = async (
       return false;
     }
 
-    // Let FeedPermissionManager handle feed permissions
-    const feedPermissions = FeedPermissionManager.buildFeedPermissions(
+    const feedPermissions = buildFeedPermissions(
       blueSkyProfileData.did,
       createdFeeds
     );
@@ -141,7 +143,7 @@ const getProfile = async () => {
 
     // Update feed permissions if needed
     if (createdFeeds.length > 0) {
-      const feedPermissions = FeedPermissionManager.buildFeedPermissions(
+      const feedPermissions = buildFeedPermissions(
         userDid,
         createdFeeds,
         permissionsResponse.data || []
@@ -152,7 +154,7 @@ const getProfile = async () => {
       });
     }
 
-    const feedRoles = FeedPermissionManager.determineUserRolesByFeed(
+    const feedRoles = determineUserRolesByFeed(
       permissionsResponse.data || [],
       createdFeeds
     );
