@@ -20,7 +20,7 @@ import { GenericWithImageEmbed } from './embed-generic-with-image';
 import { getRkey } from '../utils';
 import { StarterPackEmbed } from './embed-starter-pack';
 import { PostText } from './post-text';
-import { CONTENT_LABELS } from '@/utils/consts';
+import { CONTENT_LABELS } from '@/lib/utils/consts';
 
 const labelsToInfo = (
   labels?: AppBskyFeedDefs.PostView['labels']

@@ -1,4 +1,7 @@
-import { buildFeedPermissions, determineUserRolesByFeed } from '@/utils/roles';
+import {
+  buildFeedPermissions,
+  determineUserRolesByFeed,
+} from '@/lib/utils/roles';
 import { UserRole } from '@/types/user';
 
 describe('buildFeedPermissions', () => {

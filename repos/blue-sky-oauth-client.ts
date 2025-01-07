@@ -1,7 +1,7 @@
 import { Mutex } from 'async-mutex';
 import { SessionStore, StateStore } from '@/repos/storage';
 import { NodeOAuthClient } from '@atproto/oauth-client-node';
-import { BLUE_SKY_CLIENT_META_DATA } from '@/utils/consts';
+import { BLUE_SKY_CLIENT_META_DATA } from '@/lib/utils/consts';
 
 // Simple lock implementation using async-mutex
 const mutex = new Mutex();
