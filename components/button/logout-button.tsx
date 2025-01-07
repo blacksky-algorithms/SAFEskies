@@ -2,7 +2,7 @@
 
 import { FormEvent } from 'react';
 import { Button } from '.';
-import { signOutOfBlueSky } from '@/repos/actions';
+import { signOutOfBlueSky } from '@/repos/auth';
 
 // This is the logout button
 export const LogoutButton = () => {

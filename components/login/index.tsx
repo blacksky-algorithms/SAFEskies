@@ -1,6 +1,6 @@
 'use client';
 
-import { signInWithBluesky } from '@/repos/actions';
+import { signInWithBluesky } from '@/repos/auth';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { Button } from '../button';
