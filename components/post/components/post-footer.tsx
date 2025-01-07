@@ -16,6 +16,7 @@ export const PostFooter = (postRecord: PostView) => {
           icon='ChatBubbleLeftIcon'
           count={postRecord.replyCount || 0}
           label='replies'
+          type={postRecord?.replyCount || 0 > 0 ? 'solid' : 'outline'}
         />
         <PostFooterIcon
           icon='ArrowPathRoundedSquareIcon'
@@ -23,14 +24,16 @@ export const PostFooter = (postRecord: PostView) => {
           label='reposts'
         />
         <PostFooterIcon
+          icon='ChatBubbleLeftRightIcon'
+          count={postRecord.quoteCount || 0}
+          label='quotes'
+          type={postRecord?.quoteCount || 0 > 0 ? 'solid' : 'outline'}
+        />
+        <PostFooterIcon
           icon='HeartIcon'
           count={postRecord.likeCount || 0}
           label='likes'
-        />
-        <PostFooterIcon
-          icon='LinkIcon'
-          count={postRecord.quoteCount || 0}
-          label='quotes'
+          type={postRecord?.likeCount || 0 > 0 ? 'solid' : 'outline'}
         />
       </div>
     </footer>
@@ -42,13 +45,20 @@ const PostFooterIcon = ({
   icon,
   count,
   label,
+  type = 'outline',
 }: {
   icon: keyof typeof HeroIcons;
   count: number;
   label: string;
+  type?: 'solid' | 'outline';
 }) => (
   <div className='flex items-center space-x-1'>
-    <Icon aria-label={label} icon={icon} className='h-5 w-5 text-app-primary' />
+    <Icon
+      aria-label={label}
+      type={type}
+      icon={icon}
+      className='h-5 w-5 text-app-primary'
+    />
     <span>{count}</span>
   </div>
 );

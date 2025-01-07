@@ -9,10 +9,13 @@ import { LiveRegion } from '@/components/live-region';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { IconButton } from '@/components/button/icon-button';
 import { Post } from '@/components/post';
+import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { HydratedPostModal } from '../modals/hydrated-post';
+import { VisualIntent } from '@/enums/styles';
 
 interface FeedProps {
   uri: string;
-  onRefreshComplete?: () => void; // Callback to notify the parent that refresh is complete
+  onRefreshComplete?: () => void;
 }
 
 export const Feed = ({ uri, onRefreshComplete }: FeedProps) => {
@@ -24,6 +27,7 @@ export const Feed = ({ uri, onRefreshComplete }: FeedProps) => {
 
   const { openModalInstance, closeModalInstance } = useModal();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedPostUri, setSelectedPostUri] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -78,46 +82,62 @@ export const Feed = ({ uri, onRefreshComplete }: FeedProps) => {
     refreshFeed();
   };
 
+  const handlePostClick = async (post: PostView) => {
+    setSelectedPostUri(post.uri);
+    openModalInstance(MODAL_INSTANCE_IDS.HYDRATED_POST);
+  };
+
   return (
-    <div className=' max-h-page'>
-      <section className='flex flex-col items-center mx-auto tablet:px-10'>
-        <div
-          ref={containerRef}
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          className='overflow-y-auto h-screen flex flex-col items-center'
-        >
-          <LiveRegion>{isRefreshing && <span>Refreshing...</span>}</LiveRegion>
+    <>
+      <div className=' max-h-page'>
+        <section className='flex flex-col items-center mx-auto tablet:px-10'>
+          <div
+            ref={containerRef}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            className='overflow-y-auto h-screen flex flex-col items-center'
+          >
+            <LiveRegion>
+              {isRefreshing && <span>Refreshing...</span>}
+            </LiveRegion>
 
-          <ul className='w-screen tablet:max-w-screen-sm flex flex-col items-center'>
-            {feed.map((feedPost) => (
-              <li
-                key={feedPost.post.cid}
-                className='w-full tablet:max-w-screen'
-              >
-                <Post post={feedPost.post} />
-              </li>
-            ))}
-          </ul>
+            <ul className='w-screen tablet:max-w-screen-sm flex flex-col items-center'>
+              {feed.map((feedPost) => (
+                <li
+                  key={feedPost.post.cid}
+                  className='w-full tablet:max-w-screen'
+                  onClick={() => handlePostClick(feedPost.post)}
+                >
+                  <Post post={feedPost.post} />
+                </li>
+              ))}
+            </ul>
 
-          {isFetching && !isRefreshing && (
-            <div className='text-center py-2'>Loading more posts...</div>
-          )}
+            {isFetching && !isRefreshing && (
+              <div className='text-center py-2'>Loading more posts...</div>
+            )}
 
-          <div ref={sentinelRef} className='h-10 w-full' />
-        </div>
-        <GenericErrorModal onClose={handleErrorModalClose}>
-          <p>{error || 'Feed unavailable'}</p>
-        </GenericErrorModal>
-      </section>
-      <IconButton
-        icon='ArrowUpCircleIcon'
-        aria-label='Return to Top'
-        onClick={() =>
-          containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-        }
-        className='fixed bottom-4 left-4 h-20 w-20'
+            <div ref={sentinelRef} className='h-10 w-full' />
+          </div>
+          <GenericErrorModal onClose={handleErrorModalClose}>
+            <p>{error || 'Feed unavailable'}</p>
+          </GenericErrorModal>
+        </section>
+        <IconButton
+          intent={VisualIntent.Info}
+          icon='ArrowUpCircleIcon'
+          aria-label='Return to Top'
+          onClick={() =>
+            containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+          }
+          className='fixed bottom-4 left-4 h-14 w-14 bg-app-secondary-hover'
+          iconType='solid'
+        />
+      </div>
+      <HydratedPostModal
+        uri={selectedPostUri}
+        onClose={() => setSelectedPostUri(null)}
       />
-    </div>
+    </>
   );
 };

@@ -23,7 +23,7 @@ const MODAL_CONFIG = {
     process.env.NEXT_PUBLIC_MAX_STACKED_MODALS || '3',
     10
   ),
-  ENABLE_DEBUG: true,
+  ENABLE_DEBUG: false,
 };
 
 // Validate `MAX_STACKED_MODALS`
@@ -55,7 +55,9 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
     );
     if (!isNaN(maxModals)) {
       MODAL_CONFIG.MAX_STACKED_MODALS = maxModals;
-      console.debug(`Updated MAX_STACKED_MODALS to ${maxModals}`);
+      if (MODAL_CONFIG.ENABLE_DEBUG) {
+        console.debug(`Updated MAX_STACKED_MODALS to ${maxModals}`);
+      }
     }
 
     return () => {
