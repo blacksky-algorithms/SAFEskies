@@ -4,7 +4,7 @@ import { AtprotoAgent } from '@/repos/atproto-agent';
 import { BlueskyOAuthClient } from '@/repos/blue-sky-oauth-client';
 import { getActorFeeds } from '@/repos/actor';
 import { ProfileManager } from './profile-manager';
-import { User } from '@/types/user';
+import { User } from '@/lib/types/user';
 
 const getBlueskyProfile = async (oAuthCallbackParams: URLSearchParams) => {
   const { session } = await BlueskyOAuthClient.callback(oAuthCallbackParams);

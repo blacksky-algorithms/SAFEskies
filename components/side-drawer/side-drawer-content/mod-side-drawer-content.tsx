@@ -1,4 +1,4 @@
-import { User } from '@/types/user';
+import { User } from '@/lib/types/user';
 import { SideDrawerLink } from '../components/side-drawer-link';
 
 interface ModSideDrawerContentProps {

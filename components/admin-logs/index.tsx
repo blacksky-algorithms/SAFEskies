@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 import { Logs } from '../logs';
-import { User } from '@/types/user';
+import { User } from '@/lib/types/user';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { useLogs } from '@/hooks/useLogs';
 import { LogsManager } from '@/services/logs-manager';

@@ -10,7 +10,7 @@ import { VisualIntent } from '@/enums/styles';
 import { LogEntry } from './components/log-entry';
 import { IconButton } from '@/components/button/icon-button';
 import { LogFilters } from './components/log-filters';
-import { Log } from '@/types/logs';
+import { Log } from '@/lib/types/logs';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { Modal } from '@/components/modals';
 import { useModal } from '@/contexts/modal-context';

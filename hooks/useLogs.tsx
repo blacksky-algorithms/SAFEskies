@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { ModAction } from '@/services/logs-manager';
-import { Log } from '@/types/logs';
+import { Log } from '@/lib/types/logs';
 
 type LogState = {
   logs: Log[];

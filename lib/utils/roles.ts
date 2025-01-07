@@ -1,4 +1,4 @@
-import { FeedRoleInfo, UserRole } from '@/types/user';
+import { FeedRoleInfo, UserRole } from '@/lib/types/user';
 
 // Centralized role priority system
 const ROLE_PRIORITY: Record<UserRole, number> = {

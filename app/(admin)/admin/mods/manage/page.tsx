@@ -1,7 +1,7 @@
 import { ProfileManager } from '@/services/profile-manager';
 import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 import { ModManagementCard } from '@/components/mod-management-card';
-import { FeedRoleInfo } from '@/types/user';
+import { FeedRoleInfo } from '@/lib/types/user';
 import { Tabs } from '@/components/tab/tab';
 
 export default async function Page() {

@@ -1,6 +1,6 @@
 import { Header } from '@/components/header';
 import { SideDrawer } from '@/components/side-drawer';
-import { User, UserRole } from '@/types/user';
+import { User, UserRole } from '@/lib/types/user';
 import { PropsWithChildren } from 'react';
 
 interface BaseLayoutProps {

@@ -5,7 +5,7 @@ import { UserButton } from '@/components/user-button';
 import { LoginButton } from '@/components/button/login-button';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { User } from '@/types/user';
+import { User } from '@/lib/types/user';
 
 export const Header = ({
   children,

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { User, UserRole } from '@/types/user';
+import { User, UserRole } from '@/lib/types/user';
 import { UserDrawerContent } from './user-drawer-content';
 import { ModSideDrawerContent } from './mod-side-drawer-content';
 import { AdminSideDrawerContent } from './admin-side-drawer-content';

@@ -1,6 +1,6 @@
 'use server';
 
-import { User } from '@/types/user';
+import { User } from '@/lib/types/user';
 import { getIronSession, type IronSession } from 'iron-session';
 import { ResponseCookies } from 'next/dist/server/web/spec-extension/cookies';
 import { cookies } from 'next/headers';

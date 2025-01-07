@@ -1,5 +1,5 @@
 import { ProfileManager } from '@/services/profile-manager';
-import { User } from '@/types/user';
+import { User } from '@/lib/types/user';
 import { useEffect, useState } from 'react';
 export const useProfile = () => {
   const [profile, setProfile] = useState<User | null>(null);

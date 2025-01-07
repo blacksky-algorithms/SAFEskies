@@ -1,6 +1,6 @@
 import { SupabaseInstance } from '@/repos/supabase';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
-import { FeedRoleInfo, UserRole } from '@/types/user';
+import { FeedRoleInfo, UserRole } from '@/lib/types/user';
 import { ProfileManager } from '@/services/profile-manager';
 import { LogsManager } from '@/services/logs-manager';
 import { getActorFeeds } from '@/repos/actor';

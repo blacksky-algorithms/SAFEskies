@@ -6,7 +6,7 @@ import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { Button } from '@/components/button';
 import { OptimizedImage } from '../optimized-image';
 import cc from 'classcat';
-import { User } from '@/types/user';
+import { User } from '@/lib/types/user';
 import { VisualIntent } from '@/enums/styles';
 
 export const UserButton = ({ user }: { user: User }) => {

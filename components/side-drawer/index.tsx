@@ -1,7 +1,7 @@
 import { SideDrawerContent } from '@/components/side-drawer/side-drawer-content';
 import { Modal } from '@/components/modals';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
-import { User, UserRole } from '@/types/user';
+import { User, UserRole } from '@/lib/types/user';
 import { LogoutButton } from '../button/logout-button';
 import cc from 'classcat';
 
