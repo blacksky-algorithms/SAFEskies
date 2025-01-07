@@ -15,7 +15,7 @@ export const useFeedRoles = () => {
 
     try {
       const response = await fetch(
-        `/api/permissions/check-existing-role?${new URLSearchParams({
+        `/api/permissions/role-check?${new URLSearchParams({
           userDid,
           feedUri,
         })}`

@@ -38,7 +38,7 @@ export const PromoteModForm = ({
   const [state, setState] = useState<PromoteModState>(INITIAL_STATE);
 
   const { toast } = useToast();
-  const { checkFeedRole } = useFeedRoles();
+  const { checkFeedRole, isLoading: isRoleCheckLoading } = useFeedRoles();
   const { promoteToModerator } = usePermissions();
 
   const checkExistingRoles = useCallback(
@@ -164,14 +164,12 @@ export const PromoteModForm = ({
 
   return (
     <div className='space-y-6 w-full max-w-2xl mx-auto'>
-      {state.isLoading && <LoadingSpinner />}
-
       {state.error && <div className='text-red-500 text-sm'>{state.error}</div>}
 
       <div className='space-y-2'>
-        {!state.selectedUser ? (
-          <BSUserSearch onSelect={handleSelectUser} />
-        ) : (
+        {!state.selectedUser && <BSUserSearch onSelect={handleSelectUser} />}
+
+        {state.selectedUser && !isRoleCheckLoading && (
           <FeedSelector
             feeds={feeds}
             state={state}
@@ -179,9 +177,15 @@ export const PromoteModForm = ({
             onSelectAll={handleSelectAll}
           />
         )}
+
+        {(state.isLoading || isRoleCheckLoading) && (
+          <div className='flex justify-center items-center'>
+            <LoadingSpinner />
+          </div>
+        )}
       </div>
 
-      {state.selectedUser && (
+      {state.selectedUser && !isRoleCheckLoading && (
         <Button
           onClick={handlePromote}
           disabled={
