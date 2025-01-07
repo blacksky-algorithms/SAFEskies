@@ -1,7 +1,7 @@
-import { ProfileManager } from '@/services/profile-manager';
+import { getProfile } from '@/repos/profile';
 
 export default async function Page() {
-  const profile = await ProfileManager.getProfile();
+  const profile = await getProfile();
 
   if (!profile) {
     return null;

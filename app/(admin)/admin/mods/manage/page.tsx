@@ -1,11 +1,11 @@
-import { ProfileManager } from '@/services/profile-manager';
 import { ModManagementCard } from '@/components/mod-management-card';
 import { FeedRoleInfo } from '@/lib/types/user';
 import { Tabs } from '@/components/tab/tab';
 import { getModeratorsByFeeds } from '@/repos/permission';
+import { getProfile } from '@/repos/profile';
 
 export default async function Page() {
-  const profile = await ProfileManager.getProfile();
+  const profile = await getProfile();
 
   if (!profile) {
     return (

@@ -3,8 +3,8 @@ import { getSession } from '@/repos/iron';
 import { AtprotoAgent } from '@/repos/atproto-agent';
 import { BlueskyOAuthClient } from '@/repos/blue-sky-oauth-client';
 import { getActorFeeds } from '@/repos/actor';
-import { ProfileManager } from './profile-manager';
 import { User } from '@/lib/types/user';
+import { getProfile, saveProfile } from '@/repos/profile';
 
 const getBlueskyProfile = async (oAuthCallbackParams: URLSearchParams) => {
   const { session } = await BlueskyOAuthClient.callback(oAuthCallbackParams);
@@ -42,13 +42,13 @@ const handleOAuthCallback = async (request: NextRequest) => {
     await ironSession.save();
 
     // 4. Save profile and initialize feed permissions
-    const success = await ProfileManager.saveProfile(profileData, createdFeeds);
+    const success = await saveProfile(profileData, createdFeeds);
     if (!success) {
       throw new Error('Failed to save profile data');
     }
 
     // 5. Get complete profile with roles and update session
-    const completeProfile = await ProfileManager.getProfile();
+    const completeProfile = await getProfile();
     if (!completeProfile) {
       throw new Error('Failed to retrieve complete profile');
     }

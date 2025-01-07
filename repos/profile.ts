@@ -1,15 +1,16 @@
-import { SupabaseInstance } from '@/repos/supabase';
-import { AtprotoAgent } from '@/repos/atproto-agent';
-import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
-import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
-import { getSession } from '@/repos/iron';
-import { getActorFeeds } from '@/repos/actor';
 import {
   buildFeedPermissions,
   determineUserRolesByFeed,
 } from '@/lib/utils/permission';
+import { SupabaseInstance } from '@/repos/supabase';
+import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { AtprotoAgent } from '@/repos/atproto-agent';
+import { shouldUpdateProfile } from '@/lib/utils/profile';
+import { getActorFeeds } from '@/repos/feed-repo';
+import { getSession } from '@/repos/iron';
+import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 
-const saveProfile = async (
+export const saveProfile = async (
   blueSkyProfileData: ProfileViewBasic,
   createdFeeds: Feed[]
 ): Promise<boolean> => {
@@ -56,7 +57,7 @@ const saveProfile = async (
   }
 };
 
-const getProfileDetails = async (
+export const getProfileDetails = async (
   userDid: string
 ): Promise<ProfileViewBasic> => {
   let typedCachedProfile: ProfileViewBasic | null = null;
@@ -110,7 +111,7 @@ const getProfileDetails = async (
   }
 };
 
-const getProfile = async () => {
+export const getProfile = async () => {
   const session = await getSession();
   if (!session.user) {
     return null;
@@ -168,8 +169,7 @@ const getProfile = async () => {
     return null;
   }
 };
-
-const getBulkProfileDetails = async (
+export const getBulkProfileDetails = async (
   userDids: string[]
 ): Promise<ProfileViewBasic[]> => {
   // Deduplicate DIDs
@@ -187,7 +187,7 @@ const getBulkProfileDetails = async (
   );
 };
 
-const getDisplayNameByDID = async (did: string): Promise<string> => {
+export const getDisplayNameByDID = async (did: string): Promise<string> => {
   try {
     const profile = await getProfileDetails(did);
     return profile.displayName || profile.handle || did;
@@ -195,29 +195,4 @@ const getDisplayNameByDID = async (did: string): Promise<string> => {
     console.error('Error fetching display name:', error);
     return did;
   }
-};
-
-const shouldUpdateProfile = (
-  cached: ProfileViewBasic | null,
-  fresh: ProfileViewBasic
-): boolean => {
-  if (!cached) return true;
-
-  return (
-    cached.handle !== fresh.handle ||
-    cached.displayName !== fresh.displayName ||
-    cached.avatar !== fresh.avatar ||
-    cached.banner !== fresh.banner ||
-    cached.description !== fresh.description ||
-    JSON.stringify(cached.associated) !== JSON.stringify(fresh.associated) ||
-    JSON.stringify(cached.labels) !== JSON.stringify(fresh.labels)
-  );
-};
-
-export const ProfileManager = {
-  saveProfile,
-  getProfile,
-  getProfileDetails,
-  getDisplayNameByDID,
-  getBulkProfileDetails,
 };

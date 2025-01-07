@@ -6,8 +6,8 @@ import {
 } from '@/lib/utils/permission';
 import { SupabaseInstance } from '@/repos/supabase';
 import { LogsManager } from '@/services/logs-manager';
-import { ProfileManager } from '@/services/profile-manager';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
+import { getBulkProfileDetails } from '@/repos/profile';
 
 export const setFeedRole = async (
   targetUserDid: string,
@@ -83,17 +83,6 @@ export const canPerformAction = async (
   const feedRole = await getFeedRole(userDid, feedUri);
 
   return canPerformWithRole(feedRole, action);
-
-  // switch (action) {
-  //   case 'create_mod':
-  //   case 'remove_mod':
-  //     return feedRole === 'admin';
-  //   case 'delete_post':
-  //   case 'ban_user':
-  //     return feedRole === 'mod' || feedRole === 'admin';
-  //   default:
-  //     return false;
-  // }
 };
 
 export const getModeratorsByFeeds = async (feeds: Feed[]) => {
@@ -120,7 +109,7 @@ export const getModeratorsByFeeds = async (feeds: Feed[]) => {
         const userDids = feedModerators.map(
           (mod: { user_did: string }) => mod.user_did
         );
-        const profiles = await ProfileManager.getBulkProfileDetails(userDids);
+        const profiles = await getBulkProfileDetails(userDids);
 
         const moderators = profiles.map((profile, index) => ({
           ...profile,
