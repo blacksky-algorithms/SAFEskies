@@ -1,5 +1,4 @@
 import { AtprotoAgent } from '@/repos/atproto-agent';
-import { isThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 export const getPostThread = async (uri: string) => {
   try {

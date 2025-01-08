@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { AtprotoAgent } from '@/repos/atproto-agent';
+import { useCallback, useEffect, useState } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Input } from '@/components/input';
 import { LoadingSpinner } from '../loading-spinner';
@@ -29,6 +28,27 @@ export const BSUserSearch = ({
     onSelect(user);
   };
 
+  const fetchBlueskyUsers = useCallback(async () => {
+    try {
+      const params = new URLSearchParams({
+        searchQuery: debouncedSearch,
+      });
+
+      const response = await fetch(`/api/moderators/search?${params}`);
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to fetch users');
+      }
+
+      const data = await response.json();
+
+      return { data: data.results.data.actors, success: true };
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  }, [debouncedSearch]);
+
   useEffect(() => {
     const searchUsers = async () => {
       if (!debouncedSearch) {
@@ -41,17 +61,12 @@ export const BSUserSearch = ({
 
       setState((prevState) => ({ ...prevState, loading: true }));
       try {
-        const response = await AtprotoAgent.app.bsky.actor.searchActors({
-          term: debouncedSearch,
-          limit: 5,
-        });
+        const response = await fetchBlueskyUsers();
 
-        if (response.success) {
+        if (response && 'success' in response) {
           setState((prevState) => ({
             ...prevState,
-            results: response.data.actors.map((actor) => ({
-              ...actor,
-            })),
+            results: response.data,
             loading: false,
           }));
         } else {
