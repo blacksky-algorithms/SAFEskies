@@ -87,7 +87,7 @@ export const BSUserSearch = ({
     };
 
     searchUsers();
-  }, [debouncedSearch]);
+  }, [debouncedSearch, fetchBlueskyUsers]);
 
   return (
     <form className='relative w-full space-y-2' role='search'>
