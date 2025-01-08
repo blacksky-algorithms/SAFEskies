@@ -3,13 +3,12 @@
 import { Modal } from '@/components/modals';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { Post } from '@/components/post';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { Button } from '@/components/button';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { VisualIntent } from '@/enums/styles';
 import cc from 'classcat';
-import { getPostThread } from '@/repos/post';
 
 interface HydratedPostModalProps {
   uri: string | null;
@@ -31,31 +30,37 @@ export const HydratedPostModal = ({ uri, onClose }: HydratedPostModalProps) => {
     showReplies: {},
   });
 
-  useEffect(() => {
-    const fetchPost = async () => {
-      if (!uri) return;
+  const fetchPostThread = useCallback(async () => {
+    if (!uri) {
+      return;
+    }
+    try {
+      const params = new URLSearchParams({
+        uri: uri || '',
+      });
 
-      setState((prev) => ({ ...prev, isLoading: true, error: null }));
+      const response = await fetch(`/api/post?${params}`);
 
-      try {
-        const thread = await getPostThread(uri);
-        setState((prev) => ({
-          ...prev,
-          thread,
-          isLoading: false,
-        }));
-      } catch (err) {
-        console.error('Error fetching post:', err);
-        setState((prev) => ({
-          ...prev,
-          error: 'Failed to load post',
-          isLoading: false,
-        }));
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to fetch feed');
       }
-    };
 
-    fetchPost();
+      const data = await response.json();
+      setState((prev) => ({
+        ...prev,
+        thread: data,
+        isLoading: false,
+        error: null,
+      }));
+    } catch (error) {
+      console.error('Error fetching post thread:', error);
+    }
   }, [uri]);
+
+  useEffect(() => {
+    fetchPostThread();
+  }, [uri, fetchPostThread]);
 
   const handleReplyToggle = (replyUri: string) => {
     setState((prev) => ({

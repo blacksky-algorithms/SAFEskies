@@ -7,10 +7,7 @@ export const getPostThread = async (uri: string) => {
       uri,
     });
 
-    if (isThreadViewPost(response.data.thread)) {
-      return response.data.thread;
-    }
-    return null;
+    return response;
   } catch (error) {
     console.error('Error fetching post thread:', error);
     return null;
