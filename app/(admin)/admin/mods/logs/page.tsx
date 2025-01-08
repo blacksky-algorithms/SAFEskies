@@ -1,5 +1,5 @@
-import { ProfileManager } from '@/services/profile-manager';
 import { ModeratorLogs } from '@/components/moderator-logs';
+import { getProfileDetails } from '@/repos/profile';
 
 interface SearchParams {
   modDID?: string;
@@ -18,7 +18,7 @@ export default async function Page(props: PageProps) {
     return <div>Missing required parameters</div>;
   }
 
-  const mod = await ProfileManager.getProfileDetails(modDID);
+  const mod = await getProfileDetails(modDID);
 
   return <ModeratorLogs feedUri={feedUri} targetedProfile={mod} />;
 }

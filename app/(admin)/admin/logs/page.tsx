@@ -1,7 +1,7 @@
 import { AdminLogs } from '@/components/admin-logs';
-import { ProfileManager } from '@/services/profile-manager';
+import { getProfile } from '@/repos/profile';
 
 export default async function Page() {
-  const user = await ProfileManager.getProfile();
+  const user = await getProfile();
   return <AdminLogs user={user} />;
 }

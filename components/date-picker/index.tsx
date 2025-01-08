@@ -29,15 +29,15 @@ const PRESETS = [
   {
     label: 'Today',
     range: {
-      fromDate: getLocalDate(new Date()),
-      toDate: getLocalDate(new Date()),
+      fromDate: new Date().toLocaleDateString('en-CA'),
+      toDate: new Date().toLocaleDateString('en-CA'),
     },
   },
   {
     label: 'Yesterday',
     range: {
-      fromDate: getLocalDate(new Date(Date.now() - 86400000)),
-      toDate: getLocalDate(new Date(Date.now() - 86400000)),
+      fromDate: new Date(Date.now() - 86400000).toLocaleDateString('en-CA'),
+      toDate: new Date(Date.now() - 86400000).toLocaleDateString('en-CA'),
     },
   },
   {

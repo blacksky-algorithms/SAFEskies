@@ -9,8 +9,9 @@ import { VisualIntent } from '@/enums/styles';
 import { useToast } from '@/contexts/toast-context';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { LoadingSpinner } from '@/components/loading-spinner';
-import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
+import { useFeedRoles } from '@/hooks/useFeedRoles';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export interface PromoteModState {
   selectedUser: ProfileViewBasic | null;
@@ -27,15 +28,18 @@ export const PromoteModForm = ({
   feeds: Feed[];
   currentUserDid: string;
 }) => {
-  const [state, setState] = useState<PromoteModState>({
+  const INITIAL_STATE: PromoteModState = {
     selectedUser: null,
     selectedFeeds: [],
     disabledFeeds: [],
     isLoading: false,
     error: null,
-  });
+  };
+  const [state, setState] = useState<PromoteModState>(INITIAL_STATE);
 
   const { toast } = useToast();
+  const { checkFeedRole, isLoading: isRoleCheckLoading } = useFeedRoles();
+  const { promoteToModerator } = usePermissions();
 
   const checkExistingRoles = useCallback(
     async (user: ProfileViewBasic) => {
@@ -43,15 +47,21 @@ export const PromoteModForm = ({
 
       try {
         const disabledFeedUris: string[] = [];
-        for (const feed of feeds) {
-          const role = await FeedPermissionManager.getFeedRole(
-            user.did,
-            feed.uri
-          );
+
+        // Check all feeds in parallel for better performance
+        const roleChecks = await Promise.all(
+          feeds.map(async (feed) => {
+            const role = await checkFeedRole(user.did, feed.uri);
+            return { feedUri: feed.uri, role };
+          })
+        );
+
+        // Collect feeds where user is already a mod or admin
+        roleChecks.forEach(({ feedUri, role }) => {
           if (role === 'mod' || role === 'admin') {
-            disabledFeedUris.push(feed.uri);
+            disabledFeedUris.push(feedUri);
           }
-        }
+        });
 
         setState((prev) => ({
           ...prev,
@@ -59,7 +69,7 @@ export const PromoteModForm = ({
           isLoading: false,
         }));
       } catch (error) {
-        console.error('Error promoting moderator:', error);
+        console.error('Error checking roles:', error);
         setState((prev) => ({
           ...prev,
           error: 'Failed to check user roles',
@@ -67,7 +77,7 @@ export const PromoteModForm = ({
         }));
       }
     },
-    [feeds]
+    [feeds, checkFeedRole]
   );
 
   const handleSelectUser = async (user: ProfileViewBasic) => {
@@ -113,17 +123,16 @@ export const PromoteModForm = ({
     try {
       const results = await Promise.all(
         state.selectedFeeds.map((feed) =>
-          FeedPermissionManager.setFeedRole(
-            state.selectedUser!.did,
-            feed.uri,
-            'mod',
-            currentUserDid,
-            (feed.displayName as string) || ''
-          )
+          promoteToModerator({
+            targetUserDid: state.selectedUser!.did,
+            feedUri: feed.uri,
+            setByUserDid: currentUserDid,
+            feedName: (feed.displayName as string) || '',
+          })
         )
       );
 
-      if (results.some((result) => !result)) {
+      if (results.some((result) => !result.success)) {
         throw new Error('Failed to promote moderator for some feeds');
       }
 
@@ -133,13 +142,7 @@ export const PromoteModForm = ({
         intent: VisualIntent.Success,
       });
 
-      setState({
-        selectedUser: null,
-        selectedFeeds: [],
-        disabledFeeds: [],
-        isLoading: false,
-        error: null,
-      });
+      setState(INITIAL_STATE);
     } catch (error) {
       console.error('Error promoting moderator:', error);
       setState((prev) => ({
@@ -161,14 +164,12 @@ export const PromoteModForm = ({
 
   return (
     <div className='space-y-6 w-full max-w-2xl mx-auto'>
-      {state.isLoading && <LoadingSpinner />}
-
       {state.error && <div className='text-red-500 text-sm'>{state.error}</div>}
 
       <div className='space-y-2'>
-        {!state.selectedUser ? (
-          <BSUserSearch onSelect={handleSelectUser} />
-        ) : (
+        {!state.selectedUser && <BSUserSearch onSelect={handleSelectUser} />}
+
+        {state.selectedUser && !isRoleCheckLoading && (
           <FeedSelector
             feeds={feeds}
             state={state}
@@ -176,9 +177,15 @@ export const PromoteModForm = ({
             onSelectAll={handleSelectAll}
           />
         )}
+
+        {(state.isLoading || isRoleCheckLoading) && (
+          <div className='flex justify-center items-center'>
+            <LoadingSpinner />
+          </div>
+        )}
       </div>
 
-      {state.selectedUser && (
+      {state.selectedUser && !isRoleCheckLoading && (
         <Button
           onClick={handlePromote}
           disabled={

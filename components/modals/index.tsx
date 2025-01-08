@@ -1,7 +1,7 @@
 'use client';
 
 import { useModal } from '@/contexts/modal-context';
-import { ModalProps } from '@/types/modal-types';
+import { ModalProps } from '@/lib/types/modal-types';
 import {
   Dialog,
   DialogBackdrop,

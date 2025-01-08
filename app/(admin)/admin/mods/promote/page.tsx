@@ -1,9 +1,9 @@
 import { PromoteModForm } from '@/components/promote-mod-form';
 import { getActorFeeds } from '@/repos/actor';
-import { ProfileManager } from '@/services/profile-manager';
+import { getProfile } from '@/repos/profile';
 
 export default async function Page() {
-  const profile = await ProfileManager.getProfile();
+  const profile = await getProfile();
   const feedsResponse = await getActorFeeds(profile?.did);
   const feeds = feedsResponse?.feeds || [];
 

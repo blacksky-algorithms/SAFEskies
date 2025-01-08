@@ -1,11 +1,11 @@
-import { ProfileManager } from '@/services/profile-manager';
-import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 import { ModManagementCard } from '@/components/mod-management-card';
-import { FeedRoleInfo } from '@/types/user';
+import { FeedRoleInfo } from '@/lib/types/user';
 import { Tabs } from '@/components/tab/tab';
+import { getModeratorsByFeeds } from '@/repos/permission';
+import { getProfile } from '@/repos/profile';
 
 export default async function Page() {
-  const profile = await ProfileManager.getProfile();
+  const profile = await getProfile();
 
   if (!profile) {
     return (
@@ -23,9 +23,7 @@ export default async function Page() {
       displayName: (roleInfo as FeedRoleInfo).displayName || 'Unnamed Feed',
     }));
 
-  const moderatorsByFeed = await FeedPermissionManager.getModeratorsByFeeds(
-    adminFeeds
-  );
+  const moderatorsByFeed = await getModeratorsByFeeds(adminFeeds);
 
   const tabs = moderatorsByFeed.map(({ feed, moderators }) => ({
     title: (feed.displayName as string) || '',

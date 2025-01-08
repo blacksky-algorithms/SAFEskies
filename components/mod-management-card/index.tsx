@@ -4,7 +4,6 @@ import { useToast } from '@/contexts/toast-context';
 import { VisualIntent } from '@/enums/styles';
 import { useState } from 'react';
 import Link from 'next/link';
-import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 import { ModActionCard } from './components/mod-action-card';
@@ -35,14 +34,31 @@ export const ModManagementCard = ({
   const { toast } = useToast();
 
   const handleDemote = async (modDid: string) => {
+    setState((prev) => ({
+      ...prev,
+      pendingDemotions: new Set([...prev.pendingDemotions, modDid]),
+    }));
+
     try {
-      const success = await FeedPermissionManager.setFeedRole(
-        modDid,
-        feed.uri,
-        'user',
-        currentUserDid,
-        feed.displayName as string
-      );
+      const response = await fetch('/api/permissions/demote', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          modDid,
+          feedUri: feed.uri,
+          setByUserDid: currentUserDid,
+          feedName: feed.displayName || '',
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to demote moderator');
+      }
+
+      const { success } = await response.json();
 
       if (!success) {
         throw new Error('Failed to demote moderator');
@@ -63,6 +79,23 @@ export const ModManagementCard = ({
       });
     } catch (error) {
       console.error('Error demoting moderator:', error);
+
+      // Remove from pending demotions if there was an error
+      setState((prev) => ({
+        ...prev,
+        pendingDemotions: new Set(
+          [...prev.pendingDemotions].filter((did) => did !== modDid)
+        ),
+        error:
+          error instanceof Error ? error.message : 'Failed to demote moderator',
+      }));
+
+      toast({
+        title: 'Error',
+        message:
+          error instanceof Error ? error.message : 'Failed to demote moderator',
+        intent: VisualIntent.Error,
+      });
     }
   };
 

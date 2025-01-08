@@ -1,11 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { FeedPermissionManager } from '@/services/feed-permissions-manager';
 import { Logs } from '../logs';
-import { User } from '@/types/user';
+import { User } from '@/lib/types/user';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { useLogs } from '@/hooks/useLogs';
-import { LogsManager } from '@/services/logs-manager';
+import { fetchLogs, fetchModerators } from '@/lib/utils/logs';
 
 interface AdminLogsProps {
   user: User | null;
@@ -13,36 +12,28 @@ interface AdminLogsProps {
 
 export const AdminLogs = ({ user }: AdminLogsProps) => {
   const [moderators, setModerators] = useState<ProfileViewBasic[]>([]);
+  const [moderatorError, setModeratorError] = useState<string | null>(null);
 
-  const {
-    logs,
-    isLoading,
-    error,
-    filters,
-    onDateFilterChange,
-    onActionFilterChange,
-    onPerformedByFilterChange,
-    onTargetUserFilterChange,
-    onTargetPostFilterChange,
-    onSortByFilterChange,
-    onClearFilters,
-  } = useLogs(() => LogsManager.getAdminLogs(filters));
+  const { logs, isLoading, error, filters, ...filterHandlers } =
+    useLogs(fetchLogs);
 
   useEffect(() => {
-    const fetchModerators = async () => {
-      if (!user?.did) return;
+    if (!user?.did) return;
 
+    async function loadModerators() {
       try {
-        const mods = await FeedPermissionManager.getAllModeratorsForAdmin(
-          user.did
+        const moderatorData = await fetchModerators();
+        setModerators(moderatorData);
+        setModeratorError(null);
+      } catch (error) {
+        console.error('Error fetching moderators:', error);
+        setModeratorError(
+          error instanceof Error ? error.message : 'Failed to fetch moderators'
         );
-        setModerators(mods);
-      } catch (err) {
-        console.error('Error fetching moderators:', err);
       }
-    };
+    }
 
-    fetchModerators();
+    loadModerators();
   }, [user?.did]);
 
   const categories = {
@@ -58,16 +49,10 @@ export const AdminLogs = ({ user }: AdminLogsProps) => {
   return (
     <Logs
       categories={categories}
-      onActionFilterChange={onActionFilterChange}
-      onDateFilterChange={onDateFilterChange}
-      onPerformedByFilterChange={onPerformedByFilterChange}
-      onTargetUserFilterChange={onTargetUserFilterChange}
-      onTargetPostFilterChange={onTargetPostFilterChange}
-      onSortByFilterChange={onSortByFilterChange}
-      onClearFilters={onClearFilters}
+      {...filterHandlers}
       filters={filters}
       isLoading={isLoading}
-      error={error}
+      error={error || moderatorError}
       moderators={moderators}
     />
   );

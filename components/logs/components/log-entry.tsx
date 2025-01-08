@@ -1,7 +1,8 @@
 'use client';
-import { ModAction } from '@/services/logs-manager';
+
 import { format } from 'date-fns';
-import { Log } from '@/types/logs';
+import { Log } from '@/lib/types/logs';
+import { ModAction } from '@/lib/types/moderation';
 
 const ActionLabel: Record<ModAction, string> = {
   post_delete: 'Post Deleted',

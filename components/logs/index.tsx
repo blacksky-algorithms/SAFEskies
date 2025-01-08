@@ -1,6 +1,5 @@
 'use client';
 
-import { ModAction } from '@/services/logs-manager';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { Tabs } from '@/components/tab/tab';
 import { OptimizedImage } from '../optimized-image';
@@ -10,10 +9,11 @@ import { VisualIntent } from '@/enums/styles';
 import { LogEntry } from './components/log-entry';
 import { IconButton } from '@/components/button/icon-button';
 import { LogFilters } from './components/log-filters';
-import { Log } from '@/types/logs';
+import { Log, LogFilters as LogFiltersType } from '@/lib/types/logs';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { Modal } from '@/components/modals';
 import { useModal } from '@/contexts/modal-context';
+import { ModAction } from '@/lib/types/moderation';
 
 export const Logs = ({
   targetedProfile,
@@ -32,13 +32,7 @@ export const Logs = ({
 }: {
   targetedProfile?: ProfileViewBasic;
   categories: Record<string, Log[]>;
-  filters: {
-    actions?: ModAction[];
-    performedBy?: string;
-    targetUser?: string;
-    targetPost?: string;
-    dateRange?: { fromDate: string; toDate: string };
-  };
+  filters: LogFiltersType;
   isLoading: boolean;
   error: string | null;
   onActionFilterChange?: (action: ModAction) => void;

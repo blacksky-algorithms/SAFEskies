@@ -2,11 +2,11 @@ import type { Metadata } from 'next';
 import '@/styles/globals.css';
 
 import { Providers } from '@/contexts';
-import { preferredLanguages } from '@/utils/todo';
+import { preferredLanguages } from '@/lib/constants';
 import { BaseLayout } from '@/components/layouts/base-layout';
 import { SideDrawerContent } from '@/components/side-drawer/side-drawer-content';
-import { ProfileManager } from '@/services/profile-manager';
-import { FeedPermissionManager } from '@/services/feed-permissions-manager';
+import { getHighestRoleForUser } from '@/repos/permission';
+import { getProfile } from '@/repos/profile';
 
 export const metadata: Metadata = {
   title: 'OnlyFeeds',
@@ -17,10 +17,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await ProfileManager.getProfile();
-  const highestRole = await FeedPermissionManager.getHighestRoleForUser(
-    user?.did
-  );
+  const user = await getProfile();
+  const highestRole = await getHighestRoleForUser(user?.did);
 
   return (
     <html lang={preferredLanguages}>

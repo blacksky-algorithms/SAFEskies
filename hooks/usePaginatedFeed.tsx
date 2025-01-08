@@ -1,5 +1,4 @@
 import { useReducer, useEffect, useRef, useCallback } from 'react';
-import { FeedParams, fetchFeed } from '@/repos/feed-repo';
 import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 type FeedState = {
@@ -28,11 +27,13 @@ const initialState: FeedState = {
   error: null,
 };
 
-const feedReducer = (state: FeedState, action: FeedAction): FeedState => {
+// Move reducer to a separate function for clarity
+function feedReducer(state: FeedState, action: FeedAction): FeedState {
   switch (action.type) {
     case 'FETCH_START':
       return { ...state, isFetching: true, error: null };
     case 'FETCH_SUCCESS':
+      // Deduplicate posts using a Map
       return {
         ...state,
         feed: Array.from(
@@ -57,16 +58,18 @@ const feedReducer = (state: FeedState, action: FeedAction): FeedState => {
     default:
       return state;
   }
-};
+}
 
-export const usePaginatedFeed = ({
-  limit = 50,
-  uri,
-}: Omit<FeedParams, 'cursor' | 'signal'>) => {
+interface UsePaginatedFeedParams {
+  limit?: number;
+  uri: string;
+}
+
+export function usePaginatedFeed({ limit = 50, uri }: UsePaginatedFeedParams) {
   const [state, dispatch] = useReducer(feedReducer, initialState);
-  const controllerRef = useRef<AbortController | null>(null);
   const cursorRef = useRef(state.cursor);
 
+  // Keep cursor reference updated
   useEffect(() => {
     cursorRef.current = state.cursor;
   }, [state.cursor]);
@@ -76,20 +79,33 @@ export const usePaginatedFeed = ({
       if (refresh) dispatch({ type: 'REFRESH_FEED' });
       dispatch({ type: 'FETCH_START' });
 
-      const response = await fetchFeed({
-        limit,
-        cursor: refresh ? undefined : cursorRef.current,
-        uri,
-      });
+      try {
+        const params = new URLSearchParams({
+          uri,
+          limit: limit.toString(),
+        });
 
-      if ('error' in response) {
-        if (response.error !== 'signal is aborted without reason') {
-          dispatch({ type: 'FETCH_ERROR', payload: response.error });
+        if (!refresh && cursorRef.current) {
+          params.set('cursor', cursorRef.current);
         }
-      } else {
+
+        const response = await fetch(`/api/feed?${params}`);
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to fetch feed');
+        }
+
+        const data = await response.json();
         dispatch({
           type: 'FETCH_SUCCESS',
-          payload: { feed: response.feed, cursor: response.cursor },
+          payload: { feed: data.feed, cursor: data.cursor },
+        });
+      } catch (error) {
+        dispatch({
+          type: 'FETCH_ERROR',
+          payload:
+            error instanceof Error ? error.message : 'Failed to fetch feed',
         });
       }
     },
@@ -98,13 +114,8 @@ export const usePaginatedFeed = ({
 
   // Reset and fetch when uri changes
   useEffect(() => {
-    dispatch({ type: 'REFRESH_FEED' });
     fetchFeedData(true);
-
-    return () => {
-      if (controllerRef.current) controllerRef.current.abort();
-    };
-  }, [uri, fetchFeedData]); // Add uri to dependencies
+  }, [uri, fetchFeedData]);
 
   const fetchNextPage = useCallback(() => {
     if (!state.hasNextPage || state.isFetching) return;
@@ -115,5 +126,9 @@ export const usePaginatedFeed = ({
     fetchFeedData(true);
   }, [fetchFeedData]);
 
-  return { ...state, fetchNextPage, refreshFeed };
-};
+  return {
+    ...state,
+    fetchNextPage,
+    refreshFeed,
+  };
+}

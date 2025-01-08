@@ -1,19 +1,13 @@
-import { ModAction } from '@/services/logs-manager';
 import { Select } from '@/components/input/select';
 import { DatePicker } from '@/components/date-picker';
-import { Input } from '@/components/input';
+// import { Input } from '@/components/input';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { Button } from '@/components/button';
+import { ModAction } from '@/lib/types/moderation';
+import { LogFilters as LogFiltersType } from '@/lib/types/logs';
 
 interface Props {
-  filters: {
-    action?: ModAction;
-    performedBy?: string;
-    targetUser?: string;
-    targetPost?: string;
-    dateRange?: { fromDate: string; toDate: string };
-    sortBy?: 'ascending' | 'descending';
-  };
+  filters: LogFiltersType;
   onDateFilterChange?: (dateRange: {
     fromDate: string;
     toDate: string;
@@ -32,8 +26,8 @@ export const LogFilters = ({
   onActionFilterChange,
   onDateFilterChange,
   onPerformedByFilterChange,
-  onTargetUserFilterChange,
-  onTargetPostFilterChange,
+  // onTargetUserFilterChange,
+  // onTargetPostFilterChange,
   onSortByFilterChange,
   onClearFilters,
   moderators,
@@ -101,7 +95,9 @@ export const LogFilters = ({
           ]}
         />
       )}
-      {onTargetUserFilterChange && (
+      {/*
+      // TODO: these need refining - currently tries to fire on each keystroke
+       {onTargetUserFilterChange && (
         <Input
           id='targetUser'
           label='Filter By Target User'
@@ -116,7 +112,7 @@ export const LogFilters = ({
           value={filters.targetPost || ''}
           onChange={(e) => onTargetPostFilterChange(e.target.value)}
         />
-      )}
+      )} */}
       {onClearFilters && (
         <Button disabled={!isFilterActive} onClick={onClearFilters}>
           Clear Filters
