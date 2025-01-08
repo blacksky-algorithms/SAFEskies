@@ -1,4 +1,4 @@
-import { ModAction } from '@/services/logs-manager';
+import { ModAction } from '@/lib/types/moderation';
 
 export interface Log {
   id: string;
@@ -17,4 +17,22 @@ export interface Log {
   };
   target_post_uri: string | null;
   metadata: Record<string, unknown> | null;
+}
+
+export interface LogEntry {
+  feed_uri: string;
+  performed_by: string;
+  action: ModAction;
+  target_post_uri?: string;
+  target_user_did?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface LogFilters {
+  action?: ModAction | null;
+  performedBy?: string;
+  targetUser?: string;
+  targetPost?: string;
+  dateRange?: { fromDate: string; toDate: string };
+  sortBy: 'ascending' | 'descending';
 }

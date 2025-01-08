@@ -5,9 +5,9 @@ import {
   groupModeratorsByFeed,
 } from '@/lib/utils/permission';
 import { SupabaseInstance } from '@/repos/supabase';
-import { LogsManager } from '@/services/logs-manager';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 import { getBulkProfileDetails } from '@/repos/profile';
+import { createModerationLog } from './logs';
 
 export const setFeedRole = async (
   targetUserDid: string,
@@ -45,7 +45,7 @@ export const setFeedRole = async (
       return false;
     }
 
-    await LogsManager.createModerationLog({
+    await createModerationLog({
       feed_uri: feedUri,
       performed_by: setByUserDid,
       action: role === 'mod' ? 'mod_promote' : 'mod_demote',

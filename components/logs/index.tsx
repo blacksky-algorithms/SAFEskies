@@ -1,6 +1,5 @@
 'use client';
 
-import { ModAction } from '@/services/logs-manager';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { Tabs } from '@/components/tab/tab';
 import { OptimizedImage } from '../optimized-image';
@@ -14,6 +13,7 @@ import { Log } from '@/lib/types/logs';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { Modal } from '@/components/modals';
 import { useModal } from '@/contexts/modal-context';
+import { ModAction } from '@/lib/types/moderation';
 
 export const Logs = ({
   targetedProfile,

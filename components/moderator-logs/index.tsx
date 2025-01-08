@@ -2,7 +2,7 @@
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { Logs } from '../logs';
 import { useLogs } from '@/hooks/useLogs';
-import { LogsManager } from '@/services/logs-manager';
+import { getFeedModerationLogs } from '@/repos/logs';
 
 export const ModeratorLogs = ({
   feedUri,
@@ -20,7 +20,7 @@ export const ModeratorLogs = ({
     onActionFilterChange,
     onSortByFilterChange,
     onClearFilters,
-  } = useLogs(() => LogsManager.getFeedModerationLogs(feedUri, filters));
+  } = useLogs(() => getFeedModerationLogs(feedUri, filters));
 
   const categories = {
     all: logs,

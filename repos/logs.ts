@@ -1,23 +1,9 @@
+import { LogEntry } from '@/lib/types/logs';
+import { ModAction } from '@/lib/types/moderation';
+import { getDateTimeRange } from '@/lib/utils/logs';
 import { SupabaseInstance } from '@/repos/supabase';
 
-export type ModAction =
-  | 'post_delete'
-  | 'post_restore'
-  | 'user_ban'
-  | 'user_unban'
-  | 'mod_promote'
-  | 'mod_demote';
-
-export interface LogEntry {
-  feed_uri: string;
-  performed_by: string;
-  action: ModAction;
-  target_post_uri?: string;
-  target_user_did?: string;
-  metadata?: Record<string, unknown>;
-}
-
-const createModerationLog = async (entry: LogEntry) => {
+export const createModerationLog = async (entry: LogEntry) => {
   const { error } = await SupabaseInstance.from('moderation_logs').insert(
     entry
   );
@@ -25,7 +11,7 @@ const createModerationLog = async (entry: LogEntry) => {
   if (error) throw error;
 };
 
-const getFeedModerationLogs = async (
+export const getFeedModerationLogs = async (
   feedUri: string,
   filters?: {
     action?: ModAction | null;
@@ -73,11 +59,7 @@ const getFeedModerationLogs = async (
       query = query.ilike('target_post_uri', `%${targetPost.trim()}%`);
     }
     if (dateRange) {
-      const { fromDate, toDate } = dateRange;
-
-      const fromDateTime = `${fromDate}T00:00:00Z`;
-      const toDateTime = `${toDate}T23:59:59Z`;
-
+      const { fromDateTime, toDateTime } = getDateTimeRange(dateRange);
       query = query
         .gte('created_at', fromDateTime)
         .lte('created_at', toDateTime);
@@ -97,7 +79,7 @@ const getFeedModerationLogs = async (
   return data;
 };
 
-const getActionLogs = async (feedUri: string, action: ModAction) => {
+export const getActionLogs = async (feedUri: string, action: ModAction) => {
   const { data, error } = await SupabaseInstance.from('moderation_logs')
     .select(
       `
@@ -114,7 +96,7 @@ const getActionLogs = async (feedUri: string, action: ModAction) => {
   return data;
 };
 
-const getAdminLogs = async (filters?: {
+export const getAdminLogs = async (filters?: {
   action?: ModAction | null;
   performedBy?: string;
   targetUser?: string;
@@ -173,9 +155,7 @@ const getAdminLogs = async (filters?: {
     }
 
     if (dateRange) {
-      const { fromDate, toDate } = dateRange;
-      const fromDateTime = `${fromDate}T00:00:00Z`;
-      const toDateTime = `${toDate}T23:59:59Z`;
+      const { fromDateTime, toDateTime } = getDateTimeRange(dateRange);
       query = query
         .gte('created_at', fromDateTime)
         .lte('created_at', toDateTime);
@@ -198,11 +178,4 @@ const getAdminLogs = async (filters?: {
       log.performed_by_profile?.handle &&
       (!log.target_user_did || log.target_user_profile?.handle)
   );
-};
-
-export const LogsManager = {
-  createModerationLog,
-  getFeedModerationLogs,
-  getActionLogs,
-  getAdminLogs,
 };
