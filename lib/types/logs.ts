@@ -1,22 +1,28 @@
 import { ModAction } from '@/lib/types/moderation';
+import { UserRole } from '@/lib/types/permission';
 
 export interface Log {
   id: string;
-  feed_did: string;
   action: ModAction;
   created_at: string;
+  feed_uri: string;
   performed_by: string;
   performed_by_profile: {
+    did: string;
+    avatar?: string;
     handle: string;
     name: string | null;
   };
   target_user_did: string | null;
   target_user_profile?: {
+    did: string;
+    avatar?: string;
     handle: string;
     name: string | null;
   };
   target_post_uri: string | null;
-  metadata: Record<string, unknown> | null;
+  // TODO: reshape this
+  metadata: { feed_name?: string; role: UserRole } | null;
 }
 
 export interface LogEntry {

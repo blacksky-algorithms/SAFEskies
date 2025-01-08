@@ -1,6 +1,6 @@
 import { LogFilters, Log } from '@/lib/types/logs';
-import { useLogFilters } from './useLogFilters';
-import { useLogsQuery } from './useLogsQuery';
+import { useLogFilters } from '@/hooks/useLogFilters';
+import { useLogsQuery } from '@/hooks/useLogsQuery';
 
 export function useLogs(fetchFn: (filters: LogFilters) => Promise<Log[]>) {
   const { filters, filterHandlers } = useLogFilters();

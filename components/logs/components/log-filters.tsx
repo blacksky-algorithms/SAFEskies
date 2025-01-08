@@ -4,16 +4,10 @@ import { DatePicker } from '@/components/date-picker';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { Button } from '@/components/button';
 import { ModAction } from '@/lib/types/moderation';
+import { LogFilters as LogFiltersType } from '@/lib/types/logs';
 
 interface Props {
-  filters: {
-    action?: ModAction;
-    performedBy?: string;
-    targetUser?: string;
-    targetPost?: string;
-    dateRange?: { fromDate: string; toDate: string };
-    sortBy?: 'ascending' | 'descending';
-  };
+  filters: LogFiltersType;
   onDateFilterChange?: (dateRange: {
     fromDate: string;
     toDate: string;

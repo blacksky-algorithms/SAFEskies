@@ -2,11 +2,7 @@ import { LogFilters } from '@/lib/types/logs';
 import { ModAction } from '@/lib/types/moderation';
 import { useState } from 'react';
 
-interface UseLogFiltersOptions {
-  onFilterChange?: () => void;
-}
-
-export const useLogFilters = (options?: UseLogFiltersOptions) => {
+export const useLogFilters = () => {
   const [filters, setFilters] = useState<LogFilters>({
     sortBy: 'descending',
   });
@@ -35,7 +31,6 @@ export const useLogFilters = (options?: UseLogFiltersOptions) => {
 
   return {
     filters,
-
     filterHandlers: {
       onActionFilterChange: filterUpdaters.updateAction,
       onDateFilterChange: filterUpdaters.updateDateRange,
