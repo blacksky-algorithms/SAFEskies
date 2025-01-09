@@ -11,17 +11,18 @@ export const ModeratorLogs = ({
   feedUri: string;
   targetedProfile?: ProfileViewBasic;
 }) => {
-  const { logs, isLoading, error, filters, ...filterHandlers } =
-    useLogs(fetchLogs);
-  // TODO: create a proper route for this
-  const logsByFeed = logs.filter((log) => log.feed_uri === feedUri);
+  const { logs, isLoading, error, filters, ...filterHandlers } = useLogs(
+    fetchLogs,
+    'feed',
+    feedUri
+  );
 
   const categories = {
-    all: logsByFeed,
-    posts: logsByFeed.filter((postLog) =>
+    all: logs,
+    posts: logs.filter((postLog) =>
       ['post_delete', 'post_restore'].includes(postLog.action)
     ),
-    bans: logsByFeed.filter((banLog) =>
+    bans: logs.filter((banLog) =>
       ['user_ban', 'user_unban'].includes(banLog.action)
     ),
   };

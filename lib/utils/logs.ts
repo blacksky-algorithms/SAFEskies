@@ -11,10 +11,17 @@ export const getDateTimeRange = (dateRange: {
   return { fromDateTime, toDateTime };
 };
 
-export const buildLogQueryParams = (filters: LogFilters): URLSearchParams => {
-  const params = new URLSearchParams({
-    type: 'admin',
-  });
+export const buildLogQueryParams = (
+  filters: LogFilters,
+  type: 'admin' | 'feed',
+  feedUri?: string
+): URLSearchParams => {
+  const params = new URLSearchParams({ type });
+
+  // If it's a feed type, we need the feedUri
+  if (type === 'feed' && feedUri) {
+    params.set('feedUri', feedUri);
+  }
 
   Object.entries(filters).forEach(([key, value]) => {
     if (!value) return;
@@ -31,8 +38,12 @@ export const buildLogQueryParams = (filters: LogFilters): URLSearchParams => {
   return params;
 };
 
-export const fetchLogs = async (filters: LogFilters): Promise<Log[]> => {
-  const params = buildLogQueryParams(filters);
+export const fetchLogs = async (
+  filters: LogFilters,
+  type: 'admin' | 'feed' = 'admin',
+  feedUri?: string
+): Promise<Log[]> => {
+  const params = buildLogQueryParams(filters, type, feedUri);
   const response = await fetch(`/api/logs?${params}`);
 
   if (!response.ok) {

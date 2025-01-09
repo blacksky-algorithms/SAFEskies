@@ -1,9 +1,17 @@
 import { LogFilters, Log } from '@/lib/types/logs';
 import { useState, useRef, useEffect } from 'react';
 
+type FetchLogsFunction = (
+  filters: LogFilters,
+  type?: 'admin' | 'feed',
+  feedUri?: string
+) => Promise<Log[]>;
+
 export const useLogsQuery = (
-  fetchFn: (filters: LogFilters) => Promise<Log[]>,
-  filters: LogFilters
+  fetchFn: FetchLogsFunction,
+  filters: LogFilters,
+  type: 'admin' | 'feed' = 'admin',
+  feedUri?: string
 ) => {
   const [state, setState] = useState<{
     logs: Log[];
@@ -28,7 +36,7 @@ export const useLogsQuery = (
     const fetchData = async () => {
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
-        const data = await fetchFn(filtersRef.current);
+        const data = await fetchFn(filtersRef.current, type, feedUri);
 
         if (isMounted) {
           setState({
@@ -54,7 +62,7 @@ export const useLogsQuery = (
     return () => {
       isMounted = false;
     };
-  }, [fetchFn, filters]);
+  }, [fetchFn, filters, type, feedUri]);
 
   return state;
 };
