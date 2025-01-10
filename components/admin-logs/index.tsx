@@ -1,29 +1,32 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import { Logs } from '../logs';
 import { User } from '@/lib/types/user';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { useLogs } from '@/hooks/useLogs';
-import { fetchLogs, fetchModerators } from '@/lib/utils/logs';
 
 interface AdminLogsProps {
   user: User | null;
 }
 
-export const AdminLogs = ({ user }: AdminLogsProps) => {
+export function AdminLogs({ user }: AdminLogsProps) {
   const [moderators, setModerators] = useState<ProfileViewBasic[]>([]);
   const [moderatorError, setModeratorError] = useState<string | null>(null);
 
-  const { logs, isLoading, error, filters, ...filterHandlers } =
-    useLogs(fetchLogs);
+  const { filterUpdaters, logs, isLoading, error, filters } = useLogs();
 
   useEffect(() => {
     if (!user?.did) return;
 
     async function loadModerators() {
       try {
-        const moderatorData = await fetchModerators();
-        setModerators(moderatorData);
+        const response = await fetch('/api/moderators');
+        if (!response.ok) {
+          throw new Error('Failed to fetch moderators');
+        }
+        const data = await response.json();
+        setModerators(data.moderators);
         setModeratorError(null);
       } catch (error) {
         console.error('Error fetching moderators:', error);
@@ -36,6 +39,7 @@ export const AdminLogs = ({ user }: AdminLogsProps) => {
     loadModerators();
   }, [user?.did]);
 
+  // Group logs by category - memoize if performance becomes an issue
   const categories = {
     all: logs,
     posts: logs.filter((postLog) =>
@@ -49,11 +53,11 @@ export const AdminLogs = ({ user }: AdminLogsProps) => {
   return (
     <Logs
       categories={categories}
-      {...filterHandlers}
-      filters={filters}
       isLoading={isLoading}
       error={error || moderatorError}
       moderators={moderators}
+      filterUpdaters={filterUpdaters}
+      filters={filters}
     />
   );
-};
+}

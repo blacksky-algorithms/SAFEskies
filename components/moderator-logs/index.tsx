@@ -1,22 +1,22 @@
 'use client';
-import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
-import { Logs } from '@/components/logs';
-import { useLogs } from '@/hooks/useLogs';
-import { fetchLogs } from '@/lib/utils/logs';
 
-export const ModeratorLogs = ({
-  feedUri,
-  targetedProfile,
-}: {
+import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { Logs } from '../logs';
+import { useLogs } from '@/hooks/useLogs';
+
+interface ModeratorLogsProps {
   feedUri: string;
   targetedProfile?: ProfileViewBasic;
-}) => {
-  const { logs, isLoading, error, filters, ...filterHandlers } = useLogs(
-    fetchLogs,
+}
+
+export function ModeratorLogs({
+  feedUri,
+  targetedProfile,
+}: ModeratorLogsProps) {
+  const { filterUpdaters, logs, isLoading, error, filters } = useLogs(
     'feed',
     feedUri
   );
-
   const categories = {
     all: logs,
     posts: logs.filter((postLog) =>
@@ -29,12 +29,12 @@ export const ModeratorLogs = ({
 
   return (
     <Logs
+      targetedProfile={targetedProfile}
       categories={categories}
-      {...filterHandlers}
-      filters={filters}
+      filterUpdaters={filterUpdaters}
       isLoading={isLoading}
       error={error}
-      targetedProfile={targetedProfile}
+      filters={filters}
     />
   );
-};
+}

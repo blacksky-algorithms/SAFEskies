@@ -2,50 +2,35 @@
 
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { Tabs } from '@/components/tab/tab';
-import { OptimizedImage } from '../optimized-image';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { useToast } from '@/contexts/toast-context';
 import { VisualIntent } from '@/enums/styles';
 import { LogEntry } from './components/log-entry';
-import { IconButton } from '@/components/button/icon-button';
 import { LogFilters } from './components/log-filters';
-import { Log, LogFilters as LogFiltersType } from '@/lib/types/logs';
+import { AdminLog } from '@/lib/types/logs';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { Modal } from '@/components/modals';
-import { useModal } from '@/contexts/modal-context';
-import { ModAction } from '@/lib/types/moderation';
+import { LogsWrapper } from './components/logs-header';
+import { useLogs } from '@/hooks/useLogs';
 
 export const Logs = ({
   targetedProfile,
   categories,
-  filters,
   isLoading,
   error,
-  onActionFilterChange,
-  onDateFilterChange,
-  onPerformedByFilterChange,
-  onTargetUserFilterChange,
-  onTargetPostFilterChange,
-  onSortByFilterChange,
-  onClearFilters,
   moderators,
+  filterUpdaters,
+  filters,
 }: {
   targetedProfile?: ProfileViewBasic;
-  categories: Record<string, Log[]>;
-  filters: LogFiltersType;
+  categories: Record<string, AdminLog[]>;
   isLoading: boolean;
   error: string | null;
-  onActionFilterChange?: (action: ModAction) => void;
-  onDateFilterChange?: (range: { fromDate: string; toDate: string }) => void;
-  onPerformedByFilterChange?: (performedBy: string) => void;
-  onTargetUserFilterChange?: (targetUser: string) => void;
-  onTargetPostFilterChange?: (targetPost: string) => void;
-  onSortByFilterChange?: (sortBy: 'ascending' | 'descending') => void;
-  onClearFilters?: () => void;
   moderators?: ProfileViewBasic[];
+  filterUpdaters: ReturnType<typeof useLogs>['filterUpdaters'];
+  filters: ReturnType<typeof useLogs>['filters'];
 }) => {
   const { toast } = useToast();
-  const { openModalInstance, closeModalInstance } = useModal();
 
   if (isLoading)
     return (
@@ -78,102 +63,18 @@ export const Logs = ({
       ),
   }));
 
-  const handleActionFilterModalChange = (action: ModAction) => {
-    onActionFilterChange?.(action);
-    closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
-  };
-
-  const handleDateFilterModalChange = (range: {
-    fromDate: string;
-    toDate: string;
-  }) => {
-    onDateFilterChange?.(range);
-    closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
-  };
-
-  const handlePerformedByFilterModalChange = (performedBy: string) => {
-    onPerformedByFilterChange?.(performedBy);
-    closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
-  };
-
-  const handleTargetUserFilterModalChange = (targetUser: string) => {
-    onTargetUserFilterChange?.(targetUser);
-    closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
-  };
-
-  const handleTargetPostFilterModalChange = (targetPost: string) => {
-    onTargetPostFilterChange?.(targetPost);
-    closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
-  };
-
-  const handleSortByFilterModalChange = (
-    sortBy: 'ascending' | 'descending'
-  ) => {
-    onSortByFilterChange?.(sortBy);
-    closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
-  };
-
-  const handleOnClearFilters = () => {
-    onClearFilters?.();
-    closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
-  };
-
   return (
     <>
       <div className='grid grid-cols-1 gap-4 md:grid-cols-3 h-full'>
         <div className='col-span-2 '>
-          <section className='flex tablet:flex-col items-center justify-end tablet:jusify-between w-full pr-4'>
-            {targetedProfile && (
-              <article className='bg-app-background shadow-sm p-4 flex w-full items-center '>
-                <div className='mr-4'>
-                  {targetedProfile.avatar ? (
-                    <OptimizedImage
-                      src={targetedProfile.avatar}
-                      alt={`${
-                        targetedProfile.name || targetedProfile.handle
-                      }'s avatar`}
-                      className='w-20 h-w-20 rounded-full border-app-border border'
-                    />
-                  ) : (
-                    <div className='w-20 h-w-20 rounded-full border-app-border border' />
-                  )}
-                </div>
-                <div className='flex w-full flex-col justify-between items-start'>
-                  <div>
-                    <h3 className='text-sm font-semibold text-app'>
-                      {(targetedProfile.name as string) ||
-                        targetedProfile.handle}
-                    </h3>
-                    <p className='text-xs text-app-secondary'>
-                      @{targetedProfile.handle}
-                    </p>
-                  </div>
-                </div>
-              </article>
-            )}
-            <div className='flex tablet:hidden  '>
-              <IconButton
-                className='h-10 w-10'
-                icon='AdjustmentsHorizontalIcon'
-                onClick={() =>
-                  openModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS)
-                }
-              />
-            </div>
-          </section>
+          <LogsWrapper targetedProfile={targetedProfile} />
           <Tabs tabs={tabs} />
         </div>
         <div className='hidden tablet:flex flex-col space-y-4 p-4 border-l border-l-app-border'>
           <LogFilters
+            filterUpdaters={filterUpdaters}
+            actors={moderators}
             filters={filters}
-            onActionFilterChange={onActionFilterChange}
-            onDateFilterChange={onDateFilterChange}
-            onTargetUserFilterChange={onTargetUserFilterChange}
-            onTargetPostFilterChange={onTargetPostFilterChange}
-            onPerformedByFilterChange={onPerformedByFilterChange}
-            onSortByFilterChange={onSortByFilterChange}
-            onClearFilters={onClearFilters}
-            moderators={moderators}
           />
         </div>
       </div>
@@ -184,15 +85,9 @@ export const Logs = ({
       >
         <div className='flex flex-col space-y-4 p-4 overflow-auto max-h-page'>
           <LogFilters
+            filterUpdaters={filterUpdaters}
+            actors={moderators}
             filters={filters}
-            onActionFilterChange={handleActionFilterModalChange}
-            onDateFilterChange={handleDateFilterModalChange}
-            onTargetUserFilterChange={handleTargetUserFilterModalChange}
-            onTargetPostFilterChange={handleTargetPostFilterModalChange}
-            onPerformedByFilterChange={handlePerformedByFilterModalChange}
-            onSortByFilterChange={handleSortByFilterModalChange}
-            onClearFilters={handleOnClearFilters}
-            moderators={moderators}
           />
         </div>
       </Modal>

@@ -4,47 +4,37 @@ import { DatePicker } from '@/components/date-picker';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { Button } from '@/components/button';
 import { ModAction } from '@/lib/types/moderation';
-import { LogFilters as LogFiltersType } from '@/lib/types/logs';
+import { useLogs } from '@/hooks/useLogs';
 
 interface Props {
-  filters: LogFiltersType;
-  onDateFilterChange?: (dateRange: {
-    fromDate: string;
-    toDate: string;
-  }) => void;
-  onActionFilterChange?: (action: ModAction) => void;
-  onPerformedByFilterChange?: (performedBy: string) => void;
-  onTargetUserFilterChange?: (targetUser: string) => void;
-  onTargetPostFilterChange?: (targetPost: string) => void;
-  onSortByFilterChange?: (sortBy: 'ascending' | 'descending') => void;
-  onClearFilters?: () => void;
-  moderators?: ProfileViewBasic[];
+  actors?: ProfileViewBasic[];
+  filterUpdaters: ReturnType<typeof useLogs>['filterUpdaters'];
+  filters: ReturnType<typeof useLogs>['filters'];
 }
 
-export const LogFilters = ({
-  filters,
-  onActionFilterChange,
-  onDateFilterChange,
-  onPerformedByFilterChange,
-  // onTargetUserFilterChange,
-  // onTargetPostFilterChange,
-  onSortByFilterChange,
-  onClearFilters,
-  moderators,
-}: Props) => {
+export const LogFilters = ({ actors, filterUpdaters, filters }: Props) => {
   const isFilterActive = Object.values(filters).some((filter) => {
     return filter !== 'ascending' && filter !== 'descending' && !!filter;
   });
-
+  // closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+  const {
+    updateAction,
+    updateDateRange,
+    updatePerformedBy,
+    // updateTargetPost,
+    // onTargetPostFilterChange,
+    updateSortBy,
+    clearFilters,
+  } = filterUpdaters;
   return (
     <div className='flex flex-col justify-evenly space-y-4'>
-      {onSortByFilterChange && (
+      {updateSortBy && (
         <Select
           id='sortBy'
           label='Sort By'
           value={filters.sortBy || 'descending'}
           onChange={(value) =>
-            onSortByFilterChange(value as 'ascending' | 'descending')
+            updateSortBy(value as 'ascending' | 'descending')
           }
           options={[
             { label: 'Newest First', value: 'descending' },
@@ -52,37 +42,37 @@ export const LogFilters = ({
           ]}
         />
       )}
-      {onDateFilterChange && (
+      {updateDateRange && (
         <DatePicker
           id='dateRange'
           label='Filter By Date'
           value={filters.dateRange || { fromDate: '', toDate: '' }}
-          onChange={onDateFilterChange}
+          onChange={updateDateRange}
           presets
         />
       )}
-      {onPerformedByFilterChange && moderators && (
+      {updatePerformedBy && actors && (
         <Select
           id='performedBy'
-          label='Filter By Moderator'
+          label='Filter By Actor'
           value={filters.performedBy || ''}
-          onChange={(value) => onPerformedByFilterChange(value)}
+          onChange={(value) => updatePerformedBy(value)}
           options={[
-            { label: 'All Moderators', value: '' },
-            ...moderators.map((mod) => ({
-              label: mod.displayName || mod.handle,
-              value: mod.handle,
+            { label: 'All Actors', value: '' },
+            ...actors.map((actor) => ({
+              label: actor.displayName || actor.handle,
+              value: actor.handle,
             })),
           ]}
         />
       )}
-      {onActionFilterChange && (
+      {updateAction && (
         <Select
           id='action'
           label='Filter By Action'
           value={filters.action || ''}
           onChange={(selectedAction) =>
-            onActionFilterChange(selectedAction as ModAction)
+            updateAction(selectedAction as ModAction)
           }
           options={[
             { label: 'All Actions', value: '' },
@@ -97,12 +87,12 @@ export const LogFilters = ({
       )}
       {/*
       // TODO: these need refining - currently tries to fire on each keystroke
-       {onTargetUserFilterChange && (
+       {updateTargetPost && (
         <Input
           id='targetUser'
           label='Filter By Target User'
           value={filters.targetUser || ''}
-          onChange={(e) => onTargetUserFilterChange(e.target.value)}
+          onChange={(e) => updateTargetPost(e.target.value)}
         />
       )}
       {onTargetPostFilterChange && (
@@ -113,8 +103,8 @@ export const LogFilters = ({
           onChange={(e) => onTargetPostFilterChange(e.target.value)}
         />
       )} */}
-      {onClearFilters && (
-        <Button disabled={!isFilterActive} onClick={onClearFilters}>
+      {clearFilters && (
+        <Button disabled={!isFilterActive} onClick={clearFilters}>
           Clear Filters
         </Button>
       )}
