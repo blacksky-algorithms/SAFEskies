@@ -7,6 +7,7 @@ import {
   Transition,
 } from '@headlessui/react';
 import cc from 'classcat';
+import { Icon } from '../icon';
 
 export interface Option {
   label: string;
@@ -85,16 +86,15 @@ export const Select = ({
             leaveFrom='opacity-100'
             leaveTo='opacity-0'
           >
-            <ListboxOptions className='absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-app-background rounded-md shadow-lg max-h-page ring-1 ring-black ring-opacity-5 focus:outline-none'>
+            <ListboxOptions className='absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-app-info rounded-md shadow-lg max-h-page ring-1 ring-app-primary ring-opacity-5 focus:outline-none'>
               {options.map((option) => (
                 <ListboxOption
                   key={option.value}
                   className={({ selected }) =>
                     cc([
-                      'cursor-default select-none relative py-2 pl-10 pr-4',
+                      'cursor-default select-none relative py-2 pl-10 pr-4 text-black',
                       {
-                        'text-app-primary bg-app-secondary-hover': selected,
-                        'text-app': !selected,
+                        'bg-app-secondary-hover': selected,
                       },
                     ])
                   }
@@ -111,19 +111,11 @@ export const Select = ({
                         {option.label}
                       </span>
                       {selected && (
-                        <span className='absolute inset-y-0 left-0 flex items-center pl-3 text-app-primary'>
-                          <svg
-                            className='w-5 h-5'
-                            viewBox='0 0 20 20'
-                            fill='currentColor'
-                          >
-                            <path
-                              fillRule='evenodd'
-                              d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
-                              clipRule='evenodd'
-                            />
-                          </svg>
-                        </span>
+                        <Icon
+                          icon='CheckIcon'
+                          stroke='black'
+                          className='absolute inset-y-0 left-2 mt-2'
+                        />
                       )}
                     </>
                   )}
