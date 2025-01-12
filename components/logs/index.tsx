@@ -18,63 +18,69 @@ export const Logs = ({
   categories,
   isLoading,
   error,
-  moderators,
-  filterUpdaters,
+  modActors,
   filters,
+  updateFilter,
+  clearFilters,
 }: {
   targetedProfile?: ProfileViewBasic;
   categories: Record<string, AdminLog[]>;
   isLoading: boolean;
   error: string | null;
-  moderators?: ProfileViewBasic[];
-  filterUpdaters: ReturnType<typeof useLogs>['filterUpdaters'];
+  modActors?: ProfileViewBasic[];
   filters: ReturnType<typeof useLogs>['filters'];
+  updateFilter: (
+    filters: Partial<ReturnType<typeof useLogs>['filters']>
+  ) => void;
+  clearFilters: () => void;
 }) => {
   const { toast } = useToast();
 
-  if (isLoading)
-    return (
-      <div className='flex items-center justify-center p-20 h-full'>
-        <LoadingSpinner />
-      </div>
-    );
-
-  if (error) {
-    toast({
-      title: 'Error',
-      message: error,
-      intent: VisualIntent.Error,
-    });
-
-    return;
-  }
-
-  const tabs = Object.entries(categories).map(([key, logs]) => ({
-    title: <>{key.charAt(0).toUpperCase() + key.slice(1)}</>,
-    TabContent:
-      logs.length === 0 ? (
-        <p className='text-app-secondary text-center py-4'>No logs found</p>
-      ) : (
-        <div className='px-4  h-full overflow-auto max-h-page pt-4 pb-56'>
-          {logs.map((log) => (
-            <LogEntry key={log.id} log={log} />
-          ))}
+  const renderTabs = () => {
+    const tabs = Object.entries(categories).map(([key, logs]) => ({
+      title: <>{key.charAt(0).toUpperCase() + key.slice(1)}</>,
+      TabContent:
+        logs.length === 0 ? (
+          <p className='text-app-secondary text-center py-4'>No logs found</p>
+        ) : (
+          <div className='px-4  h-full overflow-auto max-h-page pt-4 pb-56'>
+            {logs.map((log) => (
+              <LogEntry key={log.id} log={log} />
+            ))}
+          </div>
+        ),
+    }));
+    if (isLoading)
+      return (
+        <div className='flex items-center justify-center p-20 h-full'>
+          <LoadingSpinner />
         </div>
-      ),
-  }));
+      );
+
+    if (error) {
+      toast({
+        title: 'Error',
+        message: error,
+        intent: VisualIntent.Error,
+      });
+    }
+
+    return <Tabs tabs={tabs} />;
+  };
 
   return (
     <>
       <div className='grid grid-cols-1 gap-4 md:grid-cols-3 h-full'>
         <div className='col-span-2 '>
           <LogsWrapper targetedProfile={targetedProfile} />
-          <Tabs tabs={tabs} />
+          {renderTabs()}
         </div>
         <div className='hidden tablet:flex flex-col space-y-4 p-4 border-l border-l-app-border'>
           <LogFilters
-            filterUpdaters={filterUpdaters}
-            actors={moderators}
+            modActors={modActors}
             filters={filters}
+            updateFilter={updateFilter}
+            clearFilters={clearFilters}
           />
         </div>
       </div>
@@ -85,9 +91,10 @@ export const Logs = ({
       >
         <div className='flex flex-col space-y-4 p-4 overflow-auto max-h-page'>
           <LogFilters
-            filterUpdaters={filterUpdaters}
-            actors={moderators}
+            modActors={modActors}
             filters={filters}
+            updateFilter={updateFilter}
+            clearFilters={clearFilters}
           />
         </div>
       </Modal>

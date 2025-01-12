@@ -5,74 +5,66 @@ import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/
 import { Button } from '@/components/button';
 import { ModAction } from '@/lib/types/moderation';
 import { useLogs } from '@/hooks/useLogs';
+import { memo } from 'react';
 
 interface Props {
-  actors?: ProfileViewBasic[];
-  filterUpdaters: ReturnType<typeof useLogs>['filterUpdaters'];
+  modActors?: ProfileViewBasic[];
   filters: ReturnType<typeof useLogs>['filters'];
+  updateFilter: (
+    filters: Partial<ReturnType<typeof useLogs>['filters']>
+  ) => void;
+  clearFilters: () => void;
 }
 
-export const LogFilters = ({ actors, filterUpdaters, filters }: Props) => {
-  const isFilterActive = Object.values(filters).some((filter) => {
-    return filter !== 'ascending' && filter !== 'descending' && !!filter;
-  });
-  // closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
-  const {
-    updateAction,
-    updateDateRange,
-    updatePerformedBy,
-    // updateTargetPost,
-    // onTargetPostFilterChange,
-    updateSortBy,
-    clearFilters,
-  } = filterUpdaters;
-  return (
-    <div className='flex flex-col justify-evenly space-y-4'>
-      {updateSortBy && (
+export const LogFilters = memo(
+  ({ modActors, filters, updateFilter, clearFilters }: Props) => {
+    const isFilterActive = Object.values(filters).some((filter) => {
+      return filter !== 'ascending' && filter !== 'descending' && !!filter;
+    });
+    // closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+
+    return (
+      <div className='flex flex-col justify-evenly space-y-4'>
         <Select
           id='sortBy'
           label='Sort By'
           value={filters.sortBy || 'descending'}
           onChange={(value) =>
-            updateSortBy(value as 'ascending' | 'descending')
+            updateFilter({ sortBy: value as 'ascending' | 'descending' })
           }
           options={[
             { label: 'Newest First', value: 'descending' },
             { label: 'Oldest First', value: 'ascending' },
           ]}
         />
-      )}
-      {updateDateRange && (
         <DatePicker
           id='dateRange'
           label='Filter By Date'
           value={filters.dateRange || { fromDate: '', toDate: '' }}
-          onChange={updateDateRange}
+          onChange={(dateRange) => updateFilter({ dateRange })}
           presets
         />
-      )}
-      {updatePerformedBy && actors && (
-        <Select
-          id='performedBy'
-          label='Filter By Actor'
-          value={filters.performedBy || ''}
-          onChange={(value) => updatePerformedBy(value)}
-          options={[
-            { label: 'All Actors', value: '' },
-            ...actors.map((actor) => ({
-              label: actor.displayName || actor.handle,
-              value: actor.handle,
-            })),
-          ]}
-        />
-      )}
-      {updateAction && (
+        {modActors && (
+          <Select
+            id='performedBy'
+            label='Filter By Actor'
+            value={filters.performedBy || ''}
+            onChange={(performedBy) => updateFilter({ performedBy })}
+            options={[
+              { label: 'All Actors', value: '' },
+              ...modActors.map((actor) => ({
+                label: actor.displayName || actor.handle,
+                value: actor.did,
+              })),
+            ]}
+          />
+        )}
         <Select
           id='action'
           label='Filter By Action'
           value={filters.action || ''}
-          onChange={(selectedAction) =>
-            updateAction(selectedAction as ModAction)
+          onChange={(action) =>
+            updateFilter({ action: (action as ModAction) || null })
           }
           options={[
             { label: 'All Actions', value: '' },
@@ -84,8 +76,8 @@ export const LogFilters = ({ actors, filterUpdaters, filters }: Props) => {
             { label: 'Moderator Demoted', value: 'mod_demote' },
           ]}
         />
-      )}
-      {/*
+
+        {/*
       // TODO: these need refining - currently tries to fire on each keystroke
        {updateTargetPost && (
         <Input
@@ -103,11 +95,14 @@ export const LogFilters = ({ actors, filterUpdaters, filters }: Props) => {
           onChange={(e) => onTargetPostFilterChange(e.target.value)}
         />
       )} */}
-      {clearFilters && (
-        <Button disabled={!isFilterActive} onClick={clearFilters}>
-          Clear Filters
-        </Button>
-      )}
-    </div>
-  );
-};
+        {clearFilters && (
+          <Button disabled={!isFilterActive} onClick={clearFilters}>
+            Clear Filters
+          </Button>
+        )}
+      </div>
+    );
+  }
+);
+
+LogFilters.displayName = 'LogFilters';

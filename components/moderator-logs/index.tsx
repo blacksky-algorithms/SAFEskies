@@ -13,10 +13,8 @@ export function ModeratorLogs({
   feedUri,
   targetedProfile,
 }: ModeratorLogsProps) {
-  const { filterUpdaters, logs, isLoading, error, filters } = useLogs(
-    'feed',
-    feedUri
-  );
+  const { logs, isLoading, error, filters, updateFilter, clearFilters } =
+    useLogs('feed', feedUri);
   const categories = {
     all: logs,
     posts: logs.filter((postLog) =>
@@ -31,10 +29,11 @@ export function ModeratorLogs({
     <Logs
       targetedProfile={targetedProfile}
       categories={categories}
-      filterUpdaters={filterUpdaters}
       isLoading={isLoading}
       error={error}
       filters={filters}
+      updateFilter={updateFilter}
+      clearFilters={clearFilters}
     />
   );
 }

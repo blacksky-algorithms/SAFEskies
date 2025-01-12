@@ -11,10 +11,11 @@ interface AdminLogsProps {
 }
 
 export function AdminLogs({ user }: AdminLogsProps) {
-  const [moderators, setModerators] = useState<ProfileViewBasic[]>([]);
+  const [modActors, setModActors] = useState<ProfileViewBasic[]>([]);
   const [moderatorError, setModeratorError] = useState<string | null>(null);
 
-  const { filterUpdaters, logs, isLoading, error, filters } = useLogs();
+  const { logs, isLoading, error, filters, updateFilter, clearFilters } =
+    useLogs();
 
   useEffect(() => {
     if (!user?.did) return;
@@ -26,7 +27,7 @@ export function AdminLogs({ user }: AdminLogsProps) {
           throw new Error('Failed to fetch moderators');
         }
         const data = await response.json();
-        setModerators(data.moderators);
+        setModActors(data.moderators);
         setModeratorError(null);
       } catch (error) {
         console.error('Error fetching moderators:', error);
@@ -55,9 +56,10 @@ export function AdminLogs({ user }: AdminLogsProps) {
       categories={categories}
       isLoading={isLoading}
       error={error || moderatorError}
-      moderators={moderators}
-      filterUpdaters={filterUpdaters}
+      modActors={modActors}
       filters={filters}
+      updateFilter={updateFilter}
+      clearFilters={clearFilters}
     />
   );
 }

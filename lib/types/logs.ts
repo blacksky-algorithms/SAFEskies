@@ -33,7 +33,7 @@ export interface LogEntry {
   feed_uri: string;
   performed_by: string;
   action: ModAction;
-  target_post_uri: string | null;
+  target_post_uri?: string | null;
   target_user_did: string | null;
   metadata: Record<string, unknown>;
   created_at: string;

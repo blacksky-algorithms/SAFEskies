@@ -51,7 +51,6 @@ export const setFeedRole = async (
       action: role === 'mod' ? 'mod_promote' : 'mod_demote', // TODO: Extend to all actions
       target_user_did: targetUserDid,
       metadata: { role, feed_name: feedName },
-      target_post_uri: 'TODO: Implement when post moderation is unblocked',
     });
 
     return true;
