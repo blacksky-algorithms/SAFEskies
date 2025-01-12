@@ -83,7 +83,6 @@ export const DatePicker = ({
   };
 
   const handlePreset = (preset: { fromDate: string; toDate: string }) => {
-    console.log('preset', preset);
     onChange(preset);
     setIsOpen(false);
   };

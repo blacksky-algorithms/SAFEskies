@@ -15,26 +15,35 @@ import { useLogs } from '@/hooks/useLogs';
 
 export const Logs = ({
   targetedProfile,
-  categories,
   isLoading,
   error,
-  modActors,
   filters,
   updateFilter,
   clearFilters,
+  isAdmin = false,
+  logs = [],
 }: {
   targetedProfile?: ProfileViewBasic;
-  categories: Record<string, AdminLog[]>;
   isLoading: boolean;
   error: string | null;
-  modActors?: ProfileViewBasic[];
   filters: ReturnType<typeof useLogs>['filters'];
   updateFilter: (
     filters: Partial<ReturnType<typeof useLogs>['filters']>
   ) => void;
   clearFilters: () => void;
+  isAdmin?: boolean;
+  logs: AdminLog[];
 }) => {
   const { toast } = useToast();
+  const categories = {
+    all: logs,
+    posts: logs.filter((postLog) =>
+      ['post_delete', 'post_restore'].includes(postLog.action)
+    ),
+    bans: logs.filter((banLog) =>
+      ['user_ban', 'user_unban'].includes(banLog.action)
+    ),
+  };
 
   const renderTabs = () => {
     const tabs = Object.entries(categories).map(([key, logs]) => ({
@@ -77,7 +86,7 @@ export const Logs = ({
         </div>
         <div className='hidden tablet:flex flex-col space-y-4 p-4 border-l border-l-app-border'>
           <LogFilters
-            modActors={modActors}
+            filterByMod={isAdmin && !targetedProfile}
             filters={filters}
             updateFilter={updateFilter}
             clearFilters={clearFilters}
@@ -91,7 +100,7 @@ export const Logs = ({
       >
         <div className='flex flex-col space-y-4 p-4 overflow-auto max-h-page'>
           <LogFilters
-            modActors={modActors}
+            filterByMod={isAdmin && !targetedProfile}
             filters={filters}
             updateFilter={updateFilter}
             clearFilters={clearFilters}

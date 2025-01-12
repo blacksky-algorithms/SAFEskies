@@ -32,10 +32,6 @@ export function useLogs(type: 'admin' | 'feed' = 'admin', feedUri?: string) {
   };
 
   useEffect(() => {
-    filtersRef.current = filters;
-  }, [filters]);
-
-  useEffect(() => {
     let isMounted = true;
 
     const fetchData = async () => {

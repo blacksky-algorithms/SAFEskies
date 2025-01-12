@@ -1,14 +1,14 @@
 import { Select } from '@/components/input/select';
 import { DatePicker } from '@/components/date-picker';
 // import { Input } from '@/components/input';
-import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { Button } from '@/components/button';
 import { ModAction } from '@/lib/types/moderation';
 import { useLogs } from '@/hooks/useLogs';
 import { memo } from 'react';
+import { FilterByModInput } from './filter-by-mod-input';
 
 interface Props {
-  modActors?: ProfileViewBasic[];
+  filterByMod: boolean;
   filters: ReturnType<typeof useLogs>['filters'];
   updateFilter: (
     filters: Partial<ReturnType<typeof useLogs>['filters']>
@@ -17,10 +17,11 @@ interface Props {
 }
 
 export const LogFilters = memo(
-  ({ modActors, filters, updateFilter, clearFilters }: Props) => {
+  ({ filterByMod, filters, updateFilter, clearFilters }: Props) => {
     const isFilterActive = Object.values(filters).some((filter) => {
       return filter !== 'ascending' && filter !== 'descending' && !!filter;
     });
+
     // closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
 
     return (
@@ -44,21 +45,9 @@ export const LogFilters = memo(
           onChange={(dateRange) => updateFilter({ dateRange })}
           presets
         />
-        {modActors && (
-          <Select
-            id='performedBy'
-            label='Filter By Actor'
-            value={filters.performedBy || ''}
-            onChange={(performedBy) => updateFilter({ performedBy })}
-            options={[
-              { label: 'All Actors', value: '' },
-              ...modActors.map((actor) => ({
-                label: actor.displayName || actor.handle,
-                value: actor.did,
-              })),
-            ]}
-          />
-        )}
+        {filterByMod ? (
+          <FilterByModInput filters={filters} updateFilter={updateFilter} />
+        ) : null}
         <Select
           id='action'
           label='Filter By Action'

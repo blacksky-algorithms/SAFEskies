@@ -10,12 +10,6 @@ export const usePermissions = () => {
     setByUserDid: string;
     feedName: string;
   }) => {
-    console.log('usePermissions -> promoteToModerator: ', {
-      targetUserDid,
-      feedUri,
-      setByUserDid,
-      feedName,
-    });
     const response = await fetch('/api/permissions/promote', {
       method: 'POST',
       headers: {
@@ -28,7 +22,7 @@ export const usePermissions = () => {
         feedName,
       }),
     });
-    console.log('usePermissions -> promoteToModerator -> response: ', response);
+
     if (!response.ok) {
       const data = await response.json();
       throw new Error(data.error || 'Failed to promote moderator');

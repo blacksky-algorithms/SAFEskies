@@ -1,4 +1,4 @@
-import { ModeratorLogs } from '@/components/moderator-logs';
+import { AdminLogsByMod } from '@/components/admin-logs-by-mod';
 import { getProfileDetails } from '@/repos/profile';
 
 interface SearchParams {
@@ -20,5 +20,5 @@ export default async function Page(props: PageProps) {
 
   const mod = await getProfileDetails(modDID);
 
-  return <ModeratorLogs feedUri={feedUri} targetedProfile={mod} />;
+  return <AdminLogsByMod feedUri={feedUri} targetedProfile={mod} />;
 }

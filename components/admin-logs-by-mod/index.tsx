@@ -9,31 +9,23 @@ interface ModeratorLogsProps {
   targetedProfile?: ProfileViewBasic;
 }
 
-export function ModeratorLogs({
+export function AdminLogsByMod({
   feedUri,
   targetedProfile,
 }: ModeratorLogsProps) {
   const { logs, isLoading, error, filters, updateFilter, clearFilters } =
     useLogs('feed', feedUri);
-  const categories = {
-    all: logs,
-    posts: logs.filter((postLog) =>
-      ['post_delete', 'post_restore'].includes(postLog.action)
-    ),
-    bans: logs.filter((banLog) =>
-      ['user_ban', 'user_unban'].includes(banLog.action)
-    ),
-  };
 
   return (
     <Logs
       targetedProfile={targetedProfile}
-      categories={categories}
+      logs={logs}
       isLoading={isLoading}
       error={error}
       filters={filters}
       updateFilter={updateFilter}
       clearFilters={clearFilters}
+      isAdmin
     />
   );
 }
