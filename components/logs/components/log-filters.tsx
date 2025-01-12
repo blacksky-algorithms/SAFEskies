@@ -7,6 +7,8 @@ import { useLogs } from '@/hooks/useLogs';
 import { memo, useRef } from 'react';
 import { FilterByModInput } from './filter-by-mod-input';
 import { BSUserSearch } from '@/components/bs-user-search/bs-user-search';
+import { useModal } from '@/contexts/modal-context';
+import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 
 interface Props {
   filterByMod: boolean;
@@ -25,15 +27,21 @@ export const LogFilters = memo(
 
     const filtersDisplayDataRef = useRef({ targetedUserName: '' });
 
+    const { closeModalInstance, isOpen } = useModal();
+
+    const isFiltersModalOpen = isOpen(MODAL_INSTANCE_IDS.LOG_FILTERS);
     return (
       <div className='flex flex-col justify-evenly space-y-4'>
         <Select
           id='sortBy'
           label='Sort By'
           value={filters.sortBy || 'descending'}
-          onChange={(value) =>
-            updateFilter({ sortBy: value as 'ascending' | 'descending' })
-          }
+          onChange={(value) => {
+            updateFilter({ sortBy: value as 'ascending' | 'descending' });
+            if (isFiltersModalOpen) {
+              closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+            }
+          }}
           options={[
             { label: 'Newest First', value: 'descending' },
             { label: 'Oldest First', value: 'ascending' },
@@ -43,7 +51,12 @@ export const LogFilters = memo(
           id='dateRange'
           label='Filter By Date'
           value={filters.dateRange || { fromDate: '', toDate: '' }}
-          onChange={(dateRange) => updateFilter({ dateRange })}
+          onChange={(dateRange) => {
+            updateFilter({ dateRange });
+            if (isFiltersModalOpen) {
+              closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+            }
+          }}
           presets
         />
         {filterByMod ? (
@@ -65,9 +78,12 @@ export const LogFilters = memo(
           id='action'
           label='Filter By Action'
           value={filters.action || ''}
-          onChange={(action) =>
-            updateFilter({ action: (action as ModAction) || null })
-          }
+          onChange={(action) => {
+            updateFilter({ action: (action as ModAction) || null });
+            if (isFiltersModalOpen) {
+              closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+            }
+          }}
           options={[
             { label: 'All Actions', value: '' },
             { label: 'Post Deleted', value: 'post_delete' },
@@ -94,6 +110,9 @@ export const LogFilters = memo(
             onClick={() => {
               clearFilters();
               filtersDisplayDataRef.current = { targetedUserName: '' };
+              if (isFiltersModalOpen) {
+                closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+              }
             }}
           >
             Clear Filters

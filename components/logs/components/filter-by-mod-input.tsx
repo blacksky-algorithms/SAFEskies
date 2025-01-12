@@ -1,4 +1,6 @@
 import { Select } from '@/components/input/select';
+import { useModal } from '@/contexts/modal-context';
+import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useLogs } from '@/hooks/useLogs';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { useEffect, useState } from 'react';
@@ -11,6 +13,8 @@ interface Props {
 }
 
 export const FilterByModInput = ({ filters, updateFilter }: Props) => {
+  const { closeModalInstance, isOpen } = useModal();
+  const isFiltersModalOpen = isOpen(MODAL_INSTANCE_IDS.LOG_FILTERS);
   const [state, setState] = useState<{
     mods: ProfileViewBasic[];
     error: string | null;
@@ -45,7 +49,12 @@ export const FilterByModInput = ({ filters, updateFilter }: Props) => {
       id='performedBy'
       label='Filter By Actor'
       value={filters.performedBy || ''}
-      onChange={(performedBy) => updateFilter({ performedBy })}
+      onChange={(performedBy) => {
+        updateFilter({ performedBy });
+        if (isFiltersModalOpen) {
+          closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+        }
+      }}
       options={[
         { label: 'All Actors', value: '' },
         ...state.mods.map((mod) => ({
