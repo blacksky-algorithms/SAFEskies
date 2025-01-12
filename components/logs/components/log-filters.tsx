@@ -4,8 +4,9 @@ import { DatePicker } from '@/components/date-picker';
 import { Button } from '@/components/button';
 import { ModAction } from '@/lib/types/moderation';
 import { useLogs } from '@/hooks/useLogs';
-import { memo } from 'react';
+import { memo, useRef } from 'react';
 import { FilterByModInput } from './filter-by-mod-input';
+import { BSUserSearch } from '@/components/bs-user-search/bs-user-search';
 
 interface Props {
   filterByMod: boolean;
@@ -22,7 +23,7 @@ export const LogFilters = memo(
       return filter !== 'ascending' && filter !== 'descending' && !!filter;
     });
 
-    // closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+    const filtersDisplayDataRef = useRef({ targetedUserName: '' });
 
     return (
       <div className='flex flex-col justify-evenly space-y-4'>
@@ -48,6 +49,18 @@ export const LogFilters = memo(
         {filterByMod ? (
           <FilterByModInput filters={filters} updateFilter={updateFilter} />
         ) : null}
+        <BSUserSearch
+          id='targetUser'
+          label='Filter By Target User'
+          onSelect={(user) => {
+            filtersDisplayDataRef.current = {
+              targetedUserName: user?.displayName || `@${user.handle}`,
+            };
+            updateFilter({ targetUser: user.did });
+          }}
+          placeholder={filtersDisplayDataRef.current.targetedUserName}
+        />
+
         <Select
           id='action'
           label='Filter By Action'
@@ -67,15 +80,6 @@ export const LogFilters = memo(
         />
 
         {/*
-      // TODO: these need refining - currently tries to fire on each keystroke
-       {updateTargetPost && (
-        <Input
-          id='targetUser'
-          label='Filter By Target User'
-          value={filters.targetUser || ''}
-          onChange={(e) => updateTargetPost(e.target.value)}
-        />
-      )}
       {onTargetPostFilterChange && (
         <Input
           id='targetPost'
@@ -85,7 +89,13 @@ export const LogFilters = memo(
         />
       )} */}
         {clearFilters && (
-          <Button disabled={!isFilterActive} onClick={clearFilters}>
+          <Button
+            disabled={!isFilterActive}
+            onClick={() => {
+              clearFilters();
+              filtersDisplayDataRef.current = { targetedUserName: '' };
+            }}
+          >
             Clear Filters
           </Button>
         )}
