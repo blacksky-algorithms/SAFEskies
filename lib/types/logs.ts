@@ -1,37 +1,22 @@
 import { ModAction } from '@/lib/types/moderation';
-import { UserRole } from '@/lib/types/permission';
+import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
-export interface Log {
+export interface BaseLog {
   id: string;
-  action: ModAction;
-  created_at: string;
   feed_uri: string;
   performed_by: string;
-  performed_by_profile: {
-    did: string;
-    avatar?: string;
-    handle: string;
-    name: string | null;
-  };
-  target_user_did: string | null;
-  target_user_profile?: {
-    did: string;
-    avatar?: string;
-    handle: string;
-    name: string | null;
-  };
+  action: ModAction;
   target_post_uri: string | null;
-  // TODO: reshape this
-  metadata: { feed_name?: string; role: UserRole } | null;
+  target_user_did: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  // TODO: Add these fields to the LogEntry type
+  ip_address?: string | null;
+  user_agent?: string | null;
 }
-
-export interface LogEntry {
-  feed_uri: string;
-  performed_by: string;
-  action: ModAction;
-  target_post_uri?: string;
-  target_user_did?: string;
-  metadata?: Record<string, unknown>;
+export interface AdminLog extends BaseLog {
+  performed_by_profile: ProfileViewBasic;
+  target_user_profile?: ProfileViewBasic;
 }
 
 export interface LogFilters {
@@ -41,4 +26,23 @@ export interface LogFilters {
   targetPost?: string;
   dateRange?: { fromDate: string; toDate: string };
   sortBy: 'ascending' | 'descending';
+  feedUri?: string;
+}
+export interface LogEntry {
+  id: string;
+  feed_uri: string;
+  performed_by: string;
+  action: ModAction;
+  target_post_uri?: string | null;
+  target_user_did: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  // TODO: Add these fields to the LogEntry type
+  ip_address?: string | null;
+  user_agent?: string | null;
+}
+
+export interface EnrichedLog extends LogEntry {
+  performed_by_profile: ProfileViewBasic;
+  target_user_profile?: ProfileViewBasic;
 }

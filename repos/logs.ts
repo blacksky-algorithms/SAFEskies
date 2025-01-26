@@ -1,181 +1,83 @@
-import { LogEntry } from '@/lib/types/logs';
-import { ModAction } from '@/lib/types/moderation';
-import { getDateTimeRange } from '@/lib/utils/logs';
 import { SupabaseInstance } from '@/repos/supabase';
+import { BaseLog, LogEntry, LogFilters } from '@/lib/types/logs';
+import { getBulkProfileDetails } from '@/repos/profile';
+import { getDateTimeRange } from '@/lib/utils/logs';
 
-export const createModerationLog = async (entry: LogEntry) => {
+export async function getRawLogs(filters: LogFilters): Promise<BaseLog[]> {
+  let query = SupabaseInstance.from('moderation_logs').select('*');
+
+  if (filters.feedUri) {
+    query = query.eq('feed_uri', filters.feedUri);
+  }
+
+  if (filters.action) {
+    query = query.eq('action', filters.action);
+  }
+
+  if (filters.performedBy?.trim()) {
+    query = query.eq('performed_by', filters.performedBy.trim());
+  }
+
+  if (filters.targetUser?.trim()) {
+    query = query.eq('target_user_did', filters.targetUser.trim());
+  }
+
+  if (filters.targetPost?.trim()) {
+    query = query.eq('target_post_uri', filters.targetPost.trim());
+  }
+
+  if (filters.dateRange) {
+    const { fromDateTime, toDateTime } = getDateTimeRange(filters.dateRange);
+    query = query.gte('created_at', fromDateTime).lte('created_at', toDateTime);
+  }
+
+  query = query.order('created_at', {
+    ascending: filters.sortBy === 'ascending',
+  });
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error fetching logs:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+export async function getLogs(filters: LogFilters): Promise<BaseLog[]> {
+  const rawLogs = await getRawLogs(filters);
+
+  // Filter out null values when collecting DIDs
+  const dids = new Set(
+    rawLogs
+      .flatMap((log) => [log.performed_by, log.target_user_did])
+      .filter((did): did is string => did !== null)
+  );
+
+  const profiles = await getBulkProfileDetails(Array.from(dids));
+  const profileMap = new Map(profiles.map((p) => [p.did, p]));
+
+  return rawLogs.map((log) => ({
+    ...log,
+    performed_by_profile: profileMap.get(log.performed_by) || {
+      did: log.performed_by,
+      handle: log.performed_by,
+    },
+    target_user_profile: log.target_user_did
+      ? profileMap.get(log.target_user_did)
+      : undefined,
+  }));
+}
+
+export async function createLog(
+  entry:
+    | Omit<LogEntry, 'id' | 'created_at'>
+    | Omit<BaseLog, 'id' | 'created_at'>
+) {
   const { error } = await SupabaseInstance.from('moderation_logs').insert(
     entry
   );
 
   if (error) throw error;
-};
-
-export const getFeedModerationLogs = async (
-  feedUri: string,
-  filters?: {
-    action?: ModAction | null;
-    performedBy?: string;
-    targetUser?: string;
-    targetPost?: string;
-    dateRange?: {
-      fromDate: string;
-      toDate: string;
-    };
-    sortBy?: 'ascending' | 'descending';
-  }
-) => {
-  // Base query
-  let query = SupabaseInstance.from('moderation_logs')
-    .select(
-      `
-      *,
-      performed_by_profile:profiles!performed_by(handle, name),
-      target_user_profile:profiles!target_user_did(handle, name)
-    `
-    )
-    .eq('feed_uri', feedUri);
-
-  // Apply filters if provided
-  if (filters) {
-    const { action, performedBy, targetUser, targetPost, dateRange } = filters;
-
-    if (action) {
-      query = query.in('action', [action]);
-    }
-    if (performedBy?.trim()) {
-      query = query.ilike(
-        'performed_by_profile.handle',
-        `%${performedBy.trim()}%`
-      );
-    }
-    if (targetUser?.trim()) {
-      query = query.ilike(
-        'target_user_profile.handle',
-        `%${targetUser.trim()}%`
-      );
-    }
-    if (targetPost?.trim()) {
-      query = query.ilike('target_post_uri', `%${targetPost.trim()}%`);
-    }
-    if (dateRange) {
-      const { fromDateTime, toDateTime } = getDateTimeRange(dateRange);
-      query = query
-        .gte('created_at', fromDateTime)
-        .lte('created_at', toDateTime);
-    }
-  }
-
-  // Order results by creation date
-  const { data, error } = await query.order('created_at', {
-    ascending: filters?.sortBy === 'ascending',
-  });
-
-  if (error) {
-    console.error('Error fetching moderation logs:', error.message);
-    throw error;
-  }
-
-  return data;
-};
-
-export const getActionLogs = async (feedUri: string, action: ModAction) => {
-  const { data, error } = await SupabaseInstance.from('moderation_logs')
-    .select(
-      `
-      *, 
-      performed_by_profile:profiles!performed_by(handle, name),
-      target_user_profile:profiles!target_user_did(handle, name)
-    `
-    )
-    .eq('feed_uri', feedUri)
-    .eq('action', action)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
-};
-
-export const getAdminLogs = async (filters?: {
-  action?: ModAction | null;
-  performedBy?: string;
-  targetUser?: string;
-  targetPost?: string;
-  dateRange?: {
-    fromDate: string;
-    toDate: string;
-  };
-  sortBy: 'ascending' | 'descending';
-}) => {
-  // Base query ensuring we get all required profile data
-  let query = SupabaseInstance.from('moderation_logs')
-    .select(
-      `
-      *,
-      performed_by_profile:profiles!moderation_logs_performed_by_fkey(
-        did,
-        handle,
-        name,
-        avatar
-      ),
-      target_user_profile:profiles!moderation_logs_target_user_did_fkey(
-        did,
-        handle,
-        name,
-        avatar
-      )
-    `
-    )
-    .not('performed_by_profile', 'is', null);
-
-  // Apply filters if provided
-  if (filters) {
-    const { action, performedBy, targetUser, targetPost, dateRange } = filters;
-
-    if (action) {
-      query = query.in('action', [action]);
-    }
-
-    if (performedBy?.trim()) {
-      query = query.ilike(
-        'performed_by_profile.handle',
-        `%${performedBy.trim()}%`
-      );
-    }
-
-    if (targetUser?.trim()) {
-      query = query.ilike(
-        'target_user_profile.handle',
-        `%${targetUser.trim()}%`
-      );
-    }
-
-    if (targetPost?.trim()) {
-      query = query.ilike('target_post_uri', `%${targetPost.trim()}%`);
-    }
-
-    if (dateRange) {
-      const { fromDateTime, toDateTime } = getDateTimeRange(dateRange);
-      query = query
-        .gte('created_at', fromDateTime)
-        .lte('created_at', toDateTime);
-    }
-  }
-
-  // Order results by creation date
-  const { data, error } = await query.order('created_at', {
-    ascending: filters?.sortBy === 'ascending',
-  });
-
-  if (error) {
-    console.error('Error fetching admin logs:', error.message);
-    throw error;
-  }
-
-  // Only return logs where we have all required profile data
-  return data.filter(
-    (log) =>
-      log.performed_by_profile?.handle &&
-      (!log.target_user_did || log.target_user_profile?.handle)
-  );
-};
+}

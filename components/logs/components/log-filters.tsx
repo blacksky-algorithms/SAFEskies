@@ -1,89 +1,89 @@
 import { Select } from '@/components/input/select';
 import { DatePicker } from '@/components/date-picker';
 // import { Input } from '@/components/input';
-import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { Button } from '@/components/button';
 import { ModAction } from '@/lib/types/moderation';
-import { LogFilters as LogFiltersType } from '@/lib/types/logs';
+import { useLogs } from '@/hooks/useLogs';
+import { memo, useRef } from 'react';
+import { FilterByModInput } from './filter-by-mod-input';
+import { BSUserSearch } from '@/components/bs-user-search/bs-user-search';
+import { useModal } from '@/contexts/modal-context';
+import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 
 interface Props {
-  filters: LogFiltersType;
-  onDateFilterChange?: (dateRange: {
-    fromDate: string;
-    toDate: string;
-  }) => void;
-  onActionFilterChange?: (action: ModAction) => void;
-  onPerformedByFilterChange?: (performedBy: string) => void;
-  onTargetUserFilterChange?: (targetUser: string) => void;
-  onTargetPostFilterChange?: (targetPost: string) => void;
-  onSortByFilterChange?: (sortBy: 'ascending' | 'descending') => void;
-  onClearFilters?: () => void;
-  moderators?: ProfileViewBasic[];
+  filterByMod: boolean;
+  filters: ReturnType<typeof useLogs>['filters'];
+  updateFilter: (
+    filters: Partial<ReturnType<typeof useLogs>['filters']>
+  ) => void;
+  clearFilters: () => void;
 }
 
-export const LogFilters = ({
-  filters,
-  onActionFilterChange,
-  onDateFilterChange,
-  onPerformedByFilterChange,
-  // onTargetUserFilterChange,
-  // onTargetPostFilterChange,
-  onSortByFilterChange,
-  onClearFilters,
-  moderators,
-}: Props) => {
-  const isFilterActive = Object.values(filters).some((filter) => {
-    return filter !== 'ascending' && filter !== 'descending' && !!filter;
-  });
+export const LogFilters = memo(
+  ({ filterByMod, filters, updateFilter, clearFilters }: Props) => {
+    const isFilterActive = Object.values(filters).some((filter) => {
+      return filter !== 'ascending' && filter !== 'descending' && !!filter;
+    });
 
-  return (
-    <div className='flex flex-col justify-evenly space-y-4'>
-      {onSortByFilterChange && (
+    const filtersDisplayDataRef = useRef({ targetedUserName: '' });
+
+    const { closeModalInstance, isOpen } = useModal();
+
+    const isFiltersModalOpen = isOpen(MODAL_INSTANCE_IDS.LOG_FILTERS);
+    return (
+      <div className='flex flex-col justify-evenly space-y-4'>
         <Select
           id='sortBy'
           label='Sort By'
           value={filters.sortBy || 'descending'}
-          onChange={(value) =>
-            onSortByFilterChange(value as 'ascending' | 'descending')
-          }
+          onChange={(value) => {
+            updateFilter({ sortBy: value as 'ascending' | 'descending' });
+            if (isFiltersModalOpen) {
+              closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+            }
+          }}
           options={[
             { label: 'Newest First', value: 'descending' },
             { label: 'Oldest First', value: 'ascending' },
           ]}
         />
-      )}
-      {onDateFilterChange && (
         <DatePicker
           id='dateRange'
           label='Filter By Date'
           value={filters.dateRange || { fromDate: '', toDate: '' }}
-          onChange={onDateFilterChange}
+          onChange={(dateRange) => {
+            updateFilter({ dateRange });
+            if (isFiltersModalOpen) {
+              closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+            }
+          }}
           presets
         />
-      )}
-      {onPerformedByFilterChange && moderators && (
-        <Select
-          id='performedBy'
-          label='Filter By Moderator'
-          value={filters.performedBy || ''}
-          onChange={(value) => onPerformedByFilterChange(value)}
-          options={[
-            { label: 'All Moderators', value: '' },
-            ...moderators.map((mod) => ({
-              label: mod.displayName || mod.handle,
-              value: mod.handle,
-            })),
-          ]}
+        {filterByMod ? (
+          <FilterByModInput filters={filters} updateFilter={updateFilter} />
+        ) : null}
+        <BSUserSearch
+          id='targetUser'
+          label='Filter By Target User'
+          onSelect={(user) => {
+            filtersDisplayDataRef.current = {
+              targetedUserName: user?.displayName || `@${user.handle}`,
+            };
+            updateFilter({ targetUser: user.did });
+          }}
+          placeholder={filtersDisplayDataRef.current.targetedUserName}
         />
-      )}
-      {onActionFilterChange && (
+
         <Select
           id='action'
           label='Filter By Action'
           value={filters.action || ''}
-          onChange={(selectedAction) =>
-            onActionFilterChange(selectedAction as ModAction)
-          }
+          onChange={(action) => {
+            updateFilter({ action: (action as ModAction) || null });
+            if (isFiltersModalOpen) {
+              closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+            }
+          }}
           options={[
             { label: 'All Actions', value: '' },
             { label: 'Post Deleted', value: 'post_delete' },
@@ -94,17 +94,8 @@ export const LogFilters = ({
             { label: 'Moderator Demoted', value: 'mod_demote' },
           ]}
         />
-      )}
-      {/*
-      // TODO: these need refining - currently tries to fire on each keystroke
-       {onTargetUserFilterChange && (
-        <Input
-          id='targetUser'
-          label='Filter By Target User'
-          value={filters.targetUser || ''}
-          onChange={(e) => onTargetUserFilterChange(e.target.value)}
-        />
-      )}
+
+        {/*
       {onTargetPostFilterChange && (
         <Input
           id='targetPost'
@@ -113,11 +104,23 @@ export const LogFilters = ({
           onChange={(e) => onTargetPostFilterChange(e.target.value)}
         />
       )} */}
-      {onClearFilters && (
-        <Button disabled={!isFilterActive} onClick={onClearFilters}>
-          Clear Filters
-        </Button>
-      )}
-    </div>
-  );
-};
+        {clearFilters && (
+          <Button
+            disabled={!isFilterActive}
+            onClick={() => {
+              clearFilters();
+              filtersDisplayDataRef.current = { targetedUserName: '' };
+              if (isFiltersModalOpen) {
+                closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+              }
+            }}
+          >
+            Clear Filters
+          </Button>
+        )}
+      </div>
+    );
+  }
+);
+
+LogFilters.displayName = 'LogFilters';

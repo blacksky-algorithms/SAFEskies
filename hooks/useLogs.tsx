@@ -1,30 +1,74 @@
-import { LogFilters, Log } from '@/lib/types/logs';
-import { useLogFilters } from '@/hooks/useLogFilters';
-import { useLogsQuery } from '@/hooks/useLogsQuery';
+import { useEffect, useRef, useState } from 'react';
+import { AdminLog, LogFilters } from '@/lib/types/logs';
+import { fetchLogs } from '@/lib/utils/logs';
 
-export function useLogs(
-  fetchFn: (
-    filters: LogFilters,
-    type?: 'admin' | 'feed',
-    feedUri?: string
-  ) => Promise<Log[]>,
-  type: 'admin' | 'feed' = 'admin',
-  feedUri?: string
-) {
-  const { filters, filterHandlers } = useLogFilters();
+type FilterUpdate = Partial<Pick<LogFilters, keyof LogFilters>>;
 
-  const { logs, isLoading, error } = useLogsQuery(
-    fetchFn,
-    filters,
-    type,
-    feedUri
-  );
+export function useLogs(type: 'admin' | 'feed' = 'admin', feedUri?: string) {
+  const [filters, setFilters] = useState<LogFilters>({
+    sortBy: 'descending',
+  });
+  const [state, setState] = useState<{
+    logs: AdminLog[];
+    isLoading: boolean;
+    error: string | null;
+  }>({
+    logs: [],
+    isLoading: true,
+    error: null,
+  });
+
+  const filtersRef = useRef(filters);
+
+  const updateStateAndRef = (newFilter: FilterUpdate) => {
+    const updatedState = { ...filters, ...newFilter };
+    setFilters(updatedState);
+    filtersRef.current = updatedState;
+  };
+
+  const clearFilters = () => {
+    setFilters({ sortBy: 'descending' });
+    filtersRef.current = { sortBy: 'descending' };
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        setState((prev) => ({ ...prev, isLoading: true }));
+        const logs = await fetchLogs(filtersRef.current, type, feedUri);
+
+        if (isMounted) {
+          setState({
+            logs,
+            isLoading: false,
+            error: null,
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        if (isMounted) {
+          setState({
+            logs: [],
+            isLoading: false,
+            error: 'Failed to load moderation logs',
+          });
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [filters, type, feedUri]);
 
   return {
-    logs,
-    isLoading,
-    error,
+    ...state,
     filters,
-    ...filterHandlers,
+    updateFilter: updateStateAndRef,
+    clearFilters,
   };
 }

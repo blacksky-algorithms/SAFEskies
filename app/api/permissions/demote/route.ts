@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error in demote moderator API:', error);
+    console.error('Error demoting moderator:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

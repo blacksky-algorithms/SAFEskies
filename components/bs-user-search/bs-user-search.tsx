@@ -8,8 +8,14 @@ import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/
 
 export const BSUserSearch = ({
   onSelect,
+  id = 'bs-user-search',
+  label = 'Search for Blue Sky Users',
+  placeholder = 'Type a user handle or name...',
 }: {
   onSelect: (user: ProfileViewBasic) => void;
+  id?: string;
+  label?: string;
+  placeholder?: string;
 }) => {
   const [state, setState] = useState({
     search: '',
@@ -90,9 +96,9 @@ export const BSUserSearch = ({
   }, [debouncedSearch, fetchBlueskyUsers]);
 
   return (
-    <form className='relative w-full space-y-2' role='search'>
+    <form className={'relative w-full space-y-2'} role='search'>
       <Input
-        id='bs-user-search'
+        id={id}
         type='text'
         value={state.search}
         onChange={(e) =>
@@ -101,10 +107,10 @@ export const BSUserSearch = ({
             search: e.target.value,
           }))
         }
-        placeholder='Type a user handle...'
-        label='Search for Blue Sky Users'
+        placeholder={placeholder}
+        label={label}
         aria-autocomplete='list'
-        aria-controls='bs-user-search-results'
+        aria-controls={`${id}-results`}
         role='combobox'
         aria-expanded={state.results.length > 0}
       />
@@ -120,10 +126,10 @@ export const BSUserSearch = ({
 
       {state.results.length > 0 && (
         <ul
-          id='bs-user-search-results'
+          id={`${id}-results`}
           role='listbox'
-          aria-labelledby='bs-user-search'
-          className='absolute w-full mt-2 border rounded-md shadow-lg bg-app-background border-app-border z-10'
+          aria-labelledby={id}
+          className='absolute w-full mt-2 border rounded-md shadow-lg bg-app-background border-app-border z-10 '
         >
           {state.results.map((user, index) => (
             <li

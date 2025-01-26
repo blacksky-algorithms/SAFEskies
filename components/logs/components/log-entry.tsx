@@ -1,7 +1,7 @@
 'use client';
 
 import { format } from 'date-fns';
-import { Log } from '@/lib/types/logs';
+import { AdminLog } from '@/lib/types/logs';
 import { ModAction } from '@/lib/types/moderation';
 
 const ActionLabel: Record<ModAction, string> = {
@@ -13,7 +13,7 @@ const ActionLabel: Record<ModAction, string> = {
   mod_demote: 'Moderator Removed',
 };
 
-export const LogEntry = ({ log }: { log: Log }) => (
+export const LogEntry = ({ log }: { log: AdminLog }) => (
   <div className='rounded-lg border border-app-border bg-app-background shadow-sm mb-4'>
     <div className='pt-6 px-6 py-4'>
       <div className='flex flex-col tablet:flex-row justify-between mb-2'>
