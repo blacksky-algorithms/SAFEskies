@@ -1,10 +1,10 @@
-import { AdminLog, LogFilters } from '@/lib/types/logs';
+import { Log, LogFilters } from '@/lib/types/logs';
 
 export async function fetchLogs(
   filters: LogFilters,
   type: 'admin' | 'feed' = 'admin',
   feedUri?: string
-): Promise<AdminLog[]> {
+): Promise<Log[]> {
   const params = new URLSearchParams({ type });
 
   if (type === 'feed' && feedUri) {

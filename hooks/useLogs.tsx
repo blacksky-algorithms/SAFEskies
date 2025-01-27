@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AdminLog, LogFilters } from '@/lib/types/logs';
+import { Log, LogFilters } from '@/lib/types/logs';
 import { fetchLogs } from '@/lib/utils/logs';
 
 type FilterUpdate = Partial<Pick<LogFilters, keyof LogFilters>>;
@@ -9,7 +9,7 @@ export function useLogs(type: 'admin' | 'feed' = 'admin', feedUri?: string) {
     sortBy: 'descending',
   });
   const [state, setState] = useState<{
-    logs: AdminLog[];
+    logs: Log[];
     isLoading: boolean;
     error: string | null;
   }>({

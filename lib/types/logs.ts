@@ -1,7 +1,7 @@
 import { ModAction } from '@/lib/types/moderation';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
-export interface BaseLog {
+export interface Log {
   id: string;
   feed_uri: string;
   performed_by: string;
@@ -13,7 +13,7 @@ export interface BaseLog {
   // TODO: Add these fields to the LogEntry type
   ip_address?: string | null;
   user_agent?: string | null;
-  performed_by_profile?: ProfileViewBasic;
+  performed_by_profile: ProfileViewBasic;
   target_user_profile?: ProfileViewBasic;
 }
 

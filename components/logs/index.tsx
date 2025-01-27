@@ -7,7 +7,7 @@ import { useToast } from '@/contexts/toast-context';
 import { VisualIntent } from '@/enums/styles';
 import { LogEntry } from './components/log-entry';
 import { LogFilters } from './components/log-filters';
-import { AdminLog } from '@/lib/types/logs';
+import { Log } from '@/lib/types/logs';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { Modal } from '@/components/modals';
 import { LogsWrapper } from './components/logs-header';
@@ -32,7 +32,7 @@ export const Logs = ({
   ) => void;
   clearFilters: () => void;
   isAdmin?: boolean;
-  logs: AdminLog[];
+  logs: Log[];
 }) => {
   const { toast } = useToast();
   const categories = {

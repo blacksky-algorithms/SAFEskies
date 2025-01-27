@@ -25,6 +25,7 @@ import { ReasonType } from '@atproto/api/dist/client/types/com/atproto/moderatio
 interface FeedProps {
   uri: string;
   onRefreshComplete?: () => void;
+  feedName: string | undefined;
 }
 
 interface ReportDataState {
@@ -34,7 +35,7 @@ interface ReportDataState {
   moderatedPostUri: string | null;
 }
 
-export const Feed = ({ uri, onRefreshComplete }: FeedProps) => {
+export const Feed = ({ uri, onRefreshComplete, feedName }: FeedProps) => {
   const { feed, error, isFetching, hasNextPage, fetchNextPage, refreshFeed } =
     usePaginatedFeed({
       limit: 10,
@@ -133,7 +134,7 @@ export const Feed = ({ uri, onRefreshComplete }: FeedProps) => {
     toServices: { label: string; value: string }[];
     targetedUserDid: string;
     feedUri: string;
-    feedName: string;
+    feedName: string | undefined;
   }) => {
     try {
       await fetch('/api/permissions/mod-event', {
@@ -182,7 +183,7 @@ export const Feed = ({ uri, onRefreshComplete }: FeedProps) => {
         toServices: reportData.toServices,
         targetedUserDid: postToModerate.post.author.did,
         feedUri: uri,
-        feedName: (postToModerate.post.feedName as string) || 'Unnamed Feed',
+        feedName: feedName || 'Unnamed Feed',
       };
 
       const res = await reportModerationEvent(payload);

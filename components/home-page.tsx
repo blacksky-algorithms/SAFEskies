@@ -46,6 +46,7 @@ export const HomePage = ({ feeds }: Props) => {
         uri={feed.uri}
         key={feed.uri}
         onRefreshComplete={() => setActiveTab(index)}
+        feedName={feed.displayName}
       />
     ),
   }));
