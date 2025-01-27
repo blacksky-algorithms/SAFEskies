@@ -40,7 +40,7 @@ export const LogEntry = ({ log }: { log: Log }) => (
       )}
 
       {log.metadata && (
-        <pre className='mt-2 text-xs bg-app-secondary-hover p-2 rounded'>
+        <pre className='mt-2 text-xs bg-app-secondary-hover p-2 rounded overflow-hidden break-words whitespace-pre-wrap'>
           {JSON.stringify(log.metadata, null, 2)}
         </pre>
       )}
