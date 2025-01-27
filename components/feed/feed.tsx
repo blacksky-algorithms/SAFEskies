@@ -186,8 +186,16 @@ export const Feed = ({ uri, onRefreshComplete, feedName }: FeedProps) => {
         feedName: feedName || 'Unnamed Feed',
       };
 
-      const res = await reportModerationEvent(payload);
-      console.log({ res });
+      await reportModerationEvent(payload);
+
+      closeModalInstance(MODAL_INSTANCE_IDS.REPORT_POST);
+      closeModalInstance(MODAL_INSTANCE_IDS.MOD_MENU);
+
+      setReportData((prev) => ({
+        ...prev,
+        moderatedPostUri: null,
+        toServices: [MODERATION_SERVICES[0]],
+      }));
       toast({
         title: 'Success',
         message: 'Post reported successfully',
