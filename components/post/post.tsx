@@ -12,21 +12,29 @@ interface TextRecord {
   facets?: AppBskyRichtextFacet.Main[];
 }
 
-export const Post = ({ post }: { post: PostView }) => {
+export const Post = ({
+  post,
+  onModAction,
+}: {
+  post: PostView;
+  onModAction: (post: PostView) => void;
+}) => {
   const { record, author, embed } = post;
   const textRecord = record as TextRecord;
 
   return (
-    <article className='bg-app-background border border-gray-800 shadow-sm w-full mx-auto max-w-screen'>
-      <div className={'p-3 shadow'}>
-        <PostHeader author={author} />
-        {textRecord?.text && (
-          <PostText text={textRecord.text} facets={textRecord.facets} />
-        )}
+    <>
+      <article className='bg-app-background border border-gray-800 shadow-sm w-full mx-auto max-w-screen'>
+        <div className={'p-3 shadow'}>
+          <PostHeader author={author} />
+          {textRecord?.text && (
+            <PostText text={textRecord.text} facets={textRecord.facets} />
+          )}
 
-        <EmbedRenderer content={embed} labels={post.labels} />
-      </div>
-      <PostFooter {...post} />
-    </article>
+          <EmbedRenderer content={embed} labels={post.labels} />
+        </div>
+        <PostFooter showModMenu={true} post={post} onModAction={onModAction} />
+      </article>
+    </>
   );
 };

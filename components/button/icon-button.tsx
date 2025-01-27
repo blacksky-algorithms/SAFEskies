@@ -43,6 +43,7 @@ export const IconButton = ({
       isButton={!text}
       size={size}
       type={iconType}
+      className='text-current'
     />
   );
 

@@ -18,6 +18,7 @@
   --success: #06d6a0;
   --success-hover: #05b487;
   --text: #f2f2f2;
+  --inverted-text: #1c1b1b;
   --text-hover: #ffffff;
   --header-height-app: 5rem;
   --page-height-app: calc(100dvh - var(--header-height-app));

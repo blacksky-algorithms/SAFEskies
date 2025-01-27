@@ -16,6 +16,8 @@ export function AdminLogs({ user }: AdminLogsProps) {
     return null;
   }
 
+  console.log({ categories });
+
   return (
     <Logs
       logs={logs}

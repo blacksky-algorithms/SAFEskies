@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     // Check if the user has permission to promote moderators
     const hasPermission = await canPerformAction(
       setByUserDid,
-      'create_mod',
+      'mod_promote',
       feedUri
     );
 

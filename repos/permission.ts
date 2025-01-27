@@ -7,7 +7,8 @@ import {
 import { SupabaseInstance } from '@/repos/supabase';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 import { getBulkProfileDetails } from '@/repos/profile';
-import { createLog } from './logs';
+import { createModerationLog } from '@/repos/logs';
+import { ModAction } from '@/lib/types/moderation';
 
 export const setFeedRole = async (
   targetUserDid: string,
@@ -18,7 +19,7 @@ export const setFeedRole = async (
 ): Promise<boolean> => {
   const canSetRole = await canPerformAction(
     setByUserDid,
-    'create_mod',
+    'mod_promote',
     feedUri
   );
 
@@ -45,7 +46,7 @@ export const setFeedRole = async (
       return false;
     }
 
-    await createLog({
+    await createModerationLog({
       feed_uri: feedUri,
       performed_by: setByUserDid,
       action: role === 'mod' ? 'mod_promote' : 'mod_demote', // TODO: Extend to all actions
@@ -76,7 +77,7 @@ export const getFeedRole = async (
 
 export const canPerformAction = async (
   userDid: string,
-  action: 'create_mod' | 'remove_mod' | 'delete_post' | 'ban_user',
+  action: ModAction,
   feedUri: string
 ): Promise<boolean> => {
   if (!userDid) return false;

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     // Check if the user has permission to demote moderators
     const hasPermission = await canPerformAction(
       setByUserDid,
-      'remove_mod',
+      'mod_demote',
       feedUri
     );
 

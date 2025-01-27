@@ -17,15 +17,28 @@ import cc from 'classcat';
 export const Modal = ({
   id,
   title,
+  subtitle,
   children,
   size = 'medium',
   className = '',
   onClose,
   noContentPadding,
+  fullWidthMobile,
+  showBackButton,
 }: ModalProps) => {
-  const { isOpen, closeModalInstance, registerModal, unregisterModal } =
-    useModal();
+  const {
+    isOpen,
+    closeModalInstance,
+    registerModal,
+    unregisterModal,
+    areModalsStacking,
+  } = useModal();
   const isMounted = useRef(false);
+
+  const derivedShowBackButton =
+    areModalsStacking && showBackButton !== false
+      ? true
+      : showBackButton || false;
 
   useEffect(() => {
     isMounted.current = true;
@@ -37,9 +50,9 @@ export const Modal = ({
   }, [id, registerModal, unregisterModal]);
 
   const sizeClasses = {
-    small: 'max-w-sm',
-    medium: 'max-w-md',
-    large: 'max-w-2xl',
+    small: 'w-full max-w-sm',
+    medium: 'w-full max-w-md',
+    large: 'w-full max-w-2xl',
     full: 'w-screen h-screen max-w-screen max-h-screen',
   };
 
@@ -62,28 +75,40 @@ export const Modal = ({
         </TransitionChild>
         <div
           className={cc([
-            'fixed inset-0 flex items-center justify-center',
-            { 'p-4': size !== 'full' },
+            'fixed inset-0 flex justify-center',
+            { 'p-4': size !== 'full' && !fullWidthMobile },
+            { 'tablet:p-4': size !== 'full' && fullWidthMobile },
+            { 'items-end tablet:items-center': fullWidthMobile },
+            { 'items-center': !fullWidthMobile },
           ])}
         >
           <TransitionChild>
             <DialogPanel
               className={cc([
-                'bg-app-background shadow-lg relative flex flex-col',
+                'bg-app-background shadow-lg relative flex flex-col w-full mx-auto',
                 {
-                  'w-screen h-screen rounded-none overflow-hidden':
+                  'w-screen h-screen rounded-none overflow-hidden p-4':
                     size === 'full',
-                  'p-6 rounded-lg overflow-y-auto': size !== 'full',
+                  'rounded-xl overflow-y-auto min-h-0 max-h-[80dvh]':
+                    size !== 'full',
                 },
                 sizeClasses[size],
                 className,
               ])}
             >
               <IconButton
-                className={cc([' p-2 h-12 w-12 self-end'])}
+                className={cc([
+                  'h-12 w-12 ',
+                  {
+                    'self-end': !derivedShowBackButton,
+                    'self-start': derivedShowBackButton,
+                    'mt-4 mr-4': size !== 'full' && !derivedShowBackButton,
+                    'mt-4': size !== 'full' && derivedShowBackButton,
+                  },
+                ])}
                 onClick={handleClose}
-                aria-label='Close modal'
-                icon='XMarkIcon'
+                aria-label={derivedShowBackButton ? 'Go back' : 'Close modal'}
+                icon={derivedShowBackButton ? 'ChevronLeftIcon' : 'XMarkIcon'}
               />
 
               <div
@@ -92,6 +117,7 @@ export const Modal = ({
                   'flex flex-col',
                   {
                     'px-6': size === 'full' && !noContentPadding,
+                    'p-6 ': size !== 'full',
                   },
                 ])}
               >
@@ -101,12 +127,20 @@ export const Modal = ({
                     className={cc([
                       'text-lg font-bold',
                       {
-                        'pt-6 mb-4': size === 'full',
-                        'mb-4': size !== 'full',
+                        'pt-6 pb-4': size === 'full',
+                        'pb-4': size !== 'full',
+                        'sticky -top-6 pt-2  bg-app-background z-10 ':
+                          fullWidthMobile,
                       },
                     ])}
                   >
                     {title}
+
+                    {subtitle ? (
+                      <p className='text-sm text-app-secondary pb-2   border-b border-app-border'>
+                        {subtitle}
+                      </p>
+                    ) : null}
                   </DialogTitle>
                 )}
                 <div

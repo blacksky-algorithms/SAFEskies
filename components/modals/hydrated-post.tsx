@@ -1,5 +1,6 @@
 'use client';
 
+import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { Modal } from '@/components/modals';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { Post } from '@/components/post';
@@ -13,6 +14,7 @@ import cc from 'classcat';
 interface HydratedPostModalProps {
   uri: string | null;
   onClose?: () => void;
+  onModAction: (post: PostView) => void;
 }
 
 interface HydratedPostState {
@@ -22,7 +24,11 @@ interface HydratedPostState {
   showReplies: Record<string, boolean>;
 }
 
-export const HydratedPostModal = ({ uri, onClose }: HydratedPostModalProps) => {
+export const HydratedPostModal = ({
+  uri,
+  onClose,
+  onModAction,
+}: HydratedPostModalProps) => {
   const [state, setState] = useState<HydratedPostState>({
     thread: null,
     isLoading: false,
@@ -87,7 +93,7 @@ export const HydratedPostModal = ({ uri, onClose }: HydratedPostModalProps) => {
             ])}
           >
             <div className='flex items-center justify-center flex-col'>
-              <Post post={reply.post} />
+              <Post post={reply.post} onModAction={onModAction} />
               {reply.replies && reply.replies?.length > 0 && (
                 <div>
                   <Button
@@ -120,6 +126,9 @@ export const HydratedPostModal = ({ uri, onClose }: HydratedPostModalProps) => {
       size='full'
       onClose={onClose}
       noContentPadding
+      data-testid='hydrated-post-modal'
+      data-uri={uri || ''}
+      showBackButton={false}
     >
       <div className='flex flex-col h-full pb-20 overflow-auto w-full bg-app-background'>
         {state.isLoading && (
@@ -131,7 +140,10 @@ export const HydratedPostModal = ({ uri, onClose }: HydratedPostModalProps) => {
         {state.thread && (
           <div className='max-w-2xl mx-auto w-full'>
             <div className='flex-1 overflow-auto '>
-              <Post post={state.thread.post} />
+              <Post
+                post={state.thread.post}
+                onModAction={() => onModAction(state.thread!.post)}
+              />
 
               {state.thread.replies?.map((reply) =>
                 renderReply(reply as ThreadViewPost)

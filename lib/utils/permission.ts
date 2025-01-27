@@ -1,17 +1,16 @@
-import { ActionType } from '@/lib/types/actions';
 import { FeedPermission, FeedRoleInfo, UserRole } from '@/lib/types/permission';
 import { ROLE_PRIORITY } from '../constants';
+import { ModAction } from '../types/moderation';
 
-export function canPerformWithRole(
-  role: UserRole,
-  action: ActionType
-): boolean {
+export function canPerformWithRole(role: UserRole, action: ModAction): boolean {
   switch (action) {
-    case 'create_mod':
-    case 'remove_mod':
+    case 'mod_promote':
+    case 'mod_demote':
+    case 'post_restore':
+    case 'user_unban':
+    case 'user_ban':
       return role === 'admin';
-    case 'delete_post':
-    case 'ban_user':
+    case 'post_delete':
       return role === 'mod' || role === 'admin';
     default:
       return false;
