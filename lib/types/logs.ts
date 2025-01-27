@@ -13,9 +13,7 @@ export interface BaseLog {
   // TODO: Add these fields to the LogEntry type
   ip_address?: string | null;
   user_agent?: string | null;
-}
-export interface AdminLog extends BaseLog {
-  performed_by_profile: ProfileViewBasic;
+  performed_by_profile?: ProfileViewBasic;
   target_user_profile?: ProfileViewBasic;
 }
 
@@ -40,9 +38,4 @@ export interface LogEntry {
   // TODO: Add these fields to the LogEntry type
   ip_address?: string | null;
   user_agent?: string | null;
-}
-
-export interface EnrichedLog extends LogEntry {
-  performed_by_profile: ProfileViewBasic;
-  target_user_profile?: ProfileViewBasic;
 }

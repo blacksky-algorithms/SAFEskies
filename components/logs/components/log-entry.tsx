@@ -35,7 +35,7 @@ export const LogEntry = ({ log }: { log: AdminLog }) => (
 
       {log.target_post_uri && (
         <p className='text-sm text-app-secondary truncate'>
-          Post: {log.target_post_uri}
+          Post DID: {log.target_post_uri}
         </p>
       )}
 

@@ -15,8 +15,14 @@ export async function POST(request: Request) {
     }
     const userDID = profile.did;
     // Parse the request body
-    const { targetedPostUri, reason, toServices, targetedUserDid, feedUri } =
-      await request.json();
+    const {
+      targetedPostUri,
+      reason,
+      toServices,
+      targetedUserDid,
+      feedUri,
+      feedName,
+    } = await request.json();
 
     // Validate the required fields
     if (
@@ -45,16 +51,24 @@ export async function POST(request: Request) {
         { status: 403 }
       );
     }
-
-    // Create the moderation log entry
-    const logEntry = {
+    const entryData = {
       target_post_uri: targetedPostUri,
       reason,
-      //   to_services: toServices,
-      target_user_did: targetedUserDid,
+      to_services: toServices.map(
+        (item: { label: string; value: string }) => item.value
+      ),
       feed_uri: feedUri,
-      performed_by: userDID,
       action: 'post_delete' as ModAction,
+    };
+    // Create the moderation log entry
+    const logEntry = {
+      ...entryData,
+      target_user_did: targetedUserDid,
+      performed_by: userDID,
+      metadata: {
+        ...entryData,
+        feed_name: feedName,
+      },
     };
 
     await createModerationLog(logEntry);

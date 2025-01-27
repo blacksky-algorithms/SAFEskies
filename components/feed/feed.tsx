@@ -133,6 +133,7 @@ export const Feed = ({ uri, onRefreshComplete }: FeedProps) => {
     toServices: { label: string; value: string }[];
     targetedUserDid: string;
     feedUri: string;
+    feedName: string;
   }) => {
     try {
       await fetch('/api/permissions/mod-event', {
@@ -181,6 +182,7 @@ export const Feed = ({ uri, onRefreshComplete }: FeedProps) => {
         toServices: reportData.toServices,
         targetedUserDid: postToModerate.post.author.did,
         feedUri: uri,
+        feedName: (postToModerate.post.feedName as string) || 'Unnamed Feed',
       };
 
       const res = await reportModerationEvent(payload);
