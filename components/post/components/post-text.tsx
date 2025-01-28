@@ -4,7 +4,11 @@ const renderTextSegment = (
   start: number,
   end: number,
   key: string
-) => <span key={key}>{text.slice(start, end)}</span>;
+) => (
+  <span className='overflow-hidden break-words whitespace-pre-wrap' key={key}>
+    {text.slice(start, end)}
+  </span>
+);
 
 const renderFacet = (
   facet: AppBskyRichtextFacet.Main,

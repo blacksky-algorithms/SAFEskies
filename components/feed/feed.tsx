@@ -243,12 +243,12 @@ export const Feed = ({ uri, onRefreshComplete, feedName }: FeedProps) => {
   return (
     <>
       <div className='max-h-page'>
-        <section className='flex flex-col items-center mx-auto tablet:px-10'>
+        <section className='flex flex-col items-center mx-auto tablet:px-10 '>
           <div
             ref={containerRef}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
-            className='overflow-y-auto h-screen flex flex-col items-center'
+            className='overflow-y-auto h-screen flex flex-col items-center '
           >
             <LiveRegion>
               {isRefreshing && <span>Refreshing...</span>}

@@ -34,6 +34,7 @@ export const SideDrawer = ({ user, highestRole }: Props) => {
         </span>
       }
       size='full'
+      noContentPadding
     >
       <div className='flex justify-between flex-col h-full'>
         <SideDrawerContent user={user} highestRole={highestRole} />
