@@ -35,12 +35,19 @@ export const Logs = ({
   logs: Log[];
 }) => {
   const { toast } = useToast();
+  const allLogs = logs.filter((log) => {
+    if (isAdmin) {
+      return true;
+    } else {
+      return !['mod_promote', 'mod_demote'].includes(log.action);
+    }
+  });
   const categories = {
-    all: logs,
-    posts: logs.filter((postLog) =>
+    all: allLogs.filter((log) => log.action !== 'user_ban'),
+    posts: allLogs.filter((postLog) =>
       ['post_delete', 'post_restore'].includes(postLog.action)
     ),
-    bans: logs.filter((banLog) =>
+    bans: allLogs.filter((banLog) =>
       ['user_ban', 'user_unban'].includes(banLog.action)
     ),
   };

@@ -20,6 +20,11 @@ export const ModSideDrawerContent = ({
         </h2>
         <ul className='space-y-1'>
           <SideDrawerLink label='Home' href='/' onClick={handleLinkClick} />
+          <SideDrawerLink
+            label='Logs'
+            href='/mod/logs'
+            onClick={handleLinkClick}
+          />
         </ul>
       </div>
     </nav>
