@@ -15,9 +15,11 @@ interface TextRecord {
 export const Post = ({
   post,
   onModAction,
+  showModMenu,
 }: {
   post: PostView;
   onModAction: (post: PostView) => void;
+  showModMenu: boolean;
 }) => {
   const { record, author, embed } = post;
   const textRecord = record as TextRecord;
@@ -33,7 +35,11 @@ export const Post = ({
 
           <EmbedRenderer content={embed} labels={post.labels} />
         </div>
-        <PostFooter showModMenu={true} post={post} onModAction={onModAction} />
+        <PostFooter
+          showModMenu={showModMenu}
+          post={post}
+          onModAction={onModAction}
+        />
       </article>
     </>
   );

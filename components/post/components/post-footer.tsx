@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import * as HeroIcons from '@heroicons/react/24/outline';
 import { Icon } from '@/components/icon';
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
@@ -18,15 +18,12 @@ export const PostFooter = (props: Props) => {
   const { openModalInstance } = useModal();
 
   // create a function that calculates the number of reposts and quotes. Once the number reaches the thoushads it should be displayed as 1k, 2.3k, 3k, etc.
-  const formatCount = useCallback(
-    (count: number) => {
-      if (count < 1000) {
-        return count;
-      }
-      return `${Math.floor(count / 1000)}k`;
-    },
-    [post]
-  );
+  const formatCount = (count: number) => {
+    if (count < 1000) {
+      return count;
+    }
+    return `${Math.floor(count / 1000)}k`;
+  };
 
   return (
     <>

@@ -15,6 +15,7 @@ interface HydratedPostModalProps {
   uri: string | null;
   onClose?: () => void;
   onModAction: (post: PostView) => void;
+  showModMenu: boolean;
 }
 
 interface HydratedPostState {
@@ -28,6 +29,7 @@ export const HydratedPostModal = ({
   uri,
   onClose,
   onModAction,
+  showModMenu,
 }: HydratedPostModalProps) => {
   const [state, setState] = useState<HydratedPostState>({
     thread: null,
@@ -93,7 +95,11 @@ export const HydratedPostModal = ({
             ])}
           >
             <div className='flex items-center justify-center flex-col'>
-              <Post post={reply.post} onModAction={onModAction} />
+              <Post
+                post={reply.post}
+                onModAction={onModAction}
+                showModMenu={showModMenu}
+              />
               {reply.replies && reply.replies?.length > 0 && (
                 <div>
                   <Button
@@ -143,6 +149,7 @@ export const HydratedPostModal = ({
               <Post
                 post={state.thread.post}
                 onModAction={() => onModAction(state.thread!.post)}
+                showModMenu={showModMenu}
               />
 
               {state.thread.replies?.map((reply) =>

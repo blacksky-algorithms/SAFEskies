@@ -16,6 +16,8 @@ import { ModMenuModal } from '../modals/mod-menu';
 import { ReportPostModal } from '../modals/report-post';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useModeration } from '@/hooks/useModeration';
+import { useProfileData } from '@/hooks/useProfileData';
+import { canPerformAction } from '@/repos/permission';
 
 interface FeedProps {
   uri: string;
@@ -38,8 +40,26 @@ export const Feed = ({ uri, onRefreshComplete, feedName }: FeedProps) => {
       },
     });
 
+  const { profile, isLoading } = useProfileData();
   const { openModalInstance, closeModalInstance } = useModal();
   const [viewedPostUri, setViewedPostUri] = useState<string | null>(null);
+  const [showModMenu, setShowModMenu] = useState(false);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      if (!profile || isLoading) {
+        setShowModMenu(false);
+        return;
+      }
+      const hasModPermissions = await canPerformAction(
+        profile.did,
+        'mod_promote',
+        uri
+      );
+      setShowModMenu(hasModPermissions);
+    };
+    checkRole();
+  }, [uri, profile, isLoading]);
 
   const {
     reportData,
@@ -104,7 +124,11 @@ export const Feed = ({ uri, onRefreshComplete, feedName }: FeedProps) => {
                   className='w-full tablet:max-w-screen'
                   onClick={() => handlePostClick(feedPost.post)}
                 >
-                  <Post post={feedPost.post} onModAction={handleModAction} />
+                  <Post
+                    post={feedPost.post}
+                    onModAction={handleModAction}
+                    showModMenu={showModMenu}
+                  />
                 </li>
               ))}
             </ul>
@@ -134,6 +158,7 @@ export const Feed = ({ uri, onRefreshComplete, feedName }: FeedProps) => {
         uri={viewedPostUri}
         onClose={() => setViewedPostUri(null)}
         onModAction={handleModAction}
+        showModMenu={showModMenu}
       />
       <ModMenuModal
         onClose={onClose}
