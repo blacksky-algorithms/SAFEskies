@@ -26,7 +26,7 @@ export const Post = ({
     <>
       <article className='bg-app-background border border-gray-800 shadow-sm w-full mx-auto max-w-screen'>
         <div className={'p-3 shadow'}>
-          <PostHeader author={author} />
+          <PostHeader author={author} postIndexedAt={post.indexedAt} />
           {textRecord?.text && (
             <PostText text={textRecord.text} facets={textRecord.facets} />
           )}

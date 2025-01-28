@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import * as HeroIcons from '@heroicons/react/24/outline';
 import { Icon } from '@/components/icon';
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
@@ -17,49 +17,51 @@ export const PostFooter = (props: Props) => {
   const { showModMenu, post, onModAction } = props;
   const { openModalInstance } = useModal();
 
+  // create a function that calculates the number of reposts and quotes. Once the number reaches the thoushads it should be displayed as 1k, 2.3k, 3k, etc.
+  const formatCount = useCallback(
+    (count: number) => {
+      if (count < 1000) {
+        return count;
+      }
+      return `${Math.floor(count / 1000)}k`;
+    },
+    [post]
+  );
+
   return (
     <>
-      <footer className='flex p-4 justify-between items-center text-sm'>
-        <span>Posted on: {new Date(post.indexedAt).toLocaleDateString()}</span>
-        <div className='flex items-center space-x-4'>
-          <PostFooterIcon
-            icon='ChatBubbleLeftIcon'
-            count={post.replyCount || 0}
-            label='replies'
-            type={post?.replyCount || 0 > 0 ? 'solid' : 'outline'}
+      <footer className='flex py-2 px-8 justify-between items-center text-sm'>
+        <PostFooterIcon
+          icon='ChatBubbleLeftIcon'
+          count={formatCount(post.replyCount || 0)}
+          label='replies'
+          type={post?.replyCount || 0 > 0 ? 'solid' : 'outline'}
+        />
+        <PostFooterIcon
+          icon='ArrowPathRoundedSquareIcon'
+          count={formatCount((post.repostCount || 0) + (post.quoteCount || 0))}
+          label='reposts'
+        />
+        <PostFooterIcon
+          icon='HeartIcon'
+          count={formatCount(post.likeCount || 0)}
+          label='likes'
+          type={post?.likeCount || 0 > 0 ? 'solid' : 'outline'}
+        />
+        {showModMenu ? (
+          <IconButton
+            icon='EllipsisHorizontalIcon'
+            aria-label='Post actions'
+            onClick={(e) => {
+              e.stopPropagation();
+              onModAction(post);
+              openModalInstance(MODAL_INSTANCE_IDS.MOD_MENU, true);
+            }}
+            size='sm'
+            className='h-5 w-5'
+            noPadding
           />
-          <PostFooterIcon
-            icon='ArrowPathRoundedSquareIcon'
-            count={post.repostCount || 0}
-            label='reposts'
-          />
-          <PostFooterIcon
-            icon='ChatBubbleLeftRightIcon'
-            count={post.quoteCount || 0}
-            label='quotes'
-            type={post?.quoteCount || 0 > 0 ? 'solid' : 'outline'}
-          />
-          <PostFooterIcon
-            icon='HeartIcon'
-            count={post.likeCount || 0}
-            label='likes'
-            type={post?.likeCount || 0 > 0 ? 'solid' : 'outline'}
-          />
-          {showModMenu ? (
-            <IconButton
-              icon='EllipsisHorizontalIcon'
-              aria-label='Post actions'
-              onClick={(e) => {
-                e.stopPropagation();
-                onModAction(post);
-                openModalInstance(MODAL_INSTANCE_IDS.MOD_MENU, true);
-              }}
-              size='sm'
-              className='h-5 w-5'
-              noPadding
-            />
-          ) : null}
-        </div>
+        ) : null}
       </footer>
     </>
   );
@@ -73,7 +75,7 @@ const PostFooterIcon = ({
   type = 'outline',
 }: {
   icon: keyof typeof HeroIcons;
-  count: number;
+  count: number | string;
   label: string;
   type?: 'solid' | 'outline';
 }) => (
