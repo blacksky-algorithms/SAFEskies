@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { usePaginatedFeed } from '@/hooks/usePaginatedFeed';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
@@ -21,6 +21,7 @@ import {
   ModerationService,
 } from '@/lib/constants/moderation';
 import { ReasonType } from '@atproto/api/dist/client/types/com/atproto/moderation/defs';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 
 interface FeedProps {
   uri: string;
@@ -42,9 +43,16 @@ export const Feed = ({ uri, onRefreshComplete, feedName }: FeedProps) => {
       uri,
     });
 
+  const { containerRef, isRefreshing, handleTouchStart, handleTouchMove } =
+    usePullToRefresh({
+      onRefresh: async () => {
+        await refreshFeed();
+        onRefreshComplete?.();
+      },
+    });
+
   const { openModalInstance, closeModalInstance } = useModal();
   const { toast } = useToast();
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [viewedPostUri, setViewedPostUri] = useState<string | null>(null);
   const [isReportSubmitting, setIsReportSubmitting] = useState(false);
   const [reportData, setReportData] = useState<ReportDataState>({
@@ -53,7 +61,6 @@ export const Feed = ({ uri, onRefreshComplete, feedName }: FeedProps) => {
     toServices: [MODERATION_SERVICES[0]],
     moderatedPostUri: null,
   });
-  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (error) {
@@ -75,32 +82,6 @@ export const Feed = ({ uri, onRefreshComplete, feedName }: FeedProps) => {
     rootMargin: '150px',
     threshold: 0.1,
   });
-
-  const handlePullToRefresh = async () => {
-    if (isRefreshing) return;
-
-    setIsRefreshing(true);
-    try {
-      await refreshFeed();
-      onRefreshComplete?.();
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  const onTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    containerRef.current!.dataset.touchStartY = e.touches[0].clientY.toString();
-  };
-
-  const onTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    const touchStartY = parseFloat(
-      containerRef.current!.dataset.touchStartY || '0'
-    );
-    const deltaY = e.touches[0].clientY - touchStartY;
-    if (deltaY > 50 && containerRef.current?.scrollTop === 0) {
-      handlePullToRefresh();
-    }
-  };
 
   const handlePostClick = async (post: PostView) => {
     setViewedPostUri(post.uri);
@@ -246,8 +227,8 @@ export const Feed = ({ uri, onRefreshComplete, feedName }: FeedProps) => {
         <section className='flex flex-col items-center mx-auto tablet:px-10 '>
           <div
             ref={containerRef}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
             className='overflow-y-auto h-screen flex flex-col items-center '
           >
             <LiveRegion>
