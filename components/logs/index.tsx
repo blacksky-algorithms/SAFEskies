@@ -81,7 +81,7 @@ export const Logs = ({
       });
     }
 
-    return <Tabs tabs={tabs} />;
+    return <Tabs data={tabs} />;
   };
 
   return (

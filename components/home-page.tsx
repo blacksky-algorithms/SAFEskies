@@ -2,9 +2,8 @@
 
 import { Feed } from '@/components/feed/feed';
 import { Tabs } from '@/components/tab/tab';
-import cc from 'classcat';
-import { useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import cc from 'classcat';
 
 interface Props {
   feeds: {
@@ -20,11 +19,11 @@ export const HomePage = ({ feeds }: Props) => {
   const searchParams = useSearchParams();
   const uri = searchParams.get('uri');
   const activeTab = feeds.findIndex((feed) => feed.uri === uri) || 0;
-  const tabRef = useRef<number | null>(null);
 
   const tabs = feeds.map((feed, index) => ({
     title: (
       <div
+        key={feed.uri}
         className={cc([
           'flex items-center gap-2',
           { 'justify-center ': feeds.length === 1 },
@@ -51,13 +50,12 @@ export const HomePage = ({ feeds }: Props) => {
   const handleTabChange = (index: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('uri', feeds[index].uri);
-    tabRef.current = index;
     router.push(`?${params.toString()}`);
   };
 
   return (
     <div className='container mx-auto p-4'>
-      <Tabs tabs={tabs} activeTab={activeTab} onTabChange={handleTabChange} />
+      <Tabs data={tabs} activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
   );
 };
