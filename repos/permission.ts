@@ -78,9 +78,9 @@ export const getFeedRole = async (
 export const canPerformAction = async (
   userDid: string,
   action: ModAction,
-  feedUri: string
+  feedUri: string | null
 ): Promise<boolean> => {
-  if (!userDid) return false;
+  if (!userDid || !feedUri) return false;
   const feedRole = await getFeedRole(userDid, feedUri);
 
   return canPerformWithRole(feedRole, action);

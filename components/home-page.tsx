@@ -3,7 +3,8 @@
 import { Feed } from '@/components/feed/feed';
 import { Tabs } from '@/components/tab/tab';
 import cc from 'classcat';
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 interface Props {
   feeds: {
@@ -15,8 +16,11 @@ interface Props {
 }
 
 export const HomePage = ({ feeds }: Props) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const uri = searchParams.get('uri');
+  const activeTab = feeds.findIndex((feed) => feed.uri === uri) || 0;
   const tabRef = useRef<number | null>(null);
-  const [activeTab, setActiveTab] = useState<number>(tabRef.current ?? 0);
 
   const tabs = feeds.map((feed, index) => ({
     title: (
@@ -41,23 +45,19 @@ export const HomePage = ({ feeds }: Props) => {
         </span>
       </div>
     ),
-    TabContent: (
-      <Feed
-        uri={feed.uri}
-        key={feed.uri}
-        onRefreshComplete={() => setActiveTab(index)}
-        feedName={feed.displayName}
-      />
-    ),
+    TabContent: <Feed key={`feed-${index}`} feedName={feed.displayName} />,
   }));
+
+  const handleTabChange = (index: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('uri', feeds[index].uri);
+    tabRef.current = index;
+    router.push(`?${params.toString()}`);
+  };
 
   return (
     <div className='container mx-auto p-4'>
-      <Tabs
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={(index) => setActiveTab(index)}
-      />
+      <Tabs tabs={tabs} activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
   );
 };

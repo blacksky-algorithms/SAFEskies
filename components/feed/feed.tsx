@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { usePaginatedFeed } from '@/hooks/usePaginatedFeed';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
@@ -20,12 +21,13 @@ import { useProfileData } from '@/hooks/useProfileData';
 import { canPerformAction } from '@/repos/permission';
 
 interface FeedProps {
-  uri: string;
   onRefreshComplete?: () => void;
   feedName: string | undefined;
 }
 
-export const Feed = ({ uri, onRefreshComplete, feedName }: FeedProps) => {
+export const Feed = ({ onRefreshComplete, feedName }: FeedProps) => {
+  const searchParams = useSearchParams();
+  const uri = searchParams.get('uri');
   const { feed, error, isFetching, hasNextPage, fetchNextPage, refreshFeed } =
     usePaginatedFeed({
       limit: 10,
@@ -70,7 +72,7 @@ export const Feed = ({ uri, onRefreshComplete, feedName }: FeedProps) => {
     handleReportToChange,
     isModServiceChecked,
     onClose,
-  } = useModeration({ feedUri: uri, feedName, feed });
+  } = useModeration({ feedUri: uri!, feedName, feed });
 
   useEffect(() => {
     if (error) {
