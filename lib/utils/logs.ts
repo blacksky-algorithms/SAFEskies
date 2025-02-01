@@ -6,6 +6,7 @@ export async function fetchLogs(
   feedUri?: string
 ): Promise<Log[]> {
   const params = new URLSearchParams({ type });
+  console.log('filters', { filters });
 
   if (type === 'feed' && feedUri) {
     params.set('feedUri', feedUri);

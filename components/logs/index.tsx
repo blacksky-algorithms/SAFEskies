@@ -20,7 +20,6 @@ export const Logs = ({
   filters,
   updateFilter,
   clearFilters,
-  isAdmin = false,
   logs = [],
 }: {
   targetedProfile?: ProfileViewBasic;
@@ -31,27 +30,20 @@ export const Logs = ({
     filters: Partial<ReturnType<typeof useLogs>['filters']>
   ) => void;
   clearFilters: () => void;
-  isAdmin?: boolean;
   logs: Log[];
 }) => {
   const { toast } = useToast();
-  const allLogs = logs.filter((log) => {
-    if (isAdmin) {
-      return true;
-    } else {
-      return !['mod_promote', 'mod_demote'].includes(log.action);
-    }
-  });
+
+  // Organize logs into categories
   const categories = {
-    all: allLogs.filter((log) => log.action !== 'user_ban'),
-    posts: allLogs.filter((postLog) =>
-      ['post_delete', 'post_restore'].includes(postLog.action)
+    all: logs.filter((log) => log.action !== 'user_ban'),
+    posts: logs.filter((log) =>
+      ['post_delete', 'post_restore'].includes(log.action)
     ),
-    bans: allLogs.filter((banLog) =>
-      ['user_ban', 'user_unban'].includes(banLog.action)
-    ),
+    bans: logs.filter((log) => ['user_ban', 'user_unban'].includes(log.action)),
   };
 
+  // Tab rendering logic
   const renderTabs = () => {
     const tabs = Object.entries(categories).map(([key, logs]) => ({
       title: <>{key.charAt(0).toUpperCase() + key.slice(1)}</>,
@@ -59,19 +51,21 @@ export const Logs = ({
         logs.length === 0 ? (
           <p className='text-app-secondary text-center py-4'>No logs found</p>
         ) : (
-          <div className='px-4  h-full overflow-auto max-h-page pt-4 pb-56'>
+          <div className='px-4 h-full overflow-auto max-h-page pt-4 pb-56'>
             {logs.map((log) => (
               <LogEntry key={log.id} log={log} />
             ))}
           </div>
         ),
     }));
-    if (isLoading)
+
+    if (isLoading) {
       return (
         <div className='flex items-center justify-center p-20 h-full'>
           <LoadingSpinner />
         </div>
       );
+    }
 
     if (error) {
       toast({
@@ -87,13 +81,13 @@ export const Logs = ({
   return (
     <>
       <div className='grid grid-cols-1 gap-4 md:grid-cols-3 h-full'>
-        <div className='col-span-2 '>
+        <div className='col-span-2'>
           <LogsWrapper targetedProfile={targetedProfile} />
           {renderTabs()}
         </div>
         <div className='hidden tablet:flex flex-col space-y-4 p-4 border-l border-l-app-border'>
           <LogFilters
-            filterByMod={isAdmin && !targetedProfile}
+            filterByMod={!targetedProfile}
             filters={filters}
             updateFilter={updateFilter}
             clearFilters={clearFilters}
@@ -107,7 +101,7 @@ export const Logs = ({
       >
         <div className='flex flex-col space-y-4 p-4 overflow-auto max-h-page'>
           <LogFilters
-            filterByMod={isAdmin && !targetedProfile}
+            filterByMod={!targetedProfile}
             filters={filters}
             updateFilter={updateFilter}
             clearFilters={clearFilters}

@@ -4,10 +4,24 @@ import { fetchLogs } from '@/lib/utils/logs';
 
 type FilterUpdate = Partial<Pick<LogFilters, keyof LogFilters>>;
 
-export function useLogs(type: 'admin' | 'feed' = 'admin', feedUri?: string) {
+export function useLogs({
+  uri,
+  targetUser,
+  performedBy,
+  sortBy = 'descending',
+}: {
+  uri?: string;
+  targetUser?: string;
+  performedBy?: string;
+  sortBy?: 'ascending' | 'descending';
+}) {
   const [filters, setFilters] = useState<LogFilters>({
-    sortBy: 'descending',
+    sortBy,
+    feedUri: uri,
+    targetUser: targetUser || undefined,
+    performedBy: performedBy || undefined,
   });
+  console.log('filters', filters);
   const [state, setState] = useState<{
     logs: Log[];
     isLoading: boolean;
@@ -27,8 +41,14 @@ export function useLogs(type: 'admin' | 'feed' = 'admin', feedUri?: string) {
   };
 
   const clearFilters = () => {
-    setFilters({ sortBy: 'descending' });
-    filtersRef.current = { sortBy: 'descending' };
+    const initialFilters = {
+      sortBy,
+      feedUri: uri,
+      targetUser: targetUser || undefined,
+      performedBy: performedBy || undefined,
+    };
+    setFilters(initialFilters);
+    filtersRef.current = initialFilters;
   };
 
   useEffect(() => {
@@ -37,7 +57,7 @@ export function useLogs(type: 'admin' | 'feed' = 'admin', feedUri?: string) {
     const fetchData = async () => {
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
-        const logs = await fetchLogs(filtersRef.current, type, feedUri);
+        const logs = await fetchLogs(filtersRef.current);
 
         if (isMounted) {
           setState({
@@ -63,7 +83,7 @@ export function useLogs(type: 'admin' | 'feed' = 'admin', feedUri?: string) {
     return () => {
       isMounted = false;
     };
-  }, [filters, type, feedUri]);
+  }, [filters]);
 
   return {
     ...state,
