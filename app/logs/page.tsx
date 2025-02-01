@@ -7,5 +7,5 @@ export default async function Page() {
     return null;
   }
 
-  return <Logs />;
+  return <Logs user={user} />;
 }
