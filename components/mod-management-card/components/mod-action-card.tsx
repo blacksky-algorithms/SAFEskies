@@ -44,7 +44,7 @@ export const ModActionCard = ({
         <div>
           <Link
             className='text-app-text hover:text-app-text-hover focus:underline bg-transparent'
-            href={`/admin/mods/logs/?modDID=${moderator.did}&feedUri=${feedUri}`}
+            href={`/logs?uri=${feedUri}&performedBy=${moderator.did}`}
           >
             View Logs
           </Link>

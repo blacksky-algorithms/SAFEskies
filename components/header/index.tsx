@@ -18,8 +18,11 @@ export const Header = ({
     return (
       <header className='w-full px-4 py-3 flex items-center justify-between'>
         <h1 className='text-lg font-bold'>
-          <Link href='/'>OnlyFeeds</Link>
+          <Link href='/'>SAFEsky</Link>
         </h1>
+        <p className='hidden tablet:block text-sm'>
+          Software Against A Fearful Environment
+        </p>
         {children}
       </header>
     );
@@ -28,7 +31,10 @@ export const Header = ({
   return (
     <header className='w-full px-4 py-3 flex items-center justify-between'>
       <h1 className='text-lg font-bold'>
-        <Link href='/'>OnlyFeeds</Link>
+        <Link href='/'>SAFEsky</Link>
+        <p className='hidden tablet:block text-sm'>
+          Software Against A Fearful Environment
+        </p>
       </h1>
       {children}
       <div className='flex items-center space-x-4'>

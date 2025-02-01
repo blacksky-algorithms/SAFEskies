@@ -1,27 +1,20 @@
 import { Select } from '@/components/input/select';
-import { useModal } from '@/contexts/modal-context';
-import { MODAL_INSTANCE_IDS } from '@/enums/modals';
-import { useLogs } from '@/hooks/useLogs';
-import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { useEffect, useState } from 'react';
+import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
 interface Props {
-  filters: ReturnType<typeof useLogs>['filters'];
-  updateFilter: (
-    filters: Partial<ReturnType<typeof useLogs>['filters']>
-  ) => void;
+  performedBy: string | null;
+  updateFilter: (filters: { performedBy: string | null }) => void;
 }
 
-export const FilterByModInput = ({ filters, updateFilter }: Props) => {
-  const { closeModalInstance, isOpen } = useModal();
-  const isFiltersModalOpen = isOpen(MODAL_INSTANCE_IDS.LOG_FILTERS);
+export const FilterByModInput = ({ updateFilter, performedBy }: Props) => {
   const [state, setState] = useState<{
     mods: ProfileViewBasic[];
     error: string | null;
   }>({ mods: [], error: null });
 
   useEffect(() => {
-    async function loadModerators() {
+    const loadModerators = async () => {
       try {
         const response = await fetch('/api/moderators');
         if (!response.ok) {
@@ -39,22 +32,24 @@ export const FilterByModInput = ({ filters, updateFilter }: Props) => {
               : 'Failed to fetch moderators',
         });
       }
-    }
+    };
 
     loadModerators();
   }, []);
 
+  console.log({ state });
+  if (!state.mods.length) {
+    return null;
+  }
+
   return (
     <Select
       id='performedBy'
-      label='Filter By Actor'
-      value={filters.performedBy || ''}
-      onChange={(performedBy) => {
-        updateFilter({ performedBy });
-        if (isFiltersModalOpen) {
-          closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
-        }
-      }}
+      label='Filter By Mod Actor'
+      value={performedBy || ''}
+      onChange={(performedBy) =>
+        updateFilter({ performedBy: performedBy || null })
+      }
       options={[
         { label: 'All Actors', value: '' },
         ...state.mods.map((mod) => ({

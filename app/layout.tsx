@@ -9,7 +9,7 @@ import { getHighestRoleForUser } from '@/repos/permission';
 import { getProfile } from '@/repos/profile';
 
 export const metadata: Metadata = {
-  title: 'OnlyFeeds',
+  title: 'SAFEsky',
 };
 
 export default async function RootLayout({

@@ -1,4 +1,4 @@
-import { AdminLogs } from '@/components/admin-logs';
+import { Logs } from '@/components/logs';
 import { getProfile } from '@/repos/profile';
 
 export default async function Page() {
@@ -6,5 +6,6 @@ export default async function Page() {
   if (!user) {
     return null;
   }
-  return <AdminLogs user={user} />;
+
+  return <Logs />;
 }

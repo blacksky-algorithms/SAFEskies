@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { User } from '@/lib/types/user';
 import { SideDrawerLink } from '../components/side-drawer-link';
-import { canPerformWithRole } from '@/lib/utils/permission';
+import { getLogsByFeedLinks } from '@/lib/utils/logs';
 
 interface AdminSideDrawerContentProps {
   user: User | null;
@@ -12,24 +12,7 @@ export const AdminSideDrawerContent = ({
   user,
   handleLinkClick,
 }: AdminSideDrawerContentProps) => {
-  const logsByFeedLinks = useMemo(() => {
-    if (!user) return [];
-    return Object.values(user.rolesByFeed).reduce(
-      (
-        acc: { label: string; href: string }[],
-        { displayName, feedUri, role }
-      ) => {
-        if (canPerformWithRole(role, 'user_ban')) {
-          acc.push({
-            label: displayName,
-            href: `/logs/feed/${encodeURIComponent(feedUri)}`,
-          });
-        }
-        return acc;
-      },
-      []
-    );
-  }, [user?.rolesByFeed]);
+  const logsByFeedLinks = useMemo(() => getLogsByFeedLinks(user), [user]);
 
   if (!user) return null;
 
@@ -46,8 +29,7 @@ export const AdminSideDrawerContent = ({
         />
         {logsByFeedLinks.length > 0 ? (
           <SideDrawerLink
-            label='Logs'
-            href='/admin/logs'
+            label='Feed Logs'
             onClick={handleLinkClick}
             nestedLinks={logsByFeedLinks}
           />

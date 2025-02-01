@@ -1,27 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Log, LogFilters } from '@/lib/types/logs';
+import { ModAction } from '@/lib/types/moderation';
 import { fetchLogs } from '@/lib/utils/logs';
+import { useSearchParams } from 'next/navigation';
 
-type FilterUpdate = Partial<Pick<LogFilters, keyof LogFilters>>;
+export function useLogs() {
+  const searchParams = useSearchParams();
 
-export function useLogs({
-  uri,
-  targetUser,
-  performedBy,
-  sortBy = 'descending',
-}: {
-  uri?: string;
-  targetUser?: string;
-  performedBy?: string;
-  sortBy?: 'ascending' | 'descending';
-}) {
-  const [filters, setFilters] = useState<LogFilters>({
-    sortBy,
-    feedUri: uri,
-    targetUser: targetUser || undefined,
-    performedBy: performedBy || undefined,
-  });
-  console.log('filters', filters);
   const [state, setState] = useState<{
     logs: Log[];
     isLoading: boolean;
@@ -32,63 +17,43 @@ export function useLogs({
     error: null,
   });
 
-  const filtersRef = useRef(filters);
+  // Helper to construct the filters object from search params
+  const getFiltersFromParams = (): LogFilters => {
+    const params = Object.fromEntries(searchParams.entries());
 
-  const updateStateAndRef = (newFilter: FilterUpdate) => {
-    const updatedState = { ...filters, ...newFilter };
-    setFilters(updatedState);
-    filtersRef.current = updatedState;
-  };
-
-  const clearFilters = () => {
-    const initialFilters = {
-      sortBy,
-      feedUri: uri,
-      targetUser: targetUser || undefined,
-      performedBy: performedBy || undefined,
+    return {
+      action: (params.action as ModAction) || null,
+      performedBy: params.performedBy,
+      targetUser: params.targetUser,
+      targetPost: params.targetPost,
+      sortBy: (params.sortBy as 'ascending' | 'descending') || 'descending',
+      dateRange:
+        params.fromDate && params.toDate
+          ? { fromDate: params.fromDate, toDate: params.toDate }
+          : undefined,
+      feedUri: params.uri,
     };
-    setFilters(initialFilters);
-    filtersRef.current = initialFilters;
   };
 
   useEffect(() => {
-    let isMounted = true;
-
     const fetchData = async () => {
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
-        const logs = await fetchLogs(filtersRef.current);
 
-        if (isMounted) {
-          setState({
-            logs,
-            isLoading: false,
-            error: null,
-          });
-        }
+        const filters = getFiltersFromParams();
+        const logs = await fetchLogs(filters);
+
+        setState({ logs, isLoading: false, error: null });
       } catch (err) {
-        console.error(err);
-        if (isMounted) {
-          setState({
-            logs: [],
-            isLoading: false,
-            error: 'Failed to load moderation logs',
-          });
-        }
+        console.error('Error fetching logs:', err);
+        setState({ logs: [], isLoading: false, error: 'Failed to fetch logs' });
       }
     };
 
     fetchData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [filters]);
+  }, [searchParams]);
 
   return {
     ...state,
-    filters,
-    updateFilter: updateStateAndRef,
-    clearFilters,
   };
 }
