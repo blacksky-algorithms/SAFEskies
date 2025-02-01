@@ -29,7 +29,7 @@ export const AdminSideDrawerContent = ({
         />
         {logsByFeedLinks.length > 0 ? (
           <SideDrawerLink
-            label='Feed Logs'
+            label='Logs'
             onClick={handleLinkClick}
             nestedLinks={logsByFeedLinks}
           />

@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { Tabs } from '@/components/tab/tab';
 import { useLogs } from '@/hooks/useLogs';
-import { LogEntry } from './components/log-entry';
 import { LogFilters } from './components/log-filters';
 import { LogsWrapper } from './components/logs-header';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
@@ -12,6 +11,8 @@ import { Modal } from '@/components/modals';
 import { User } from '@/lib/types/user';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getLogsByFeedLinks } from '@/lib/utils/logs';
+import { Log } from '@/lib/types/logs';
+import { LogEntry } from './components/log-entry';
 import cc from 'classcat';
 
 export const Logs = ({ user }: { user: User }) => {
@@ -47,6 +48,14 @@ export const Logs = ({ user }: { user: User }) => {
     router.push(selectedTab.href);
   };
 
+  const isLogAdmin = (log: Log) => {
+    if (user.rolesByFeed[log.feed_uri].role === 'admin') {
+      return true;
+    }
+
+    return false;
+  };
+
   const tabs = tabsData.map((tab) => ({
     title: (
       <div
@@ -62,7 +71,7 @@ export const Logs = ({ user }: { user: User }) => {
     TabContent: logs.length ? (
       <div className='px-4 h-full overflow-auto max-h-page pt-4 pb-56'>
         {logs.map((log) => (
-          <LogEntry key={log.id} log={log} />
+          <LogEntry key={log.id} log={log} isLogAdmin={isLogAdmin(log)} />
         ))}
       </div>
     ) : (
