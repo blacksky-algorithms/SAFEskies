@@ -1,6 +1,17 @@
 import { UserRole } from '@/lib/types/permission';
 import { buildFeedPermissions, determineUserRolesByFeed } from '../permission';
 
+jest.mock('@atproto/api', () => ({
+  ComAtprotoModerationDefs: {
+    REASONMISLEADING: 'misleading',
+    REASONSPAM: 'spam',
+    REASONSEXUAL: 'nsfw',
+    REASONRUDE: 'behavior',
+    REASONVIOLATION: 'illegal',
+    REASONOTHER: 'other',
+  },
+}));
+
 describe('buildFeedPermissions', () => {
   it('combines created feed permissions with existing mod permissions', () => {
     const userDid = 'user123';

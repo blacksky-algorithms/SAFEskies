@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server';
 import { getAllModeratorsForAdmin } from '@/repos/permission';
-import { getSession } from '@/repos/iron';
+
+import { getProfile } from '@/repos/profile';
 
 export async function GET() {
   try {
-    // Verify authentication
-    const session = await getSession();
-    if (!session.user) {
+    const user = await getProfile();
+
+    if (!user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const moderators = await getAllModeratorsForAdmin(session.user.did);
+    const moderators = await getAllModeratorsForAdmin(user.did);
     return NextResponse.json({ moderators });
   } catch (error) {
     console.error('Error fetching moderators:', error);

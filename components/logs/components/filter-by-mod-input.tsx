@@ -37,11 +37,6 @@ export const FilterByModInput = ({ updateFilter, performedBy }: Props) => {
     loadModerators();
   }, []);
 
-  console.log({ state });
-  if (!state.mods.length) {
-    return null;
-  }
-
   return (
     <Select
       id='performedBy'

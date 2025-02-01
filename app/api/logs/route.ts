@@ -1,24 +1,22 @@
 import { NextResponse } from 'next/server';
-import { getSession } from '@/repos/iron';
 import { getLogs } from '@/repos/logs';
 import { LogFilters } from '@/lib/types/logs';
 import { ModAction } from '@/lib/types/moderation';
-import { User } from '@/lib/types/user';
+import { userCanViewAdminActions } from '@/lib/utils/permission';
+import { ADMIN_ACTIONS } from '@/lib/constants/moderation';
+import { getProfile } from '@/repos/profile';
 
 export async function GET(request: Request) {
   try {
-    const session = await getSession();
-    const user = session.user as User;
+    const user = await getProfile();
 
     if (!user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const feedUri = searchParams.get('feedUri') || undefined;
-
     const filters: LogFilters = {
-      feedUri,
+      feedUri: searchParams.get('feedUri') || undefined,
       action: searchParams.get('action') as ModAction | null,
       performedBy: searchParams.get('performedBy') || undefined,
       targetUser: searchParams.get('targetUser') || undefined,
@@ -35,18 +33,15 @@ export async function GET(request: Request) {
           : undefined,
     };
 
-    // Check if the user has admin access to the feed URI
-    const shouldExcludeAdminActions =
-      feedUri && !userHasAdminAccess(user, feedUri);
+    // Determine if the user can view admin-level actions
+    const canViewAdminActions = userCanViewAdminActions(user);
 
     // Fetch logs
     let logs = await getLogs(filters);
 
-    // Filter out 'mod_promote' and 'mod_demote' if necessary
-    if (shouldExcludeAdminActions) {
-      logs = logs.filter(
-        (log) => log.action !== 'mod_promote' && log.action !== 'mod_demote'
-      );
+    // Filter out admin actions if the user lacks permission
+    if (!canViewAdminActions) {
+      logs = logs.filter((log) => !ADMIN_ACTIONS.includes(log.action));
     }
 
     return NextResponse.json({ logs });
@@ -57,12 +52,4 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
-}
-
-/**
- * Determines if the user has the 'admin' role for the given feed URI.
- */
-function userHasAdminAccess(user: User, feedUri: string): boolean {
-  const feedRoleInfo = user.rolesByFeed[feedUri];
-  return feedRoleInfo?.role === 'admin';
 }

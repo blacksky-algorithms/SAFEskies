@@ -2,7 +2,7 @@
 
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 import { Checkbox } from '../input/checkbox';
-import { PromoteModState } from '../promote-mod-form';
+import { PromoteModState } from '@/lib/types/moderation';
 
 interface FeedSelectorProps {
   feeds: Feed[];

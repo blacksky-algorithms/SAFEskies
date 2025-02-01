@@ -1,16 +1,19 @@
 import { FeedPermission, FeedRoleInfo, UserRole } from '@/lib/types/permission';
-import { ROLE_PRIORITY } from '../constants';
-import { ModAction } from '../types/moderation';
+import { ROLE_PRIORITY } from '@/lib/constants';
+import { ModAction } from '@/lib/types/moderation';
+import { ADMIN_ACTIONS } from '@/lib/constants/moderation';
+import { User } from '@/lib/types/user';
 
 export function canPerformWithRole(role: UserRole, action: ModAction): boolean {
   switch (action) {
     case 'mod_promote':
     case 'mod_demote':
-    case 'post_restore':
     case 'user_unban':
     case 'user_ban':
       return role === 'admin';
     case 'post_delete':
+      return role === 'mod' || role === 'admin';
+    case 'post_restore':
       return role === 'mod' || role === 'admin';
     default:
       return false;
@@ -130,3 +133,9 @@ export const determineUserRolesByFeed = (
 
   return rolesByFeed;
 };
+
+export function userCanViewAdminActions(user: User): boolean {
+  return Object.values(user.rolesByFeed).some((roleInfo) =>
+    ADMIN_ACTIONS.some((action) => canPerformWithRole(roleInfo.role, action))
+  );
+}

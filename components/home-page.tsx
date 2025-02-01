@@ -4,6 +4,7 @@ import { Feed } from '@/components/feed/feed';
 import { Tabs } from '@/components/tab/tab';
 import { useSearchParams, useRouter } from 'next/navigation';
 import cc from 'classcat';
+import { useEffect } from 'react';
 
 interface Props {
   feeds: {
@@ -19,6 +20,16 @@ export const HomePage = ({ feeds }: Props) => {
   const searchParams = useSearchParams();
   const uri = searchParams.get('uri');
   const activeTab = feeds.findIndex((feed) => feed.uri === uri) || 0;
+
+  useEffect(() => {
+    console.log('firing');
+    if (!uri) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('uri', feeds[0].uri);
+      router.push(`?${params.toString()}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uri]);
 
   const tabs = feeds.map((feed, index) => ({
     title: (

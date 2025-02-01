@@ -120,21 +120,19 @@ export const getProfile = async () => {
   try {
     const userDid = session.user.did;
 
-    // Get profile with potential updates
-    const profileData = await getProfileDetails(userDid);
-    if (!profileData) return null;
+    // Fetch the user's latest profile from Supabase and actor feeds in parallel
+    const [profileData, permissionsResponse, actorFeedsResponse] =
+      await Promise.all([
+        getProfileDetails(userDid),
+        SupabaseInstance.from('feed_permissions')
+          .select('feed_uri, feed_name, role')
+          .eq('user_did', userDid),
+        getActorFeeds(userDid),
+      ]);
 
-    // Fetch and sync feed data
-    const [permissionsResponse, actorFeedsResponse] = await Promise.all([
-      SupabaseInstance.from('feed_permissions')
-        .select('feed_uri, feed_name, role')
-        .eq('user_did', userDid),
-      getActorFeeds(userDid),
-    ]);
-
-    if (permissionsResponse.error) {
+    if (!profileData || permissionsResponse.error) {
       console.error(
-        'Error fetching feed permissions:',
+        'Error fetching profile or feed permissions:',
         permissionsResponse.error
       );
       return null;
@@ -142,19 +140,19 @@ export const getProfile = async () => {
 
     const createdFeeds = actorFeedsResponse?.feeds || [];
 
-    // Update feed permissions if needed
+    // Build and update feed permissions if necessary
     if (createdFeeds.length > 0) {
       const feedPermissions = buildFeedPermissions(
         userDid,
         createdFeeds,
         permissionsResponse.data || []
       );
-
       await SupabaseInstance.from('feed_permissions').upsert(feedPermissions, {
         onConflict: 'user_did,feed_uri',
       });
     }
 
+    // Determine and return roles by feed
     const feedRoles = determineUserRolesByFeed(
       permissionsResponse.data || [],
       createdFeeds
@@ -169,6 +167,7 @@ export const getProfile = async () => {
     return null;
   }
 };
+
 export const getBulkProfileDetails = async (
   userDids: string[]
 ): Promise<ProfileViewBasic[]> => {

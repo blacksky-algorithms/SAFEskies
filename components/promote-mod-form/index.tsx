@@ -12,14 +12,7 @@ import { LoadingSpinner } from '@/components/loading-spinner';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 import { useFeedRoles } from '@/hooks/useFeedRoles';
 import { usePermissions } from '@/hooks/usePermissions';
-
-export interface PromoteModState {
-  selectedUser: ProfileViewBasic | null;
-  selectedFeeds: Feed[];
-  disabledFeeds: string[];
-  isLoading: boolean;
-  error: string | null;
-}
+import { PromoteModState } from '@/lib/types/moderation';
 
 export const PromoteModForm = ({
   feeds,

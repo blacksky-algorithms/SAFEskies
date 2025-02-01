@@ -25,7 +25,7 @@ export const ModSideDrawerContent = ({
           <SideDrawerLink label='Home' href='/' onClick={handleLinkClick} />
           {logsByFeedLinks.length > 0 ? (
             <SideDrawerLink
-              label='Feed Logs'
+              label='Logs'
               onClick={handleLinkClick}
               nestedLinks={logsByFeedLinks}
             />

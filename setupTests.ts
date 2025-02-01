@@ -3,6 +3,18 @@ import { render as rtlRender } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { Providers } from '@/contexts';
 import { ReactNode, AwaitedReactNode, JSX } from 'react';
+
+jest.mock('@supabase/supabase-js', () => ({
+  createClient: jest.fn(() => ({
+    from: jest.fn(() => ({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockReturnThis(),
+      single: jest.fn(() => Promise.resolve({ data: {}, error: null })),
+    })),
+  })),
+}));
+
 expect.extend(toHaveNoViolations);
 
 let originalWarn: typeof console.warn;

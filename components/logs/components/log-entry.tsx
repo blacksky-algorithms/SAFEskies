@@ -15,10 +15,10 @@ const ActionLabel: Record<ModAction, string> = {
 
 export const LogEntry = ({
   log,
-  isLogAdmin,
+  canViewAdminActions,
 }: {
   log: Log;
-  isLogAdmin: boolean;
+  canViewAdminActions: boolean;
 }) => {
   return (
     <div className='rounded-lg border border-app-border bg-app-background shadow-sm mb-4'>
@@ -30,7 +30,7 @@ export const LogEntry = ({
           </span>
         </div>
 
-        {isLogAdmin && (
+        {canViewAdminActions && (
           <p className='text-sm text-app-secondary'>
             By: @{log.performed_by_profile.handle}
           </p>
