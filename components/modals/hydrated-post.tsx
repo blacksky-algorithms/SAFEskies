@@ -39,28 +39,24 @@ export const HydratedPostModal = ({
   });
 
   const fetchPostThread = useCallback(async () => {
-    if (!uri) {
-      return;
-    }
-    try {
-      const params = new URLSearchParams({
-        uri: uri || '',
-      });
+    if (!uri) return;
 
+    try {
+      const params = new URLSearchParams({ uri });
       const response = await fetch(`/api/post?${params}`);
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to fetch feed');
+        throw new Error(data.error || 'Failed to fetch post');
       }
 
       const data = await response.json();
-      setState((prev) => ({
-        ...prev,
+      setState({
         thread: data,
         isLoading: false,
         error: null,
-      }));
+        showReplies: {},
+      });
     } catch (error) {
       console.error('Error fetching post thread:', error);
     }
@@ -86,33 +82,24 @@ export const HydratedPostModal = ({
     return (
       <div key={reply.post.uri} className='w-full'>
         <div className='flex'>
-          <div
-            className={cc([
-              'flex-1',
-              {
-                'pl-4': depth > 0,
-              },
-            ])}
-          >
-            <div className='flex items-center justify-center flex-col'>
-              <Post
-                post={reply.post}
-                onModAction={onModAction}
-                showModMenu={showModMenu}
-              />
-              {reply.replies && reply.replies?.length > 0 && (
-                <div>
-                  <Button
-                    onClick={() => handleReplyToggle(reply.post.uri)}
-                    intent={VisualIntent.TextButton}
-                  >
-                    {isExpanded
-                      ? 'Hide replies'
-                      : `Show replies (${reply.replies.length})`}
-                  </Button>
-                </div>
-              )}
-            </div>
+          <div className={cc(['flex-1', { 'pl-4': depth > 0 }])}>
+            <Post
+              post={reply.post}
+              parentPost={(reply.parent?.post as PostView) || null}
+              rootPost={(reply.parent?.post as PostView) || null}
+              onModAction={onModAction}
+              showModMenu={showModMenu}
+            />
+            {reply.replies && reply.replies.length > 0 && (
+              <Button
+                onClick={() => handleReplyToggle(reply.post.uri)}
+                intent={VisualIntent.TextButton}
+              >
+                {isExpanded
+                  ? 'Hide replies'
+                  : `Show replies (${reply.replies.length})`}
+              </Button>
+            )}
             {isExpanded && (
               <div className='mt-2 w-full'>
                 {reply.replies?.map((subReply) =>
@@ -132,9 +119,6 @@ export const HydratedPostModal = ({
       size='full'
       onClose={onClose}
       noContentPadding
-      data-testid='hydrated-post-modal'
-      data-uri={uri || ''}
-      showBackButton={false}
     >
       <div className='flex flex-col h-full pb-20 overflow-auto w-full bg-app-background'>
         {state.isLoading && (
@@ -145,13 +129,14 @@ export const HydratedPostModal = ({
 
         {state.thread && (
           <div className='max-w-2xl mx-auto w-full'>
-            <div className='flex-1 overflow-auto '>
+            <div className='flex-1 overflow-auto'>
               <Post
                 post={state.thread.post}
-                onModAction={() => onModAction(state.thread!.post)}
+                parentPost={(state.thread.parent?.post as PostView) || null}
+                rootPost={(state.thread.parent?.post as PostView) || null}
+                onModAction={onModAction}
                 showModMenu={showModMenu}
               />
-
               {state.thread.replies?.map((reply) =>
                 renderReply(reply as ThreadViewPost)
               )}
