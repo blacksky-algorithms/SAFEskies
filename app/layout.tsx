@@ -9,7 +9,7 @@ import { getHighestRoleForUser } from '@/repos/permission';
 import { getProfile } from '@/repos/profile';
 
 export const metadata: Metadata = {
-  title: 'SAFEsky',
+  title: 'SAFEskies',
 };
 
 export default async function RootLayout({

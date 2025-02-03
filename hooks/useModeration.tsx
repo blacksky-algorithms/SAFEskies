@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, ChangeEvent } from 'react';
 import {
   FeedViewPost,
   PostView,
@@ -19,6 +19,7 @@ interface ReportDataState {
   reason: ReportOption | null;
   toServices: typeof MODERATION_SERVICES;
   moderatedPostUri: string | null;
+  additionalInfo: string;
 }
 
 interface UseModerationOptions {
@@ -40,6 +41,7 @@ export function useModeration({
     reason: null,
     toServices: [MODERATION_SERVICES[0]],
     moderatedPostUri: null,
+    additionalInfo: '',
   });
 
   const handleModAction = (post: PostView) => {
@@ -56,6 +58,14 @@ export function useModeration({
       reason,
     }));
     openModalInstance(MODAL_INSTANCE_IDS.REPORT_POST, true);
+  };
+
+  const handleAddtlInfoChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    console.log(event.target.value, { event });
+    setReportData((prev) => ({
+      ...prev,
+      additionalInfo: event.target.value,
+    }));
   };
 
   const reportModerationEvent = async (payload: {
@@ -177,6 +187,7 @@ export function useModeration({
     handleSelectReportReason,
     handleReportPost,
     handleReportToChange,
+    handleAddtlInfoChange,
     isModServiceChecked,
     onClose,
   };

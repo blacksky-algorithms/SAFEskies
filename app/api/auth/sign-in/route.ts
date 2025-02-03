@@ -12,8 +12,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const blueskyClient = BlueskyOAuthClient;
-    const url = await blueskyClient.authorize(handle);
+    const url = await BlueskyOAuthClient.authorize(handle);
 
     return NextResponse.json({ url: url.toString() });
   } catch (error) {

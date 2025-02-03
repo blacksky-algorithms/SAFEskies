@@ -47,6 +47,8 @@ export const Feed = ({ onRefreshComplete, feedName }: FeedProps) => {
   const [viewedPostUri, setViewedPostUri] = useState<string | null>(null);
   const [showModMenu, setShowModMenu] = useState(false);
 
+  console.log({ feed });
+
   useEffect(() => {
     const checkRole = async () => {
       if (!profile || isLoading) {
@@ -69,6 +71,7 @@ export const Feed = ({ onRefreshComplete, feedName }: FeedProps) => {
     handleModAction,
     handleSelectReportReason,
     handleReportPost,
+    handleAddtlInfoChange,
     handleReportToChange,
     isModServiceChecked,
     onClose,
@@ -120,19 +123,35 @@ export const Feed = ({ onRefreshComplete, feedName }: FeedProps) => {
             </LiveRegion>
 
             <ul className='w-screen tablet:max-w-screen-sm flex flex-col items-center'>
-              {feed.map((feedPost) => (
-                <li
-                  key={feedPost.post.cid}
-                  className='w-full tablet:max-w-screen'
-                  onClick={() => handlePostClick(feedPost.post)}
-                >
-                  <Post
-                    post={feedPost.post}
-                    onModAction={handleModAction}
-                    showModMenu={showModMenu}
-                  />
-                </li>
-              ))}
+              {feed.map((feedPost) => {
+                const { post, reply } = feedPost;
+
+                // Correctly extract parent and root
+                const parentPost = reply?.parent ?? null;
+                const rootPost = reply?.root ?? null;
+                const shouldRenderParentPost =
+                  parentPost &&
+                  rootPost &&
+                  (parentPost.uri !== rootPost.uri ||
+                    parentPost.cid !== rootPost.cid);
+                return (
+                  <li
+                    key={post.cid}
+                    className='w-full tablet:max-w-screen'
+                    onClick={() => handlePostClick(post)}
+                  >
+                    <Post
+                      post={post}
+                      parentPost={
+                        shouldRenderParentPost ? (parentPost as PostView) : null
+                      }
+                      rootPost={rootPost as PostView}
+                      onModAction={handleModAction}
+                      showModMenu={showModMenu}
+                    />
+                  </li>
+                );
+              })}
             </ul>
 
             {isFetching && !isRefreshing && (
@@ -174,6 +193,7 @@ export const Feed = ({ onRefreshComplete, feedName }: FeedProps) => {
         handleReportToChange={handleReportToChange}
         isModServiceChecked={isModServiceChecked}
         isDisabled={reportData.toServices.length === 0}
+        handleAddtlInfoChange={handleAddtlInfoChange}
       />
     </>
   );

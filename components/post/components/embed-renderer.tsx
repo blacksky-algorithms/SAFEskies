@@ -114,7 +114,7 @@ export const EmbedRenderer = ({
         );
 
         return (
-          <div className='transition-colors border-gray-800 rounded-lg p-4 gap-1.5 w-full flex flex-col'>
+          <div className='transition-colors border-gray-800 rounded-lg p-4 gap-1.5 max-w-full overflow-hidden flex flex-col'>
             <PostHeader
               author={record.author}
               isAuthorLabeled={isAuthorLabeled}

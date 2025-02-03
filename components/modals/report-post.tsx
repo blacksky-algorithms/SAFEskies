@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 import { Modal } from '@/components/modals';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import {
@@ -20,6 +20,7 @@ interface Props {
   onReport: () => void;
   reason: ReportOption | null;
   isReportSubmitting: boolean;
+  handleAddtlInfoChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
   handleReportToChange: (reportTo: ModerationService) => void;
   isModServiceChecked: (service: ModerationService) => boolean;
   isDisabled: boolean;
@@ -30,6 +31,7 @@ export const ReportPostModal = ({
   onReport,
   reason,
   isReportSubmitting,
+  handleAddtlInfoChange,
   handleReportToChange,
   isModServiceChecked,
   isDisabled,
@@ -87,6 +89,7 @@ export const ReportPostModal = ({
           id='additional report information'
           label='Optionally provide additional information below:'
           maxLength={300}
+          onChange={handleAddtlInfoChange}
         />
         <Button
           onClick={onReport}

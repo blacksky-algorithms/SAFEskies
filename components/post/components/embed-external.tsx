@@ -18,6 +18,7 @@ export const EmbedExternal = ({
       />
     );
   }
+
   // generally social cards
   return (
     <Link

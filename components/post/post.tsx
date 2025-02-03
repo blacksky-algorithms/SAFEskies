@@ -6,34 +6,88 @@ import { PostFooter } from './components/post-footer';
 import { PostHeader } from './components/post-header';
 import { PostText } from './components/post-text';
 import { EmbedRenderer } from './components/embed-renderer';
+import { Icon } from '@/components/icon';
+import cc from 'classcat';
 
 interface TextRecord {
   text: string;
   facets?: AppBskyRichtextFacet.Main[];
 }
 
-export const Post = ({
-  post,
-  onModAction,
-  showModMenu,
-}: {
+interface PostProps {
   post: PostView;
+  parentPost?: PostView | null;
+  rootPost?: PostView | null;
   onModAction: (post: PostView) => void;
   showModMenu: boolean;
-}) => {
-  const { record, author, embed } = post;
-  const textRecord = record as TextRecord;
+}
+
+export const Post = ({
+  post,
+  parentPost,
+  rootPost,
+  onModAction,
+  showModMenu,
+}: PostProps) => {
+  const renderThreadPost = (postData: PostView | null) => {
+    if (!postData) return null;
+    const { author, embed, indexedAt, record } = postData;
+    const textRecord = record as TextRecord;
+
+    return (
+      <div
+        className={cc([
+          'bg-app-background p-3 border-l border-r border-t border-gray-800 shadow-sm w-full mx-auto max-w-screen',
+        ])}
+      >
+        <PostHeader author={author} postIndexedAt={indexedAt} />
+        {textRecord?.text && (
+          <PostText text={textRecord.text} facets={textRecord.facets} />
+        )}
+        <EmbedRenderer content={embed} labels={postData.labels} />
+      </div>
+    );
+  };
 
   return (
-    <>
-      <article className='bg-app-background border border-gray-800 shadow-sm w-full mx-auto max-w-screen'>
-        <div className={'p-3 shadow'}>
-          <PostHeader author={author} postIndexedAt={post.indexedAt} />
-          {textRecord?.text && (
-            <PostText text={textRecord.text} facets={textRecord.facets} />
-          )}
+    <div className='w-full flex flex-col'>
+      {/* Render root and parent posts */}
+      {rootPost && renderThreadPost(rootPost)}
+      {parentPost &&
+        parentPost.uri !== rootPost?.uri &&
+        renderThreadPost(parentPost)}
 
-          <EmbedRenderer content={embed} labels={post.labels} />
+      {/* Replying to message before the current post */}
+
+      <article
+        className={cc([
+          'border-l border-r border-b border-gray-800 shadow-sm w-full mx-auto max-w-screen',
+
+          {
+            'px-3': !parentPost && !rootPost,
+            'px-10': parentPost || rootPost,
+            'border-b-none': parentPost || rootPost,
+          },
+        ])}
+      >
+        <div className='py-3 shadow'>
+          <PostHeader author={post.author} postIndexedAt={post.indexedAt} />
+          {parentPost && (
+            <div className='flex items-center space-x-2 justify-start text-gray-400 text-sm'>
+              <Icon size='sm' icon='ArrowUturnLeftIcon' />
+              <span className='text-gray-400'>
+                Reply to{' '}
+                <span className='text-gray-200 semi-bold'>
+                  {`@${parentPost.author?.displayName}` ||
+                    parentPost.author.handle}
+                </span>
+              </span>
+            </div>
+          )}
+          {(post.record as TextRecord)?.text && (
+            <PostText text={(post.record as TextRecord).text} />
+          )}
+          <EmbedRenderer content={post.embed} labels={post.labels} />
         </div>
         <PostFooter
           showModMenu={showModMenu}
@@ -41,6 +95,6 @@ export const Post = ({
           onModAction={onModAction}
         />
       </article>
-    </>
+    </div>
   );
 };
