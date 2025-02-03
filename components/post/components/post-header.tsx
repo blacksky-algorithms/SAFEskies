@@ -6,10 +6,12 @@ export const PostHeader = ({
   author,
   isAuthorLabeled,
   postIndexedAt,
+  id,
 }: {
   author: ProfileViewBasic;
   isAuthorLabeled?: boolean;
   postIndexedAt?: string;
+  id?: string;
 }) => {
   if (!author) return null;
   const formatPostedOn = () => {
@@ -31,7 +33,7 @@ export const PostHeader = ({
   };
 
   return (
-    <div className='flex items-center justify-between '>
+    <div id={id} className='flex items-center justify-between '>
       <div className='mb-2 flex items-center'>
         {author.avatar && (
           <OptimizedImage

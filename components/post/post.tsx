@@ -29,57 +29,64 @@ export const Post = ({
   onModAction,
   showModMenu,
 }: PostProps) => {
-  const renderThreadPost = (postData: PostView | null) => {
+  const renderThreadPost = (postData: PostView | null, id: string) => {
     if (!postData) return null;
     const { author, embed, indexedAt, record } = postData;
     const textRecord = record as TextRecord;
 
     return (
-      <div
+      <article
+        id={id}
+        aria-labelledby={`${id}-header`}
+        role='region'
         className={cc([
           'bg-app-background p-3 border-l border-r border-t border-gray-800 shadow-sm w-full mx-auto max-w-screen',
         ])}
       >
-        <PostHeader author={author} postIndexedAt={indexedAt} />
+        <PostHeader
+          author={author}
+          postIndexedAt={indexedAt}
+          id={`${id}-header`}
+        />
         {textRecord?.text && (
           <PostText text={textRecord.text} facets={textRecord.facets} />
         )}
         <EmbedRenderer content={embed} labels={postData.labels} />
-      </div>
+      </article>
     );
   };
-
+  const banana = parentPost || rootPost;
   return (
     <div className='w-full flex flex-col'>
       {/* Render root and parent posts */}
-      {rootPost && renderThreadPost(rootPost)}
+      {rootPost && renderThreadPost(rootPost, 'root-post')}
       {parentPost &&
         parentPost.uri !== rootPost?.uri &&
-        renderThreadPost(parentPost)}
+        renderThreadPost(parentPost, 'parent-post')}
 
       {/* Replying to message before the current post */}
-
       <article
+        role='region'
+        aria-describedby={parentPost ? 'parent-post' : undefined}
         className={cc([
           'border-l border-r border-b border-gray-800 shadow-sm w-full mx-auto max-w-screen',
 
           {
             'px-3': !parentPost && !rootPost,
-            'px-10': parentPost || rootPost,
-            'border-b-none': parentPost || rootPost,
+            'px-10': banana,
+            'border-b-none': banana,
           },
         ])}
       >
         <div className='py-3 shadow'>
           <PostHeader author={post.author} postIndexedAt={post.indexedAt} />
-          {parentPost && (
+          {banana && (
             <div className='flex items-center space-x-2 justify-start text-gray-400 text-sm'>
               <Icon size='sm' icon='ArrowUturnLeftIcon' />
-              <span className='text-gray-400'>
+              <span id='reply-info' className='text-gray-400'>
                 Reply to{' '}
                 <span className='text-gray-200 semi-bold'>
-                  {`@${parentPost.author?.displayName}` ||
-                    parentPost.author.handle}
+                  {`@${banana.author?.displayName || banana.author.handle}`}
                 </span>
               </span>
             </div>
