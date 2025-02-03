@@ -22,7 +22,6 @@ export const HomePage = ({ feeds }: Props) => {
   const activeTab = feeds.findIndex((feed) => feed.uri === uri) || 0;
 
   useEffect(() => {
-    console.log('firing');
     if (!uri) {
       const params = new URLSearchParams(searchParams.toString());
       params.set('uri', feeds[0].uri);

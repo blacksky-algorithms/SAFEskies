@@ -61,7 +61,6 @@ export function useModeration({
   };
 
   const handleAddtlInfoChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    console.log(event.target.value, { event });
     setReportData((prev) => ({
       ...prev,
       additionalInfo: event.target.value,

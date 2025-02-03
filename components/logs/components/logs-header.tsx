@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+// import { useSearchParams } from 'next/navigation';
 import { OptimizedImage } from '@/components/optimized-image';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { IconButton } from '@/components/button/icon-button';
@@ -13,10 +13,11 @@ export const LogsWrapper = ({
   targetedProfile?: ProfileViewBasic;
 }) => {
   const { openModalInstance } = useModal();
-  const searchParams = useSearchParams();
-  const showProfileHeaderOnLogs =
-    searchParams.has('targetUser') || searchParams.has('performedBy');
-  console.log({ showProfileHeaderOnLogs });
+  // TODO
+  // const searchParams = useSearchParams();
+  // const showProfileHeaderOnLogs =
+  //   searchParams.has('targetUser') || searchParams.has('performedBy');
+  // console.log({ showProfileHeaderOnLogs });
   return (
     <section className='flex tablet:flex-col items-center justify-end tablet:jusify-between w-full pr-4'>
       {targetedProfile && (

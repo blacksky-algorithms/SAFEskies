@@ -47,8 +47,6 @@ export const Feed = ({ onRefreshComplete, feedName }: FeedProps) => {
   const [viewedPostUri, setViewedPostUri] = useState<string | null>(null);
   const [showModMenu, setShowModMenu] = useState(false);
 
-  console.log({ feed });
-
   useEffect(() => {
     const checkRole = async () => {
       if (!profile || isLoading) {
