@@ -55,7 +55,7 @@ export const Post = ({
       </article>
     );
   };
-  const banana = parentPost || rootPost;
+  const parentOrRootPost = parentPost || rootPost;
   return (
     <div className='w-full flex flex-col'>
       {/* Render root and parent posts */}
@@ -73,20 +73,23 @@ export const Post = ({
 
           {
             'px-3': !parentPost && !rootPost,
-            'px-10': banana,
-            'border-b-none': banana,
+            'px-10': parentOrRootPost,
+            'border-b-none': parentOrRootPost,
           },
         ])}
       >
         <div className='py-3 shadow'>
           <PostHeader author={post.author} postIndexedAt={post.indexedAt} />
-          {banana && (
+          {parentOrRootPost && (
             <div className='flex items-center space-x-2 justify-start text-gray-400 text-sm'>
               <Icon size='sm' icon='ArrowUturnLeftIcon' />
               <span id='reply-info' className='text-gray-400'>
                 Reply to{' '}
                 <span className='text-gray-200 semi-bold'>
-                  {`@${banana.author?.displayName || banana.author.handle}`}
+                  {`@${
+                    parentOrRootPost.author?.displayName ||
+                    parentOrRootPost.author.handle
+                  }`}
                 </span>
               </span>
             </div>
