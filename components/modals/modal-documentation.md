@@ -181,7 +181,7 @@ Testing is simplified with accessibility in mind:
 **Example Test Case:**
 
 ```tsx
-import { render, screen, act, waitFor } from '@/setupTests';
+import { render, screen, act, waitFor } from '@/test/setupTests';
 import { Modal } from '@/components/modals';
 import { ModalProvider } from '@/contexts/modal-context';
 

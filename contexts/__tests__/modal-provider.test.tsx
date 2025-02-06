@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, act, waitFor, axe } from '@/setupTests';
+import { render, act, waitFor, axe } from '@/test/setupTests';
 import { useModal } from '@/contexts/modal-context';
 import { Modal } from '@/components/modals';
 

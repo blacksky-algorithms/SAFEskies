@@ -1,4 +1,4 @@
-import { renderHook, act } from '@/setupTests';
+import { renderHook, act } from '@/test/setupTests';
 import { useState } from 'react';
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 

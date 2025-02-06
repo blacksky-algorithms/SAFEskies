@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, axe } from '@/setupTests';
+import { render, screen, axe } from '@/test/setupTests';
 import { IconButton } from '../icon-button';
 
 describe('IconButton Component', () => {

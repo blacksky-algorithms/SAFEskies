@@ -29,7 +29,7 @@
     ".next/types/**/*.ts",
     "jest.config.js",
     "jest.config.ts",
-    "setupTests.ts"
+    "test/setupTests.ts"
   ],
   "exclude": ["node_modules"]
 }
