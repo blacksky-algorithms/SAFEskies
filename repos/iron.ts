@@ -16,6 +16,11 @@ export const getSession = async (): Promise<IronSession<Session>> => {
     {
       cookieName: 'sid',
       password: process.env.COOKIE_PASSWORD as string,
+      cookieOptions: {
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        sameSite: 'strict',
+      },
     }
   );
   return session;
