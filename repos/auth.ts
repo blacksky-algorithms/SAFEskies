@@ -12,7 +12,6 @@ export const getUsersBlueskyProfileData = async (
   oAuthCallbackParams: URLSearchParams
 ) => {
   const { session } = await BlueskyOAuthClient.callback(oAuthCallbackParams);
-  console.log(session);
 
   if (!session?.did) {
     throw new Error('Invalid session: No DID found.');
@@ -35,7 +34,7 @@ export const handleOAuthCallback = async (request: NextRequest) => {
     const profileData = await getUsersBlueskyProfileData(
       request.nextUrl.searchParams
     );
-    console.log({ profileData });
+
     // 2. Get user's feeds
     const feedsResponse = await getActorFeeds(profileData.did);
     const createdFeeds = feedsResponse?.feeds || [];
