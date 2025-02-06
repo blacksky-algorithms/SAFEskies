@@ -1,8 +1,9 @@
 import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { AtprotoAgent } from './atproto-agent';
-import { SupabaseInstance } from './supabase';
+import { AtprotoAgent } from '@/repos/atproto-agent';
+import { SupabaseInstance } from '@/repos/supabase';
 import { DEFAULT_FEED } from '@/lib/constants';
 import { UserRole } from '@/lib/types/permission';
+import { getActorFeeds } from '@/repos/actor';
 
 export interface FeedParams {
   limit?: number;
@@ -14,22 +15,6 @@ export interface FeedResponse {
   feed: FeedViewPost[];
   cursor?: string;
 }
-
-export const getActorFeeds = async (actor?: string) => {
-  if (!actor) {
-    return;
-  }
-  try {
-    const response = await AtprotoAgent.app.bsky.feed.getActorFeeds({
-      actor,
-    });
-
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching feed generator data:', error);
-    throw new Error('Failed to fetch feed generator data.');
-  }
-};
 
 export const fetchFeed = async ({
   limit = 50,

@@ -50,7 +50,7 @@ export function FeedSelector({
               return (
                 <div key={item.cid as string} className='flex flex-col gap-1'>
                   <Checkbox
-                    id={`select-feed-${item.cid}`}
+                    id={`select-feed-${item.uri}`}
                     label={(item.displayName as string) || 'Unnamed Feed'}
                     checked={
                       isDisabled === true ? isDisabled : isFeedSelected(item)
