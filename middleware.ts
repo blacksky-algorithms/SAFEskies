@@ -46,7 +46,6 @@ export async function middleware(req: NextRequest) {
 
     if (req.nextUrl.pathname.startsWith('/admin')) {
       if (userHighestRole !== 'admin') {
-        console.log('Unauthorized admin access attempt');
         return NextResponse.redirect(new URL('/not-authorized', req.url));
       }
     }

@@ -38,32 +38,13 @@ export const fetchFeed = async ({
   }
 };
 
-export const getUserModFeeds = async (userDid: string) => {
+const getFeedsByRole = async (userDid: string | undefined, role: UserRole) => {
+  if (!userDid || role === 'user') return [];
   try {
     const { data, error } = await SupabaseInstance.from('feed_permissions')
       .select('feed_uri, feed_name')
       .eq('user_did', userDid)
-      .eq('role', 'mod');
-
-    if (error) {
-      console.error('Error fetching mod feeds:', error);
-      return [];
-    }
-
-    return data || [];
-  } catch (error) {
-    console.error('Error in getUserModFeeds:', error);
-    return [];
-  }
-};
-
-export const getUserAdminFeeds = async (userDid: string | undefined) => {
-  if (!userDid) return [];
-  try {
-    const { data, error } = await SupabaseInstance.from('feed_permissions')
-      .select('feed_uri, feed_name')
-      .eq('user_did', userDid)
-      .eq('role', 'admin');
+      .eq('role', role);
 
     if (error) {
       console.error('Error fetching admin feeds:', error);
@@ -72,18 +53,19 @@ export const getUserAdminFeeds = async (userDid: string | undefined) => {
 
     return data || [];
   } catch (error) {
-    console.error('Error in getUserAdminFeeds:', error);
+    console.error('Error in getFeedsByRole:', error);
     return [];
   }
 };
 
 export const getUserFeeds = async (userDid?: string) => {
   if (!userDid) return { feeds: [], defaultFeed: DEFAULT_FEED };
+
   try {
     // 1. Get feed permissions from our database
     const [modFeeds, adminFeeds] = await Promise.all([
-      getUserModFeeds(userDid),
-      getUserAdminFeeds(userDid),
+      getFeedsByRole(userDid, 'mod'),
+      getFeedsByRole(userDid, 'admin'),
     ]);
 
     // 2. Get latest feed data from Bluesky

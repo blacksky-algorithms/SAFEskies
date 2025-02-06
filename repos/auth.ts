@@ -12,6 +12,7 @@ export const getBlueskyProfile = async (
   oAuthCallbackParams: URLSearchParams
 ) => {
   const { session } = await BlueskyOAuthClient.callback(oAuthCallbackParams);
+
   if (!session?.did) {
     throw new Error('Invalid session: No DID found.');
   }
