@@ -25,6 +25,7 @@ export const HomePage = ({ feeds }: Props) => {
     if (!uri) {
       const params = new URLSearchParams(searchParams.toString());
       params.set('uri', feeds[0].uri);
+      params.delete('redirected');
       router.push(`?${params.toString()}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

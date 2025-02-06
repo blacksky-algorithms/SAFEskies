@@ -8,7 +8,7 @@ import { getActorFeeds } from '@/repos/actor';
 import { User } from '@/lib/types/user';
 import { getProfile, saveProfile } from '@/repos/profile';
 
-export const getBlueskyProfile = async (
+export const getUsersBlueskyProfileData = async (
   oAuthCallbackParams: URLSearchParams
 ) => {
   const { session } = await BlueskyOAuthClient.callback(oAuthCallbackParams);
@@ -31,8 +31,10 @@ export const getBlueskyProfile = async (
 export const handleOAuthCallback = async (request: NextRequest) => {
   try {
     // 1. Get initial profile data
-    const profileData = await getBlueskyProfile(request.nextUrl.searchParams);
-
+    const profileData = await getUsersBlueskyProfileData(
+      request.nextUrl.searchParams
+    );
+    console.log({ profileData });
     // 2. Get user's feeds
     const feedsResponse = await getActorFeeds(profileData.did);
     const createdFeeds = feedsResponse?.feeds || [];

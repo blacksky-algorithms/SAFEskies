@@ -20,7 +20,7 @@ export const saveProfile = async (
       .upsert({
         did: blueSkyProfileData.did,
         handle: blueSkyProfileData.handle,
-        name: blueSkyProfileData.displayName,
+        displayName: blueSkyProfileData.displayName,
         avatar: blueSkyProfileData.avatar,
         associated: blueSkyProfileData.associated,
         labels: blueSkyProfileData.labels,
@@ -92,10 +92,10 @@ export const getProfileDetails = async (
         .upsert({
           did: response.data.did,
           handle: response.data.handle,
-          name: response.data.displayName,
           avatar: response.data.avatar,
           associated: response.data.associated,
           labels: response.data.labels,
+          displayName: response.data.displayName,
         })
         .eq('did', userDid);
 
