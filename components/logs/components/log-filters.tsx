@@ -21,6 +21,7 @@ export const LogFilters = memo(
     const isFiltersModalOpen = isOpen(MODAL_INSTANCE_IDS.LOG_FILTERS);
 
     const updateFilter = (key: string, value: string | null) => {
+      console.log({ key, value });
       const params = new URLSearchParams(searchParams);
       if (value) {
         params.set(key, value);
@@ -64,8 +65,19 @@ export const LogFilters = memo(
             toDate: searchParams.get('toDate') || '',
           }}
           onChange={({ fromDate, toDate }) => {
-            updateFilter('fromDate', fromDate);
-            updateFilter('toDate', toDate);
+            // Update both params at once
+            const params = new URLSearchParams(searchParams);
+            if (fromDate && toDate) {
+              params.set('fromDate', fromDate);
+              params.set('toDate', toDate);
+            } else {
+              params.delete('fromDate');
+              params.delete('toDate');
+            }
+            router.push(`/logs?${params.toString()}`);
+            if (isFiltersModalOpen) {
+              closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+            }
           }}
           presets
         />
