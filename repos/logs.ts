@@ -4,11 +4,11 @@ import { getBulkProfileDetails } from '@/repos/profile';
 import { getDateTimeRange } from '@/lib/utils/logs';
 
 /**
- * Applies common equality and date range filters to a Supabase query.
- * Maps LogFilters keys to their corresponding database column names.
+ * Applies filters to the query based on the provided LogFilters.
+ * It will only apply a filter if the value is not null/undefined and (if a string) not empty.
  */
 const applyFiltersToQuery = (query: any, filters: LogFilters) => {
-  // Map filter keys to database column names
+  // Mapping filter keys to database column names
   const fieldMapping: Array<{ key: keyof LogFilters; column: string }> = [
     { key: 'feedUri', column: 'feed_uri' },
     { key: 'action', column: 'action' },
@@ -17,18 +17,23 @@ const applyFiltersToQuery = (query: any, filters: LogFilters) => {
     { key: 'targetPost', column: 'target_post_uri' },
   ];
 
-  // Apply equality filters for string values (trimming whitespace)
   for (const { key, column } of fieldMapping) {
     const value = filters[key];
-    if (typeof value === 'string' && value.trim()) {
-      query = query.eq(column, value.trim());
-    } else if (value !== undefined && key === 'action') {
-      // In case action is a non-string value (or already properly formatted)
-      query = query.eq(column, value);
+    // Only apply the filter if the value is not null/undefined.
+    // For strings, also check that it's not just whitespace.
+    if (
+      value !== undefined &&
+      value !== null &&
+      (!(typeof value === 'string') || value.trim() !== '')
+    ) {
+      query = query.eq(
+        column,
+        typeof value === 'string' ? value.trim() : value
+      );
     }
   }
 
-  // Apply date range filter if provided
+  // Apply the date range filter if provided
   if (filters.dateRange) {
     const { fromDateTime, toDateTime } = getDateTimeRange(filters.dateRange);
     query = query.gte('created_at', fromDateTime).lte('created_at', toDateTime);
@@ -59,9 +64,7 @@ export async function getRawLogs(filters: LogFilters): Promise<Log[]> {
 }
 
 /**
- * Enriches an array of logs with profile details.
- * It bulk-fetches all profiles for the unique DIDs found in the logs,
- * and then attaches the corresponding profile data to each log.
+ * Enriches an array of logs with profile details by bulk-fetching the profiles.
  */
 const enrichLogsWithProfiles = async (logs: Log[]): Promise<Log[]> => {
   const dids = Array.from(
@@ -87,7 +90,7 @@ const enrichLogsWithProfiles = async (logs: Log[]): Promise<Log[]> => {
 };
 
 /**
- * Retrieves logs using the given filters and enriches them with profile details.
+ * Retrieves logs using the provided filters and enriches them with profile data.
  */
 export async function getLogs(filters: LogFilters): Promise<Log[]> {
   const rawLogs = await getRawLogs(filters);

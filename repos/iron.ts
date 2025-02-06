@@ -11,7 +11,7 @@ export type Session = {
 
 export const getSession = async (): Promise<IronSession<Session>> => {
   const cookieStore = await cookies();
-  console.log('YOOOOOOO', process.env.NODE_ENV);
+
   const session = await getIronSession<Session>(
     cookieStore as unknown as ResponseCookies,
     {

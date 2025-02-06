@@ -48,7 +48,7 @@ export const FilterByModInput = ({ updateFilter, performedBy }: Props) => {
       options={[
         { label: 'All Actors', value: '' },
         ...state.mods.map((mod) => ({
-          label: mod.displayName || mod.handle,
+          label: `@${mod.handle}` || mod.displayName || '',
           value: mod.did,
         })),
       ]}

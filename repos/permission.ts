@@ -150,7 +150,7 @@ export const getAllModeratorsForAdmin = async (adminDid: string) => {
         profiles!feed_permissions_user_did_fkey (
           did,
           handle,
-          name,
+          displayName,
           avatar
         )
       `
