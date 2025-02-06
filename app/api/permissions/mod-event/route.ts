@@ -22,6 +22,7 @@ export async function POST(request: Request) {
       targetedUserDid,
       feedUri,
       feedName,
+      additionalInfo,
     } = await request.json();
 
     // Validate the required fields
@@ -65,9 +66,11 @@ export async function POST(request: Request) {
       ...entryData,
       target_user_did: targetedUserDid,
       performed_by: userDID,
+      additional_info: additionalInfo,
       metadata: {
         ...entryData,
         feed_name: feedName,
+        additional_info: additionalInfo,
       },
     };
 

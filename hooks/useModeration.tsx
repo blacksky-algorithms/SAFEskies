@@ -74,6 +74,7 @@ export function useModeration({
     targetedUserDid: string;
     feedUri: string;
     feedName: string | undefined;
+    additionalInfo: string | undefined;
   }) => {
     try {
       await fetch('/api/permissions/mod-event', {
@@ -124,6 +125,7 @@ export function useModeration({
         targetedUserDid: postToModerate.post.author.did,
         feedUri,
         feedName: feedName || 'Unnamed Feed',
+        additionalInfo: reportData.additionalInfo,
       };
 
       await reportModerationEvent(payload);

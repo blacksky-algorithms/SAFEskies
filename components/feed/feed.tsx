@@ -55,7 +55,7 @@ export const Feed = ({ onRefreshComplete, feedName }: FeedProps) => {
       }
       const hasModPermissions = await canPerformAction(
         profile.did,
-        'mod_promote',
+        'post_delete',
         uri
       );
       setShowModMenu(hasModPermissions);
