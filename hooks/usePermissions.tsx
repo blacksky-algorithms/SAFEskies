@@ -1,12 +1,12 @@
 export const usePermissions = () => {
   const promoteToModerator = async ({
     targetUserDid,
-    feedUri,
+    uri,
     setByUserDid,
     feedName,
   }: {
     targetUserDid: string;
-    feedUri: string;
+    uri: string;
     setByUserDid: string;
     feedName: string;
   }) => {
@@ -17,7 +17,7 @@ export const usePermissions = () => {
       },
       body: JSON.stringify({
         targetUserDid,
-        feedUri,
+        uri,
         setByUserDid,
         feedName,
       }),

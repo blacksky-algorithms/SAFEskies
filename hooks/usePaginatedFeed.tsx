@@ -62,7 +62,7 @@ function feedReducer(state: FeedState, action: FeedAction): FeedState {
 
 interface UsePaginatedFeedParams {
   limit?: number;
-  uri: string;
+  uri: string | null;
 }
 
 export function usePaginatedFeed({ limit = 50, uri }: UsePaginatedFeedParams) {
@@ -76,6 +76,7 @@ export function usePaginatedFeed({ limit = 50, uri }: UsePaginatedFeedParams) {
 
   const fetchFeedData = useCallback(
     async (refresh = false) => {
+      if (!uri) return;
       if (refresh) dispatch({ type: 'REFRESH_FEED' });
       dispatch({ type: 'FETCH_START' });
 

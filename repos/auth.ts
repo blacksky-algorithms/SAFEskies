@@ -8,10 +8,11 @@ import { getActorFeeds } from '@/repos/actor';
 import { User } from '@/lib/types/user';
 import { getProfile, saveProfile } from '@/repos/profile';
 
-export const getBlueskyProfile = async (
+export const getUsersBlueskyProfileData = async (
   oAuthCallbackParams: URLSearchParams
 ) => {
   const { session } = await BlueskyOAuthClient.callback(oAuthCallbackParams);
+
   if (!session?.did) {
     throw new Error('Invalid session: No DID found.');
   }
@@ -30,7 +31,9 @@ export const getBlueskyProfile = async (
 export const handleOAuthCallback = async (request: NextRequest) => {
   try {
     // 1. Get initial profile data
-    const profileData = await getBlueskyProfile(request.nextUrl.searchParams);
+    const profileData = await getUsersBlueskyProfileData(
+      request.nextUrl.searchParams
+    );
 
     // 2. Get user's feeds
     const feedsResponse = await getActorFeeds(profileData.did);
@@ -77,30 +80,5 @@ export const handleOAuthCallback = async (request: NextRequest) => {
         },
       }
     );
-  }
-};
-
-export const signInWithBluesky = async (handle: string): Promise<string> => {
-  try {
-    const blueskyClient = BlueskyOAuthClient;
-
-    const url = await blueskyClient.authorize(handle);
-
-    return url.toString();
-  } catch (error) {
-    console.error(error);
-    // TODO: Handle error
-    return '';
-  }
-};
-
-export const signOutOfBlueSky = async (): Promise<void> => {
-  try {
-    const session = await getSession();
-    session.destroy(); // Clear session data
-    await session.save(); // Persist destruction
-  } catch (error) {
-    console.error('Error during logout:', error);
-    // TODO: Handle error
   }
 };

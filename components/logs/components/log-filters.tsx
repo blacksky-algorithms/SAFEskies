@@ -1,89 +1,113 @@
+'use client';
+
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Select } from '@/components/input/select';
 import { DatePicker } from '@/components/date-picker';
-// import { Input } from '@/components/input';
 import { Button } from '@/components/button';
-import { ModAction } from '@/lib/types/moderation';
-import { useLogs } from '@/hooks/useLogs';
-import { memo, useRef } from 'react';
+import { memo, useState } from 'react';
 import { FilterByModInput } from './filter-by-mod-input';
 import { BSUserSearch } from '@/components/bs-user-search/bs-user-search';
 import { useModal } from '@/contexts/modal-context';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 
-interface Props {
-  filterByMod: boolean;
-  filters: ReturnType<typeof useLogs>['filters'];
-  updateFilter: (
-    filters: Partial<ReturnType<typeof useLogs>['filters']>
-  ) => void;
-  clearFilters: () => void;
-}
-
 export const LogFilters = memo(
-  ({ filterByMod, filters, updateFilter, clearFilters }: Props) => {
-    const isFilterActive = Object.values(filters).some((filter) => {
-      return filter !== 'ascending' && filter !== 'descending' && !!filter;
-    });
-
-    const filtersDisplayDataRef = useRef({ targetedUserName: '' });
-
+  ({ canViewAdminActions }: { canViewAdminActions: boolean }) => {
+    const searchParams = useSearchParams();
+    const router = useRouter();
     const { closeModalInstance, isOpen } = useModal();
 
+    const [actorDisplayName, setActorDisplayName] = useState('Search Bluesky');
+
     const isFiltersModalOpen = isOpen(MODAL_INSTANCE_IDS.LOG_FILTERS);
+
+    const updateFilter = (key: string, value: string | null) => {
+      console.log({ key, value });
+      const params = new URLSearchParams(searchParams);
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+      router.push(`/logs?${params.toString()}`);
+      if (isFiltersModalOpen) {
+        closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+      }
+    };
+
+    const clearFilters = () => {
+      router.push('/logs');
+      setActorDisplayName('Search Bluesky');
+      if (isFiltersModalOpen) {
+        closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
+      }
+    };
+
+    const isFilterActive = Array.from(searchParams.keys()).length > 0;
+
     return (
-      <div className='flex flex-col justify-evenly space-y-4'>
+      <div className='flex flex-col justify-evenly space-y-4 pb-10'>
         <Select
           id='sortBy'
           label='Sort By'
-          value={filters.sortBy || 'descending'}
-          onChange={(value) => {
-            updateFilter({ sortBy: value as 'ascending' | 'descending' });
-            if (isFiltersModalOpen) {
-              closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
-            }
-          }}
+          value={searchParams.get('sortBy') || 'descending'}
+          onChange={(value) => updateFilter('sortBy', value)}
           options={[
             { label: 'Newest First', value: 'descending' },
             { label: 'Oldest First', value: 'ascending' },
           ]}
         />
+
         <DatePicker
           id='dateRange'
           label='Filter By Date'
-          value={filters.dateRange || { fromDate: '', toDate: '' }}
-          onChange={(dateRange) => {
-            updateFilter({ dateRange });
+          value={{
+            fromDate: searchParams.get('fromDate') || '',
+            toDate: searchParams.get('toDate') || '',
+          }}
+          onChange={({ fromDate, toDate }) => {
+            // Update both params at once
+            const params = new URLSearchParams(searchParams);
+            if (fromDate && toDate) {
+              params.set('fromDate', fromDate);
+              params.set('toDate', toDate);
+            } else {
+              params.delete('fromDate');
+              params.delete('toDate');
+            }
+            router.push(`/logs?${params.toString()}`);
             if (isFiltersModalOpen) {
               closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
             }
           }}
           presets
         />
-        {filterByMod ? (
-          <FilterByModInput filters={filters} updateFilter={updateFilter} />
-        ) : null}
+
+        {canViewAdminActions && (
+          <FilterByModInput
+            performedBy={searchParams.get('performedBy') || ''}
+            updateFilter={(filter) =>
+              updateFilter('performedBy', filter.performedBy || null)
+            }
+          />
+        )}
+
         <BSUserSearch
           id='targetUser'
           label='Filter By Target User'
           onSelect={(user) => {
-            filtersDisplayDataRef.current = {
-              targetedUserName: user?.displayName || `@${user.handle}`,
-            };
-            updateFilter({ targetUser: user.did });
+            setActorDisplayName(user?.displayName || `@${user.handle}`);
+            updateFilter('targetUser', user.did);
           }}
-          placeholder={filtersDisplayDataRef.current.targetedUserName}
+          placeholder={actorDisplayName}
         />
+
+        {/* TODO: implement filter by targetPost */}
 
         <Select
           id='action'
           label='Filter By Action'
-          value={filters.action || ''}
-          onChange={(action) => {
-            updateFilter({ action: (action as ModAction) || null });
-            if (isFiltersModalOpen) {
-              closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
-            }
-          }}
+          value={searchParams.get('action') || ''}
+          onChange={(action) => updateFilter('action', action || null)}
           options={[
             { label: 'All Actions', value: '' },
             { label: 'Post Deleted', value: 'post_delete' },
@@ -95,26 +119,8 @@ export const LogFilters = memo(
           ]}
         />
 
-        {/*
-      {onTargetPostFilterChange && (
-        <Input
-          id='targetPost'
-          label='Filter By Target Post'
-          value={filters.targetPost || ''}
-          onChange={(e) => onTargetPostFilterChange(e.target.value)}
-        />
-      )} */}
         {clearFilters && (
-          <Button
-            disabled={!isFilterActive}
-            onClick={() => {
-              clearFilters();
-              filtersDisplayDataRef.current = { targetedUserName: '' };
-              if (isFiltersModalOpen) {
-                closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);
-              }
-            }}
-          >
+          <Button disabled={!isFilterActive} onClick={clearFilters}>
             Clear Filters
           </Button>
         )}

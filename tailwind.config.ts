@@ -38,6 +38,7 @@ export default {
         'app-success': 'var(--success)',
         'app-success-hover': 'var(--success-hover)',
         app: 'var(--text)',
+        'app-inverted': 'var(--inverted-text)',
       },
       backgroundColor: {
         'app-background': 'var(--background)',

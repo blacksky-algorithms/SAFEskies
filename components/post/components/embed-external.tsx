@@ -1,20 +1,13 @@
 import { OptimizedImage } from '@/components/optimized-image';
 import { AppBskyEmbedExternal } from '@atproto/api';
-import { Info } from './embed-info';
 import Link from 'next/link';
 import { toNiceDomain } from '../utils';
 
 export const EmbedExternal = ({
   content,
-  labelInfo,
 }: {
   content: AppBskyEmbedExternal.View;
-  labelInfo?: string;
 }) => {
-  if (labelInfo) {
-    return <Info>{labelInfo}</Info>;
-  }
-
   const isGif = content.external.uri && content.external.uri.includes('.gif');
   if (isGif) {
     return (
@@ -25,6 +18,7 @@ export const EmbedExternal = ({
       />
     );
   }
+
   // generally social cards
   return (
     <Link

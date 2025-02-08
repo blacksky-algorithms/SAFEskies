@@ -1,16 +1,17 @@
 // app/api/moderators/route.ts
 import { NextResponse } from 'next/server';
 import { getAllModeratorsForAdmin } from '@/repos/permission';
-import { getSession } from '@/repos/iron';
+import { getProfile } from '@/repos/profile';
 
 export async function GET() {
   try {
-    const session = await getSession();
-    if (!session.user) {
+    const user = await getProfile();
+
+    if (!user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const userDid = session.user.did;
+    const userDid = user.did;
 
     try {
       const moderators = await getAllModeratorsForAdmin(userDid);

@@ -12,14 +12,7 @@ import { LoadingSpinner } from '@/components/loading-spinner';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 import { useFeedRoles } from '@/hooks/useFeedRoles';
 import { usePermissions } from '@/hooks/usePermissions';
-
-export interface PromoteModState {
-  selectedUser: ProfileViewBasic | null;
-  selectedFeeds: Feed[];
-  disabledFeeds: string[];
-  isLoading: boolean;
-  error: string | null;
-}
+import { PromoteModState } from '@/lib/types/moderation';
 
 export const PromoteModForm = ({
   feeds,
@@ -52,14 +45,14 @@ export const PromoteModForm = ({
         const roleChecks = await Promise.all(
           feeds.map(async (feed) => {
             const role = await checkFeedRole(user.did, feed.uri);
-            return { feedUri: feed.uri, role };
+            return { uri: feed.uri, role };
           })
         );
 
         // Collect feeds where user is already a mod or admin
-        roleChecks.forEach(({ feedUri, role }) => {
+        roleChecks.forEach(({ uri, role }) => {
           if (role === 'mod' || role === 'admin') {
-            disabledFeedUris.push(feedUri);
+            disabledFeedUris.push(uri);
           }
         });
 
@@ -125,7 +118,7 @@ export const PromoteModForm = ({
         state.selectedFeeds.map((feed) =>
           promoteToModerator({
             targetUserDid: state.selectedUser!.did,
-            feedUri: feed.uri,
+            uri: feed.uri,
             setByUserDid: currentUserDid,
             feedName: (feed.displayName as string) || '',
           })

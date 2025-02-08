@@ -1,20 +1,14 @@
 import React from 'react';
+import { AppBskyEmbedImages } from '@atproto/api';
 
 import { OptimizedImage } from '@/components/optimized-image';
 import cc from 'classcat';
-import { AppBskyEmbedImages } from '@atproto/api';
-import { Info } from './embed-info';
 
 export const PostImages = ({
   content,
-  labelInfo,
 }: {
   content: AppBskyEmbedImages.View;
-  labelInfo?: string;
 }) => {
-  if (labelInfo) {
-    return <Info>{labelInfo}</Info>;
-  }
   const imageCount = content.images.length;
 
   return (

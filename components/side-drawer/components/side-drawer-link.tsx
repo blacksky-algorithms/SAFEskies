@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import cc from 'classcat';
 
 interface SideDrawerLinkProps {
@@ -16,6 +16,7 @@ export const SideDrawerLink = ({
   onClick,
 }: SideDrawerLinkProps) => {
   const pathname = usePathname();
+  const params = useSearchParams();
 
   const handleLinkClick = (path: string) => {
     if (onClick) onClick(path);
@@ -26,7 +27,7 @@ export const SideDrawerLink = ({
       {nestedLinks ? (
         <p
           className={cc([
-            'block px-4 py-2 text-app rounded-lg',
+            'block py-2 text-app rounded-lg',
             { 'cursor-pointer hover:bg-app-secondary-hover ': !nestedLinks },
           ])}
         >
@@ -39,7 +40,7 @@ export const SideDrawerLink = ({
           }}
           href={href || ''}
           className={cc([
-            'block px-4 py-2 text-app rounded-lg',
+            'block py-2 text-app rounded-lg',
             { 'cursor-pointer hover:bg-app-secondary-hover ': !nestedLinks },
           ])}
         >
@@ -47,24 +48,26 @@ export const SideDrawerLink = ({
         </a>
       )}
       {nestedLinks && (
-        <div className='pl-6 space-y-1'>
-          {nestedLinks.map((link) => (
-            <a
-              key={link.href}
-              onClick={() => handleLinkClick(link.href)}
-              href={link.href}
-              className={cc([
-                'block px-4 py-2 hover:bg-app-secondary-hover rounded-lg',
-                {
-                  'font-semibold text-app-primary': pathname.startsWith(
-                    link.href
-                  ),
-                },
-              ])}
-            >
-              {link.label}
-            </a>
-          ))}
+        <div className='pl-4 space-y-1'>
+          {nestedLinks.map((link) => {
+            return (
+              <a
+                key={link.href}
+                onClick={() => handleLinkClick(link.href)}
+                href={link.href}
+                className={cc([
+                  'block px-4 py-2 hover:bg-app-secondary-hover rounded-lg',
+                  {
+                    'font-semibold text-app-primary':
+                      link.href === pathname ||
+                      link.href === `${pathname}?${params.toString()}`,
+                  },
+                ])}
+              >
+                {link.label}
+              </a>
+            );
+          })}
         </div>
       )}
     </li>

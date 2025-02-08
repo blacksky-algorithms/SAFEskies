@@ -6,7 +6,7 @@ export type UserRole = 'admin' | 'mod' | 'user';
 export type FeedRoleInfo = {
   role: UserRole;
   displayName: string;
-  feedUri: string;
+  uri: string;
 };
 
 export type ModeratorWithProfile = ProfileViewBasic & { role: UserRole };
@@ -18,7 +18,7 @@ export type FeedWithModerators = {
 
 export type FeedPermission = {
   role: UserRole;
-  feed_uri: string;
+  uri: string;
   feed_name: string;
   user_did: string;
   created_by?: string;

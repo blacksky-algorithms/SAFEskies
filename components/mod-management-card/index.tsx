@@ -47,7 +47,7 @@ export const ModManagementCard = ({
         },
         body: JSON.stringify({
           modDid,
-          feedUri: feed.uri,
+          uri: feed.uri,
           setByUserDid: currentUserDid,
           feedName: feed.displayName || '',
         }),
@@ -127,7 +127,7 @@ export const ModManagementCard = ({
             moderator={mod}
             isBeingDemoted={state.pendingDemotions.has(mod.did)}
             onDemote={handleDemote}
-            feedUri={feed.uri as string}
+            uri={feed.uri as string}
           />
         ))}
       </div>

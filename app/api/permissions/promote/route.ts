@@ -5,11 +5,10 @@ import { canPerformAction, setFeedRole } from '@/repos/permission';
 export async function POST(request: Request) {
   try {
     // Get data from request body
-    const { targetUserDid, feedUri, setByUserDid, feedName } =
-      await request.json();
+    const { targetUserDid, uri, setByUserDid, feedName } = await request.json();
 
     // Validate required fields
-    if (!targetUserDid || !feedUri || !setByUserDid || !feedName) {
+    if (!targetUserDid || !uri || !setByUserDid || !feedName) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -19,8 +18,8 @@ export async function POST(request: Request) {
     // Check if the user has permission to promote moderators
     const hasPermission = await canPerformAction(
       setByUserDid,
-      'create_mod',
-      feedUri
+      'mod_promote',
+      uri
     );
 
     if (!hasPermission) {
@@ -33,7 +32,7 @@ export async function POST(request: Request) {
     // Attempt to set the role
     const success = await setFeedRole(
       targetUserDid,
-      feedUri,
+      uri,
       'mod',
       setByUserDid,
       feedName

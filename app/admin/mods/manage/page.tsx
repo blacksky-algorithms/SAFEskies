@@ -44,7 +44,7 @@ export default async function Page() {
         <h2 className='text-2xl font-bold'>Moderator Management</h2>
       </header>
       {tabs.length > 0 ? (
-        <Tabs tabs={tabs} />
+        <Tabs data={tabs} />
       ) : (
         <p className='text-app-secondary mt-6'>
           You don&apos;t have admin access to any feeds.

@@ -7,10 +7,10 @@ export async function GET(request: Request) {
   // Get the URL parameters
   const { searchParams } = new URL(request.url);
   const userDid = searchParams.get('userDid');
-  const feedUri = searchParams.get('feedUri');
+  const uri = searchParams.get('uri');
 
   // Validate required parameters
-  if (!userDid || !feedUri) {
+  if (!userDid || !uri) {
     return NextResponse.json(
       { error: 'Missing required parameters' },
       { status: 400 }
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
   try {
     // Get the user's role for this feed
-    const role: UserRole = await getFeedRole(userDid, feedUri);
+    const role: UserRole = await getFeedRole(userDid, uri);
 
     return NextResponse.json({ role });
   } catch (error) {

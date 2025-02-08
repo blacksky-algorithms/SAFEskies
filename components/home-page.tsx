@@ -2,8 +2,9 @@
 
 import { Feed } from '@/components/feed/feed';
 import { Tabs } from '@/components/tab/tab';
+import { useSearchParams, useRouter } from 'next/navigation';
 import cc from 'classcat';
-import { useState, useRef } from 'react';
+import { useEffect } from 'react';
 
 interface Props {
   feeds: {
@@ -15,12 +16,25 @@ interface Props {
 }
 
 export const HomePage = ({ feeds }: Props) => {
-  const tabRef = useRef<number | null>(null);
-  const [activeTab, setActiveTab] = useState<number>(tabRef.current ?? 0);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const uri = searchParams.get('uri');
+  const activeTab = feeds.findIndex((feed) => feed.uri === uri) || 0;
+
+  useEffect(() => {
+    if (!uri) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('uri', feeds[0].uri);
+      params.delete('redirected');
+      router.push(`?${params.toString()}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uri]);
 
   const tabs = feeds.map((feed, index) => ({
     title: (
       <div
+        key={feed.uri}
         className={cc([
           'flex items-center gap-2',
           { 'justify-center ': feeds.length === 1 },
@@ -41,22 +55,18 @@ export const HomePage = ({ feeds }: Props) => {
         </span>
       </div>
     ),
-    TabContent: (
-      <Feed
-        uri={feed.uri}
-        key={feed.uri}
-        onRefreshComplete={() => setActiveTab(index)}
-      />
-    ),
+    TabContent: <Feed key={`feed-${index}`} feedName={feed.displayName} />,
   }));
+
+  const handleTabChange = (index: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('uri', feeds[index].uri);
+    router.push(`?${params.toString()}`);
+  };
 
   return (
     <div className='container mx-auto p-4'>
-      <Tabs
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={(index) => setActiveTab(index)}
-      />
+      <Tabs data={tabs} activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
   );
 };

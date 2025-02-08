@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, axe, cleanup } from '@/setupTests';
+import { render, screen, axe, cleanup } from '@/test/setupTests';
 import { Button } from '@/components/button';
 import { VisualIntent } from '@/enums/styles';
 

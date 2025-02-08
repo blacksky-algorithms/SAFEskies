@@ -16,6 +16,7 @@ type ModalState = {
   closeModalInstance: (id: string) => void;
   registerModal: (id: string) => void;
   unregisterModal: (id: string) => void;
+  areModalsStacking: boolean;
 };
 
 const MODAL_CONFIG = {
@@ -165,10 +166,14 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
 
     setModals((prev) => {
       if (!(id in prev)) return prev;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [id]: _, ...rest } = prev;
       return rest;
     });
   }, []);
+
+  const areModalsStacking = Object.values(modals).filter(Boolean).length > 1;
+  // const areModalsStacking = Object.values(modals).filter(Boolean).length > 1;
 
   return (
     <ModalContext.Provider
@@ -178,6 +183,7 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({
         closeModalInstance,
         registerModal,
         unregisterModal,
+        areModalsStacking,
       }}
     >
       {children}

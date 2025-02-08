@@ -1,64 +1,83 @@
 import { SupabaseInstance } from '@/repos/supabase';
-import { BaseLog, LogEntry, LogFilters } from '@/lib/types/logs';
+import { Log, LogEntry, LogFilters } from '@/lib/types/logs';
 import { getBulkProfileDetails } from '@/repos/profile';
 import { getDateTimeRange } from '@/lib/utils/logs';
 
-export async function getRawLogs(filters: LogFilters): Promise<BaseLog[]> {
-  let query = SupabaseInstance.from('moderation_logs').select('*');
+/**
+ * Applies filters to the query based on the provided LogFilters.
+ * It will only apply a filter if the value is not null/undefined and (if a string) not empty.
+ */
+const applyFiltersToQuery = (query: any, filters: LogFilters) => {
+  // Mapping filter keys to database column names
+  const fieldMapping: Array<{ key: keyof LogFilters; column: string }> = [
+    { key: 'uri', column: 'uri' },
+    { key: 'action', column: 'action' },
+    { key: 'performedBy', column: 'performed_by' },
+    { key: 'targetUser', column: 'target_user_did' },
+    { key: 'targetPost', column: 'target_post_uri' },
+  ];
 
-  if (filters.feedUri) {
-    query = query.eq('feed_uri', filters.feedUri);
+  for (const { key, column } of fieldMapping) {
+    const value = filters[key];
+    // Only apply the filter if the value is not null/undefined.
+    // For strings, also check that it's not just whitespace.
+    if (
+      value !== undefined &&
+      value !== null &&
+      (!(typeof value === 'string') || value.trim() !== '')
+    ) {
+      query = query.eq(
+        column,
+        typeof value === 'string' ? value.trim() : value
+      );
+    }
   }
 
-  if (filters.action) {
-    query = query.eq('action', filters.action);
-  }
-
-  if (filters.performedBy?.trim()) {
-    query = query.eq('performed_by', filters.performedBy.trim());
-  }
-
-  if (filters.targetUser?.trim()) {
-    query = query.eq('target_user_did', filters.targetUser.trim());
-  }
-
-  if (filters.targetPost?.trim()) {
-    query = query.eq('target_post_uri', filters.targetPost.trim());
-  }
-
+  // Apply the date range filter if provided
   if (filters.dateRange) {
     const { fromDateTime, toDateTime } = getDateTimeRange(filters.dateRange);
     query = query.gte('created_at', fromDateTime).lte('created_at', toDateTime);
   }
 
+  // Apply ordering based on sortBy
   query = query.order('created_at', {
     ascending: filters.sortBy === 'ascending',
   });
 
-  const { data, error } = await query;
+  return query;
+};
 
+/**
+ * Retrieves raw logs from Supabase after applying the given filters.
+ */
+export async function getRawLogs(filters: LogFilters): Promise<Log[]> {
+  const query = applyFiltersToQuery(
+    SupabaseInstance.from('moderation_logs').select('*'),
+    filters
+  );
+  const { data, error } = await query;
   if (error) {
     console.error('Error fetching logs:', error);
     throw error;
   }
-
   return data;
 }
 
-export async function getLogs(filters: LogFilters): Promise<BaseLog[]> {
-  const rawLogs = await getRawLogs(filters);
-
-  // Filter out null values when collecting DIDs
-  const dids = new Set(
-    rawLogs
-      .flatMap((log) => [log.performed_by, log.target_user_did])
-      .filter((did): did is string => did !== null)
+/**
+ * Enriches an array of logs with profile details by bulk-fetching the profiles.
+ */
+const enrichLogsWithProfiles = async (logs: Log[]): Promise<Log[]> => {
+  const dids = Array.from(
+    new Set(
+      logs
+        .flatMap((log) => [log.performed_by, log.target_user_did])
+        .filter((did): did is string => Boolean(did))
+    )
   );
-
-  const profiles = await getBulkProfileDetails(Array.from(dids));
+  const profiles = await getBulkProfileDetails(dids);
   const profileMap = new Map(profiles.map((p) => [p.did, p]));
 
-  return rawLogs.map((log) => ({
+  return logs.map((log) => ({
     ...log,
     performed_by_profile: profileMap.get(log.performed_by) || {
       did: log.performed_by,
@@ -68,16 +87,24 @@ export async function getLogs(filters: LogFilters): Promise<BaseLog[]> {
       ? profileMap.get(log.target_user_did)
       : undefined,
   }));
+};
+
+/**
+ * Retrieves logs using the provided filters and enriches them with profile data.
+ */
+export async function getLogs(filters: LogFilters): Promise<Log[]> {
+  const rawLogs = await getRawLogs(filters);
+  return enrichLogsWithProfiles(rawLogs);
 }
 
-export async function createLog(
-  entry:
-    | Omit<LogEntry, 'id' | 'created_at'>
-    | Omit<BaseLog, 'id' | 'created_at'>
+/**
+ * Inserts a new moderation log entry into Supabase.
+ */
+export async function createModerationLog(
+  entry: Omit<LogEntry, 'id' | 'created_at'> | Omit<Log, 'id' | 'created_at'>
 ) {
   const { error } = await SupabaseInstance.from('moderation_logs').insert(
     entry
   );
-
   if (error) throw error;
 }

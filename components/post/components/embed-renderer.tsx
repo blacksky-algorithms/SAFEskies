@@ -9,7 +9,7 @@ import {
   AppBskyGraphDefs,
   AppBskyLabelerDefs,
 } from '@atproto/api';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { PostHeader } from '@/components/post/components/post-header';
 import { PostImages } from '@/components/post/components/post-images';
@@ -21,6 +21,8 @@ import { getRkey } from '../utils';
 import { StarterPackEmbed } from './embed-starter-pack';
 import { PostText } from './post-text';
 import { CONTENT_LABELS } from '@/lib/constants';
+import { IconButton } from '@/components/button/icon-button';
+import { VisualIntent } from '@/enums/styles';
 
 const labelsToInfo = (
   labels?: AppBskyFeedDefs.PostView['labels']
@@ -50,17 +52,33 @@ export const EmbedRenderer = ({
   hideRecord?: boolean;
 }) => {
   const labelInfo = useMemo(() => labelsToInfo(labels), [labels]);
+  const [isLabelVisible, setIsLabelVisible] = useState(!!labelInfo);
+  const toggleLabelVisiblity = (e: React.SyntheticEvent) => {
+    e.stopPropagation();
+    setIsLabelVisible((prev) => !prev);
+  };
 
   if (!content) return null;
+
+  if (isLabelVisible) {
+    return (
+      <IconButton
+        intent={VisualIntent.Error}
+        icon='ShieldExclamationIcon'
+        onClick={toggleLabelVisiblity}
+        text={labelInfo}
+      />
+    );
+  }
 
   // this logic is pulled straight from blue sky. I thought it was important as I learn to understand how to handle different types of embeds and content types are handled I don't stray from the wisdom of experience
   try {
     if (AppBskyEmbedImages.isView(content)) {
-      return <PostImages content={content} labelInfo={labelInfo} />;
+      return <PostImages content={content} />;
     }
 
     if (AppBskyEmbedExternal.isView(content)) {
-      return <EmbedExternal content={content} labelInfo={labelInfo} />;
+      return <EmbedExternal content={content} />;
     }
 
     if (AppBskyEmbedRecord.isView(content)) {
@@ -96,7 +114,7 @@ export const EmbedRenderer = ({
         );
 
         return (
-          <div className='transition-colors border-gray-800 rounded-lg p-4 gap-1.5 w-full flex flex-col'>
+          <div className='transition-colors border-gray-800 rounded-lg p-4 gap-1.5 max-w-full overflow-hidden flex flex-col'>
             <PostHeader
               author={record.author}
               isAuthorLabeled={isAuthorLabeled}
@@ -152,11 +170,11 @@ export const EmbedRenderer = ({
       }
 
       if (AppBskyEmbedRecord.isViewNotFound(record)) {
-        return <Info>Quoted post not found, it may have been deleted.</Info>;
+        return <Info>Not found, it may have been deleted.</Info>;
       }
 
       if (AppBskyEmbedRecord.isViewBlocked(record)) {
-        return <Info>The quoted post is blocked.</Info>;
+        return <Info>Blocked.</Info>;
       }
 
       if (AppBskyEmbedRecord.isViewDetached(record)) {
@@ -168,7 +186,7 @@ export const EmbedRenderer = ({
     }
 
     if (AppBskyEmbedVideo.isView(content)) {
-      return <EmbedVideoView embed={content} labelInfo={labelInfo} />;
+      return <EmbedVideoView embed={content} />;
     }
 
     if (

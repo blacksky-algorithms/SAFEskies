@@ -1,74 +1,77 @@
-import { useEffect, useRef, useState } from 'react';
-import { AdminLog, LogFilters } from '@/lib/types/logs';
+import { useEffect, useState } from 'react';
+import { Log, LogFilters } from '@/lib/types/logs';
+import { ModAction } from '@/lib/types/moderation';
 import { fetchLogs } from '@/lib/utils/logs';
+import { useSearchParams } from 'next/navigation';
+import { userCanViewAdminActions } from '@/lib/utils/permission';
+import { useProfileData } from '@/hooks/useProfileData';
+import { User } from '@/lib/types/user';
 
-type FilterUpdate = Partial<Pick<LogFilters, keyof LogFilters>>;
+export function useLogs() {
+  const searchParams = useSearchParams();
+  const { profile } = useProfileData();
 
-export function useLogs(type: 'admin' | 'feed' = 'admin', feedUri?: string) {
-  const [filters, setFilters] = useState<LogFilters>({
-    sortBy: 'descending',
-  });
   const [state, setState] = useState<{
-    logs: AdminLog[];
+    logs: Log[];
     isLoading: boolean;
     error: string | null;
+    userCanViewAdminActions: boolean;
   }>({
     logs: [],
     isLoading: true,
     error: null,
+    userCanViewAdminActions: false,
   });
 
-  const filtersRef = useRef(filters);
-
-  const updateStateAndRef = (newFilter: FilterUpdate) => {
-    const updatedState = { ...filters, ...newFilter };
-    setFilters(updatedState);
-    filtersRef.current = updatedState;
-  };
-
-  const clearFilters = () => {
-    setFilters({ sortBy: 'descending' });
-    filtersRef.current = { sortBy: 'descending' };
-  };
-
   useEffect(() => {
-    let isMounted = true;
+    const getFiltersFromParams = (): LogFilters => {
+      const params = Object.fromEntries(searchParams.entries());
 
+      return {
+        action: (params.action as ModAction) || null,
+        performedBy: params.performedBy,
+        targetUser: params.targetUser,
+        targetPost: params.targetPost,
+        sortBy: (params.sortBy as 'ascending' | 'descending') || 'descending',
+        dateRange:
+          params.fromDate && params.toDate
+            ? { fromDate: params.fromDate, toDate: params.toDate }
+            : undefined,
+        uri: params.uri,
+      };
+    };
     const fetchData = async () => {
+      if (!profile) {
+        return;
+      }
+      const canViewAdminActions = userCanViewAdminActions(profile as User);
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
-        const logs = await fetchLogs(filtersRef.current, type, feedUri);
 
-        if (isMounted) {
-          setState({
-            logs,
-            isLoading: false,
-            error: null,
-          });
-        }
+        const filters = getFiltersFromParams();
+        const logs = await fetchLogs(filters);
+
+        setState({
+          logs,
+          isLoading: false,
+          error: null,
+          userCanViewAdminActions: canViewAdminActions,
+        });
       } catch (err) {
-        console.error(err);
-        if (isMounted) {
-          setState({
-            logs: [],
-            isLoading: false,
-            error: 'Failed to load moderation logs',
-          });
-        }
+        console.error('Error fetching logs:', err);
+        setState({
+          logs: [],
+          isLoading: false,
+          error: 'Failed to fetch logs',
+          userCanViewAdminActions: false,
+        });
       }
     };
 
     fetchData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [filters, type, feedUri]);
+  }, [searchParams, profile]);
 
   return {
     ...state,
-    filters,
-    updateFilter: updateStateAndRef,
-    clearFilters,
   };
 }

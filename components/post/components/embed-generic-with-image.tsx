@@ -56,7 +56,7 @@ export const GenericWithImageEmbed = ({
       </Link>
       <NotImplementedModal>
         <p className='text-center'>
-          This feature has not yet been implemented on OnlyFeeds, if you
+          This feature has not yet been implemented on SAFEskies, if you
           confirmedHref you will be going to the Blue Sky App
         </p>
         <div>

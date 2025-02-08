@@ -8,7 +8,7 @@ import {
   TabPanels,
 } from '@headlessui/react';
 import cc from 'classcat';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 
 interface TabItem {
   title: string | ReactNode;
@@ -16,12 +16,24 @@ interface TabItem {
 }
 
 interface TabsProps {
-  tabs: TabItem[];
+  data: TabItem[];
   activeTab?: number;
   onTabChange?: (index: number) => void;
 }
 
-export function Tabs({ tabs, activeTab, onTabChange }: TabsProps) {
+export function Tabs({ data, activeTab, onTabChange }: TabsProps) {
+  const activeTabRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (activeTabRef.current) {
+      activeTabRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest',
+      });
+    }
+  }, []); // a hack to scroll to the active tab on mount after refreshing on mobile - do better natalie
+
   return (
     <TabGroup
       selectedIndex={activeTab}
@@ -29,7 +41,7 @@ export function Tabs({ tabs, activeTab, onTabChange }: TabsProps) {
       className='w-full'
     >
       <TabList className='flex space-x-1 bg-app-background p-1 overflow-auto'>
-        {tabs.map((tab, index) => (
+        {data.map((tab, index) => (
           <HeadlessTab
             key={index}
             className={({ selected }) =>
@@ -37,12 +49,13 @@ export function Tabs({ tabs, activeTab, onTabChange }: TabsProps) {
                 'w-full text-center px-4 py-2 cursor-pointer',
                 {
                   'border-b-4 border-b-app-primary':
-                    selected && tabs.length > 1,
+                    selected && data.length > 1,
                 },
               ])
             }
           >
             <h2
+              ref={activeTabRef}
               id={`feed-title-${tab.title}`}
               className='text-2xl font-bold whitespace-nowrap'
             >
@@ -52,10 +65,14 @@ export function Tabs({ tabs, activeTab, onTabChange }: TabsProps) {
         ))}
       </TabList>
       <TabPanels>
-        {tabs.map((tab, index) => (
+        {data.map((tab, index) => (
           <TabPanel key={index}>{tab.TabContent}</TabPanel>
         ))}
       </TabPanels>
     </TabGroup>
   );
 }
+
+export const Tab = ({ children }: { children: ReactNode }) => {
+  return <TabPanel>{children}</TabPanel>;
+};

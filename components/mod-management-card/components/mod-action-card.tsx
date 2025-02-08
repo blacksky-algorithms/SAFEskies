@@ -10,14 +10,14 @@ interface ModActionCardProps {
   moderator: ProfileViewBasic;
   isBeingDemoted: boolean;
   onDemote: (modDid: string) => void;
-  feedUri: string;
+  uri: string;
 }
 
 export const ModActionCard = ({
   moderator,
   isBeingDemoted,
   onDemote,
-  feedUri,
+  uri,
 }: ModActionCardProps) => (
   <article className='bg-app-background border border-app-border rounded-md shadow-sm p-4 flex'>
     <div className='mr-4'>
@@ -44,7 +44,7 @@ export const ModActionCard = ({
         <div>
           <Link
             className='text-app-text hover:text-app-text-hover focus:underline bg-transparent'
-            href={`/admin/mods/logs/?modDID=${moderator.did}&feedUri=${feedUri}`}
+            href={`/logs?uri=${uri}&performedBy=${moderator.did}`}
           >
             View Logs
           </Link>

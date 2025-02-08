@@ -1,5 +1,6 @@
 'use client';
 
+import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { Modal } from '@/components/modals';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { Post } from '@/components/post';
@@ -13,6 +14,8 @@ import cc from 'classcat';
 interface HydratedPostModalProps {
   uri: string | null;
   onClose?: () => void;
+  onModAction: (post: PostView) => void;
+  showModMenu: boolean;
 }
 
 interface HydratedPostState {
@@ -22,7 +25,12 @@ interface HydratedPostState {
   showReplies: Record<string, boolean>;
 }
 
-export const HydratedPostModal = ({ uri, onClose }: HydratedPostModalProps) => {
+export const HydratedPostModal = ({
+  uri,
+  onClose,
+  onModAction,
+  showModMenu,
+}: HydratedPostModalProps) => {
   const [state, setState] = useState<HydratedPostState>({
     thread: null,
     isLoading: false,
@@ -31,28 +39,24 @@ export const HydratedPostModal = ({ uri, onClose }: HydratedPostModalProps) => {
   });
 
   const fetchPostThread = useCallback(async () => {
-    if (!uri) {
-      return;
-    }
-    try {
-      const params = new URLSearchParams({
-        uri: uri || '',
-      });
+    if (!uri) return;
 
+    try {
+      const params = new URLSearchParams({ uri });
       const response = await fetch(`/api/post?${params}`);
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to fetch feed');
+        throw new Error(data.error || 'Failed to fetch post');
       }
 
       const data = await response.json();
-      setState((prev) => ({
-        ...prev,
+      setState({
         thread: data,
         isLoading: false,
         error: null,
-      }));
+        showReplies: {},
+      });
     } catch (error) {
       console.error('Error fetching post thread:', error);
     }
@@ -78,29 +82,24 @@ export const HydratedPostModal = ({ uri, onClose }: HydratedPostModalProps) => {
     return (
       <div key={reply.post.uri} className='w-full'>
         <div className='flex'>
-          <div
-            className={cc([
-              'flex-1',
-              {
-                'pl-4': depth > 0,
-              },
-            ])}
-          >
-            <div className='flex items-center justify-center flex-col'>
-              <Post post={reply.post} />
-              {reply.replies && reply.replies?.length > 0 && (
-                <div>
-                  <Button
-                    onClick={() => handleReplyToggle(reply.post.uri)}
-                    intent={VisualIntent.TextButton}
-                  >
-                    {isExpanded
-                      ? 'Hide replies'
-                      : `Show replies (${reply.replies.length})`}
-                  </Button>
-                </div>
-              )}
-            </div>
+          <div className={cc(['flex-1', { 'pl-4': depth > 0 }])}>
+            <Post
+              post={reply.post}
+              parentPost={(reply.parent?.post as PostView) || null}
+              rootPost={(reply.parent?.post as PostView) || null}
+              onModAction={onModAction}
+              showModMenu={showModMenu}
+            />
+            {reply.replies && reply.replies.length > 0 && (
+              <Button
+                onClick={() => handleReplyToggle(reply.post.uri)}
+                intent={VisualIntent.TextButton}
+              >
+                {isExpanded
+                  ? 'Hide replies'
+                  : `Show replies (${reply.replies.length})`}
+              </Button>
+            )}
             {isExpanded && (
               <div className='mt-2 w-full'>
                 {reply.replies?.map((subReply) =>
@@ -130,9 +129,14 @@ export const HydratedPostModal = ({ uri, onClose }: HydratedPostModalProps) => {
 
         {state.thread && (
           <div className='max-w-2xl mx-auto w-full'>
-            <div className='flex-1 overflow-auto '>
-              <Post post={state.thread.post} />
-
+            <div className='flex-1 overflow-auto'>
+              <Post
+                post={state.thread.post}
+                parentPost={(state.thread.parent?.post as PostView) || null}
+                rootPost={(state.thread.parent?.post as PostView) || null}
+                onModAction={onModAction}
+                showModMenu={showModMenu}
+              />
               {state.thread.replies?.map((reply) =>
                 renderReply(reply as ThreadViewPost)
               )}

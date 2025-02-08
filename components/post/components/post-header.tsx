@@ -5,29 +5,54 @@ import cc from 'classcat';
 export const PostHeader = ({
   author,
   isAuthorLabeled,
+  postIndexedAt,
+  id,
 }: {
   author: ProfileViewBasic;
   isAuthorLabeled?: boolean;
+  postIndexedAt?: string;
+  id?: string;
 }) => {
   if (!author) return null;
-  // TODO: Add labels to post header? Need to understand what labels are and where they come from
+  const formatPostedOn = () => {
+    if (!postIndexedAt) return null;
+    const postedOn = new Date(postIndexedAt);
+    const now = new Date();
+    const diff = now.getTime() - postedOn.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (minutes < 60) {
+      return `${minutes}m`;
+    }
+    if (hours < 24) {
+      return `${hours}h`;
+    }
+    return `${days}d`;
+  };
+
   return (
-    <div className='mb-2 flex items-center'>
-      {author.avatar && (
-        <OptimizedImage
-          src={author.avatar}
-          alt={`Avatar of ${author?.displayName || author.handle}`}
-          className={cc([
-            'w-8 h-8 rounded-full mr-2',
-            { 'blur-[1.5px]': isAuthorLabeled },
-          ])}
-        />
-      )}
-      <div>
-        <p className='font-semibold'>{author?.displayName || author.handle}</p>
-        <p className='text-sm'>@{author.handle}</p>
+    <div id={id} className='flex items-center justify-between '>
+      <div className='mb-2 flex items-center'>
+        {author.avatar && (
+          <OptimizedImage
+            src={author.avatar}
+            alt={`Avatar of ${author?.displayName || author.handle}`}
+            className={cc([
+              'w-8 h-8 rounded-full mr-2',
+              { 'blur-[1.5px]': isAuthorLabeled },
+            ])}
+          />
+        )}
+        <div>
+          <p className='font-semibold'>
+            {author?.displayName || author.handle}
+          </p>
+          <p className='text-sm text-app-secondary'>@{author.handle}</p>
+        </div>
       </div>
-      <div className='flex items-center space-x-2'></div>
+      <span className='text-sm text-app-secondary p-4'>{formatPostedOn()}</span>
     </div>
   );
 };

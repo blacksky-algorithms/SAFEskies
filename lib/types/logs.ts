@@ -1,9 +1,9 @@
 import { ModAction } from '@/lib/types/moderation';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
-export interface BaseLog {
+export interface Log {
   id: string;
-  feed_uri: string;
+  uri: string;
   performed_by: string;
   action: ModAction;
   target_post_uri: string | null;
@@ -13,8 +13,6 @@ export interface BaseLog {
   // TODO: Add these fields to the LogEntry type
   ip_address?: string | null;
   user_agent?: string | null;
-}
-export interface AdminLog extends BaseLog {
   performed_by_profile: ProfileViewBasic;
   target_user_profile?: ProfileViewBasic;
 }
@@ -26,11 +24,11 @@ export interface LogFilters {
   targetPost?: string;
   dateRange?: { fromDate: string; toDate: string };
   sortBy: 'ascending' | 'descending';
-  feedUri?: string;
+  uri?: string;
 }
 export interface LogEntry {
   id: string;
-  feed_uri: string;
+  uri: string;
   performed_by: string;
   action: ModAction;
   target_post_uri?: string | null;
@@ -40,9 +38,4 @@ export interface LogEntry {
   // TODO: Add these fields to the LogEntry type
   ip_address?: string | null;
   user_agent?: string | null;
-}
-
-export interface EnrichedLog extends LogEntry {
-  performed_by_profile: ProfileViewBasic;
-  target_user_profile?: ProfileViewBasic;
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { usePaginatedFeed } from '@/hooks/usePaginatedFeed';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
@@ -12,23 +13,67 @@ import { Post } from '@/components/post';
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { HydratedPostModal } from '../modals/hydrated-post';
 import { VisualIntent } from '@/enums/styles';
+import { ModMenuModal } from '../modals/mod-menu';
+import { ReportPostModal } from '../modals/report-post';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { useModeration } from '@/hooks/useModeration';
+import { useProfileData } from '@/hooks/useProfileData';
+import { canPerformAction } from '@/repos/permission';
 
 interface FeedProps {
-  uri: string;
   onRefreshComplete?: () => void;
+  feedName: string | undefined;
 }
 
-export const Feed = ({ uri, onRefreshComplete }: FeedProps) => {
+export const Feed = ({ onRefreshComplete, feedName }: FeedProps) => {
+  const searchParams = useSearchParams();
+  const uri = searchParams.get('uri');
   const { feed, error, isFetching, hasNextPage, fetchNextPage, refreshFeed } =
     usePaginatedFeed({
       limit: 10,
       uri,
     });
 
+  const { containerRef, isRefreshing, handleTouchStart, handleTouchMove } =
+    usePullToRefresh({
+      onRefresh: async () => {
+        await refreshFeed();
+        onRefreshComplete?.();
+      },
+    });
+
+  const { profile, isLoading } = useProfileData();
   const { openModalInstance, closeModalInstance } = useModal();
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [selectedPostUri, setSelectedPostUri] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [viewedPostUri, setViewedPostUri] = useState<string | null>(null);
+  const [showModMenu, setShowModMenu] = useState(false);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      if (!profile || isLoading) {
+        setShowModMenu(false);
+        return;
+      }
+      const hasModPermissions = await canPerformAction(
+        profile.did,
+        'post_delete',
+        uri
+      );
+      setShowModMenu(hasModPermissions);
+    };
+    checkRole();
+  }, [uri, profile, isLoading]);
+
+  const {
+    reportData,
+    isReportSubmitting,
+    handleModAction,
+    handleSelectReportReason,
+    handleReportPost,
+    handleAddtlInfoChange,
+    handleReportToChange,
+    isModServiceChecked,
+    onClose,
+  } = useModeration({ uri: uri!, feedName, feed });
 
   useEffect(() => {
     if (error) {
@@ -51,30 +96,9 @@ export const Feed = ({ uri, onRefreshComplete }: FeedProps) => {
     threshold: 0.1,
   });
 
-  const handlePullToRefresh = async () => {
-    if (isRefreshing) return;
-
-    setIsRefreshing(true);
-    try {
-      await refreshFeed();
-      onRefreshComplete?.(); // Notify parent when refresh is done
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  const onTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    containerRef.current!.dataset.touchStartY = e.touches[0].clientY.toString();
-  };
-
-  const onTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    const touchStartY = parseFloat(
-      containerRef.current!.dataset.touchStartY || '0'
-    );
-    const deltaY = e.touches[0].clientY - touchStartY;
-    if (deltaY > 50 && containerRef.current?.scrollTop === 0) {
-      handlePullToRefresh();
-    }
+  const handlePostClick = async (post: PostView) => {
+    setViewedPostUri(post.uri);
+    openModalInstance(MODAL_INSTANCE_IDS.HYDRATED_POST, true);
   };
 
   const handleErrorModalClose = () => {
@@ -82,19 +106,14 @@ export const Feed = ({ uri, onRefreshComplete }: FeedProps) => {
     refreshFeed();
   };
 
-  const handlePostClick = async (post: PostView) => {
-    setSelectedPostUri(post.uri);
-    openModalInstance(MODAL_INSTANCE_IDS.HYDRATED_POST);
-  };
-
   return (
     <>
-      <div className=' max-h-page'>
+      <div className='max-h-page'>
         <section className='flex flex-col items-center mx-auto tablet:px-10'>
           <div
             ref={containerRef}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
             className='overflow-y-auto h-screen flex flex-col items-center'
           >
             <LiveRegion>
@@ -102,15 +121,35 @@ export const Feed = ({ uri, onRefreshComplete }: FeedProps) => {
             </LiveRegion>
 
             <ul className='w-screen tablet:max-w-screen-sm flex flex-col items-center'>
-              {feed.map((feedPost) => (
-                <li
-                  key={feedPost.post.cid}
-                  className='w-full tablet:max-w-screen'
-                  onClick={() => handlePostClick(feedPost.post)}
-                >
-                  <Post post={feedPost.post} />
-                </li>
-              ))}
+              {feed.map((feedPost) => {
+                const { post, reply } = feedPost;
+
+                // Correctly extract parent and root
+                const parentPost = reply?.parent ?? null;
+                const rootPost = reply?.root ?? null;
+                const shouldRenderParentPost =
+                  parentPost &&
+                  rootPost &&
+                  (parentPost.uri !== rootPost.uri ||
+                    parentPost.cid !== rootPost.cid);
+                return (
+                  <li
+                    key={post.cid}
+                    className='w-full tablet:max-w-screen'
+                    onClick={() => handlePostClick(post)}
+                  >
+                    <Post
+                      post={post}
+                      parentPost={
+                        shouldRenderParentPost ? (parentPost as PostView) : null
+                      }
+                      rootPost={rootPost as PostView}
+                      onModAction={handleModAction}
+                      showModMenu={showModMenu}
+                    />
+                  </li>
+                );
+              })}
             </ul>
 
             {isFetching && !isRefreshing && (
@@ -135,8 +174,24 @@ export const Feed = ({ uri, onRefreshComplete }: FeedProps) => {
         />
       </div>
       <HydratedPostModal
-        uri={selectedPostUri}
-        onClose={() => setSelectedPostUri(null)}
+        uri={viewedPostUri}
+        onClose={() => setViewedPostUri(null)}
+        onModAction={handleModAction}
+        showModMenu={showModMenu}
+      />
+      <ModMenuModal
+        onClose={onClose}
+        handleSelectReportReason={handleSelectReportReason}
+      />
+      <ReportPostModal
+        onClose={onClose}
+        onReport={handleReportPost}
+        reason={reportData.reason}
+        isReportSubmitting={isReportSubmitting}
+        handleReportToChange={handleReportToChange}
+        isModServiceChecked={isModServiceChecked}
+        isDisabled={reportData.toServices.length === 0}
+        handleAddtlInfoChange={handleAddtlInfoChange}
       />
     </>
   );

@@ -1,14 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { AppBskyEmbedVideo } from '@atproto/api';
 import Hls from 'hls.js';
-import { Info } from './embed-info';
 
 const clamp = (num: number, min: number, max: number) =>
   Math.max(min, Math.min(num, max));
 
 export const EmbedVideoView = ({
   embed,
-  labelInfo,
 }: {
   embed: AppBskyEmbedVideo.View;
   labelInfo?: string;
@@ -31,9 +29,7 @@ export const EmbedVideoView = ({
     const { width, height } = embed.aspectRatio;
     aspectRatio = clamp(width / height, 1 / 1, 3 / 1);
   }
-  if (labelInfo) {
-    return <Info>{labelInfo}</Info>;
-  }
+
   return (
     <div
       className='relative mt-4 mx-auto'
