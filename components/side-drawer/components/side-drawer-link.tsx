@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import cc from 'classcat';
 
 interface SideDrawerLinkProps {
@@ -16,6 +16,7 @@ export const SideDrawerLink = ({
   onClick,
 }: SideDrawerLinkProps) => {
   const pathname = usePathname();
+  const params = useSearchParams();
 
   const handleLinkClick = (path: string) => {
     if (onClick) onClick(path);
@@ -48,23 +49,25 @@ export const SideDrawerLink = ({
       )}
       {nestedLinks && (
         <div className='pl-4 space-y-1'>
-          {nestedLinks.map((link) => (
-            <a
-              key={link.href}
-              onClick={() => handleLinkClick(link.href)}
-              href={link.href}
-              className={cc([
-                'block px-4 py-2 hover:bg-app-secondary-hover rounded-lg',
-                {
-                  'font-semibold text-app-primary': pathname.startsWith(
-                    link.href
-                  ),
-                },
-              ])}
-            >
-              {link.label}
-            </a>
-          ))}
+          {nestedLinks.map((link) => {
+            return (
+              <a
+                key={link.href}
+                onClick={() => handleLinkClick(link.href)}
+                href={link.href}
+                className={cc([
+                  'block px-4 py-2 hover:bg-app-secondary-hover rounded-lg',
+                  {
+                    'font-semibold text-app-primary':
+                      link.href === pathname ||
+                      link.href === `${pathname}?${params.toString()}`,
+                  },
+                ])}
+              >
+                {link.label}
+              </a>
+            );
+          })}
         </div>
       )}
     </li>
