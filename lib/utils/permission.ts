@@ -142,7 +142,7 @@ export function userCanViewAdminActions(user: User): boolean {
 
 export async function reportToBlacksky(uris: { uri: string }[]) {
   console.log('reporting to blacksky', uris);
-
+  return null;
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_RSKY_FEEDGEN}/queue/posts/delete`!,

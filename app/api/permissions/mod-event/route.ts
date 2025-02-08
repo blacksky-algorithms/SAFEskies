@@ -3,37 +3,7 @@ import { canPerformAction } from '@/repos/permission';
 import { createModerationLog } from '@/repos/logs';
 import { getProfile } from '@/repos/profile';
 import { ModAction } from '@/lib/types/moderation';
-
-const reportToBlacksky = async (uri: string) => {
-  console.log('reporting to blacksky', uri);
-  // console.log({
-  //   uri,
-  //   process: process.env.NEXT_PUBLIC_RSKY_FEEDGEN,
-  //   key: process.env.RSKY_API_KEY,
-  // });
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_RSKY_FEEDGEN}/queue/posts/delete`!,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-RSKY-KEY': process.env.RSKY_API_KEY!,
-        },
-        body: JSON.stringify([{ uri }]),
-      }
-    );
-    console.log({ response });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error:', error);
-    throw error;
-  }
-};
+import { reportToBlacksky } from '@/lib/utils/permission';
 
 export async function POST(request: Request) {
   try {
@@ -114,7 +84,7 @@ export async function POST(request: Request) {
           service.value === 'blacksky'
       )
     ) {
-      reportToBlacksky(targetedPostUri);
+      await reportToBlacksky(targetedPostUri);
     }
 
     return NextResponse.json({ success: true });
