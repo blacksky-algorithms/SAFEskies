@@ -42,7 +42,7 @@ const getFeedsByRole = async (userDid: string | undefined, role: UserRole) => {
   if (!userDid || role === 'user') return [];
   try {
     const { data, error } = await SupabaseInstance.from('feed_permissions')
-      .select('feed_uri, feed_name')
+      .select('uri, feed_name')
       .eq('user_did', userDid)
       .eq('role', role);
 
@@ -81,9 +81,9 @@ export const getUserFeeds = async (userDid?: string) => {
 
     // 4. Merge database permissions with latest Bluesky feed data
     const modFeedsList = modFeeds.map((feed) => {
-      const blueskyFeed = blueskyFeedsMap.get(feed.feed_uri);
+      const blueskyFeed = blueskyFeedsMap.get(feed.uri);
       return {
-        uri: feed.feed_uri,
+        uri: feed.uri,
         displayName: blueskyFeed?.displayName || feed.feed_name,
         description: blueskyFeed?.description,
         did: blueskyFeed?.did,
@@ -92,9 +92,9 @@ export const getUserFeeds = async (userDid?: string) => {
     });
 
     const adminFeedsList = adminFeeds.map((feed) => {
-      const blueskyFeed = blueskyFeedsMap.get(feed.feed_uri);
+      const blueskyFeed = blueskyFeedsMap.get(feed.uri);
       return {
-        uri: feed.feed_uri,
+        uri: feed.uri,
         displayName: blueskyFeed?.displayName || feed.feed_name,
         description: blueskyFeed?.description,
         did: blueskyFeed?.did,
@@ -105,20 +105,20 @@ export const getUserFeeds = async (userDid?: string) => {
     // 5. Update our database with latest feed data if needed
     await Promise.all([
       ...modFeeds.map(async (feed) => {
-        const blueskyFeed = blueskyFeedsMap.get(feed.feed_uri);
+        const blueskyFeed = blueskyFeedsMap.get(feed.uri);
         if (blueskyFeed && blueskyFeed.displayName !== feed.feed_name) {
           await SupabaseInstance.from('feed_permissions')
             .update({ feed_name: blueskyFeed.displayName })
-            .eq('feed_uri', feed.feed_uri)
+            .eq('uri', feed.uri)
             .eq('user_did', userDid);
         }
       }),
       ...adminFeeds.map(async (feed) => {
-        const blueskyFeed = blueskyFeedsMap.get(feed.feed_uri);
+        const blueskyFeed = blueskyFeedsMap.get(feed.uri);
         if (blueskyFeed && blueskyFeed.displayName !== feed.feed_name) {
           await SupabaseInstance.from('feed_permissions')
             .update({ feed_name: blueskyFeed.displayName })
-            .eq('feed_uri', feed.feed_uri)
+            .eq('uri', feed.uri)
             .eq('user_did', userDid);
         }
       }),

@@ -73,7 +73,7 @@ export const Feed = ({ onRefreshComplete, feedName }: FeedProps) => {
     handleReportToChange,
     isModServiceChecked,
     onClose,
-  } = useModeration({ feedUri: uri!, feedName, feed });
+  } = useModeration({ uri: uri!, feedName, feed });
 
   useEffect(() => {
     if (error) {

@@ -38,14 +38,11 @@ export function getDateTimeRange(dateRange: {
 export function getLogsByFeedLinks(user: User | null) {
   if (!user) return [];
   return Object.values(user.rolesByFeed).reduce(
-    (
-      acc: { label: string; href: string }[],
-      { displayName, feedUri, role }
-    ) => {
+    (acc: { label: string; href: string }[], { displayName, uri, role }) => {
       if (canPerformWithRole(role, 'post_delete')) {
         acc.push({
           label: displayName,
-          href: `/logs?uri=${encodeURIComponent(feedUri)}`,
+          href: `/logs?uri=${encodeURIComponent(uri)}`,
         });
       }
       return acc;

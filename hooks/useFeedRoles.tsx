@@ -8,7 +8,7 @@ export const useFeedRoles = () => {
 
   const checkFeedRole = async (
     userDid: string,
-    feedUri: string
+    uri: string
   ): Promise<UserRole> => {
     setIsLoading(true);
     setError(null);
@@ -17,7 +17,7 @@ export const useFeedRoles = () => {
       const response = await fetch(
         `/api/permissions/role-check?${new URLSearchParams({
           userDid,
-          feedUri,
+          uri,
         })}`
       );
 

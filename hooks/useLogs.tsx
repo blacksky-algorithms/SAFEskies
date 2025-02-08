@@ -37,7 +37,7 @@ export function useLogs() {
           params.fromDate && params.toDate
             ? { fromDate: params.fromDate, toDate: params.toDate }
             : undefined,
-        feedUri: params.uri,
+        uri: params.uri,
       };
     };
     const fetchData = async () => {

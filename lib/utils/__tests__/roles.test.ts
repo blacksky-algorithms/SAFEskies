@@ -19,12 +19,12 @@ describe('buildFeedPermissions', () => {
     const existingPermissions = [
       {
         role: 'mod' as UserRole,
-        feed_uri: 'at://feed/456',
+        uri: 'at://feed/456',
         feed_name: 'Feed 456',
       },
       {
         role: 'user' as UserRole,
-        feed_uri: 'at://feed/789',
+        uri: 'at://feed/789',
         feed_name: 'Feed 789',
       },
     ];
@@ -38,7 +38,7 @@ describe('buildFeedPermissions', () => {
     expect(permissions).toEqual([
       {
         user_did: 'user123',
-        feed_uri: 'at://feed/123',
+        uri: 'at://feed/123',
         feed_name: 'Feed 123',
         role: 'admin',
         created_by: 'user123',
@@ -47,13 +47,13 @@ describe('buildFeedPermissions', () => {
       {
         user_did: 'user123',
         role: 'mod',
-        feed_uri: 'at://feed/456',
+        uri: 'at://feed/456',
         feed_name: 'Feed 456',
       },
       {
         user_did: 'user123',
         role: 'user',
-        feed_uri: 'at://feed/789',
+        uri: 'at://feed/789',
         feed_name: 'Feed 789',
       },
     ]);
@@ -70,7 +70,7 @@ describe('buildFeedPermissions', () => {
     const existingPermissions = [
       {
         role: 'mod' as UserRole,
-        feed_uri: 'at://feed/123',
+        uri: 'at://feed/123',
         feed_name: 'Feed 123',
       },
     ];
@@ -84,7 +84,7 @@ describe('buildFeedPermissions', () => {
     expect(permissions).toEqual([
       {
         user_did: 'user123',
-        feed_uri: 'at://feed/123',
+        uri: 'at://feed/123',
         feed_name: 'Feed 123',
         role: 'admin',
         created_by: 'user123',
@@ -99,7 +99,7 @@ describe('buildFeedPermissions', () => {
     const existingPermissions = [
       {
         role: 'user' as UserRole,
-        feed_uri: '',
+        uri: '',
         feed_name: '',
       },
     ];
@@ -107,7 +107,7 @@ describe('buildFeedPermissions', () => {
     expect(() => {
       buildFeedPermissions(userDid, createdFeeds, existingPermissions);
     }).toThrow(
-      'Invalid permission data: Each permission must have a valid feed_uri, feed_name, and role.'
+      'Invalid permission data: Each permission must have a valid uri, feed_name, and role.'
     );
   });
 
@@ -117,12 +117,12 @@ describe('buildFeedPermissions', () => {
     const existingPermissions = [
       {
         role: 'user' as UserRole,
-        feed_uri: 'at://feed/123',
+        uri: 'at://feed/123',
         feed_name: 'Feed 123',
       },
       {
         role: 'mod' as UserRole,
-        feed_uri: 'at://feed/123',
+        uri: 'at://feed/123',
         feed_name: 'Feed 123',
       },
     ];
@@ -137,7 +137,7 @@ describe('buildFeedPermissions', () => {
       {
         user_did: 'user123',
         role: 'mod',
-        feed_uri: 'at://feed/123',
+        uri: 'at://feed/123',
         feed_name: 'Feed 123',
       },
     ]);
@@ -150,12 +150,12 @@ describe('determineUserRolesByFeed', () => {
     const existingPermissions = [
       {
         role: 'mod' as UserRole,
-        feed_uri: 'at://feed/456',
+        uri: 'at://feed/456',
         feed_name: 'Feed 456',
       },
       {
         role: 'user' as UserRole,
-        feed_uri: 'at://feed/789',
+        uri: 'at://feed/789',
         feed_name: 'Feed 789',
       },
     ];
@@ -169,17 +169,17 @@ describe('determineUserRolesByFeed', () => {
       'at://feed/123': {
         role: 'admin',
         displayName: 'Feed 123',
-        feedUri: 'at://feed/123',
+        uri: 'at://feed/123',
       },
       'at://feed/456': {
         role: 'mod',
         displayName: 'Feed 456',
-        feedUri: 'at://feed/456',
+        uri: 'at://feed/456',
       },
       'at://feed/789': {
         role: 'user',
         displayName: 'Feed 789',
-        feedUri: 'at://feed/789',
+        uri: 'at://feed/789',
       },
     });
   });
@@ -189,12 +189,12 @@ describe('determineUserRolesByFeed', () => {
     const existingPermissions = [
       {
         role: 'user' as UserRole,
-        feed_uri: 'at://feed/123',
+        uri: 'at://feed/123',
         feed_name: 'Feed 123',
       },
       {
         role: 'mod' as UserRole,
-        feed_uri: 'at://feed/123',
+        uri: 'at://feed/123',
         feed_name: 'Feed 123',
       },
     ];
@@ -208,7 +208,7 @@ describe('determineUserRolesByFeed', () => {
       'at://feed/123': {
         role: 'mod',
         displayName: 'Feed 123',
-        feedUri: 'at://feed/123',
+        uri: 'at://feed/123',
       },
     });
   });
@@ -218,7 +218,7 @@ describe('determineUserRolesByFeed', () => {
     const existingPermissions = [
       {
         role: 'user' as UserRole,
-        feed_uri: 'at://feed/123',
+        uri: 'at://feed/123',
         feed_name: 'Feed 123',
       },
     ];
@@ -232,7 +232,7 @@ describe('determineUserRolesByFeed', () => {
       'at://feed/123': {
         role: 'admin',
         displayName: 'Feed 123',
-        feedUri: 'at://feed/123',
+        uri: 'at://feed/123',
       },
     });
   });
@@ -241,7 +241,7 @@ describe('determineUserRolesByFeed', () => {
     const createdFeeds: { uri: string; displayName?: string }[] = [];
     const existingPermissions: {
       role: UserRole;
-      feed_uri: string;
+      uri: string;
       feed_name: string;
     }[] = [];
 
@@ -258,12 +258,12 @@ describe('determineUserRolesByFeed', () => {
     const existingPermissions = [
       {
         role: 'mod' as UserRole,
-        feed_uri: 'at://feed/456',
+        uri: 'at://feed/456',
         feed_name: 'Feed 456',
       },
       {
         role: null as unknown as UserRole,
-        feed_uri: 'at://feed/789',
+        uri: 'at://feed/789',
         feed_name: '',
       },
     ];
@@ -277,16 +277,16 @@ describe('determineUserRolesByFeed', () => {
       'at://feed/123': {
         role: 'admin',
         displayName: 'Feed 123',
-        feedUri: 'at://feed/123',
+        uri: 'at://feed/123',
       },
       'at://feed/456': {
         role: 'mod',
         displayName: 'Feed 456',
-        feedUri: 'at://feed/456',
+        uri: 'at://feed/456',
       },
       'at://feed/789': {
         displayName: 'Unknown Feed',
-        feedUri: 'at://feed/789',
+        uri: 'at://feed/789',
         role: 'user',
       },
     });

@@ -4,7 +4,7 @@ import { UserRole } from '@/lib/types/permission';
 export interface FeedRoleInfo {
   role: UserRole;
   displayName: string;
-  feedUri: string;
+  uri: string;
 }
 
 export interface User extends ProfileViewBasic {
@@ -13,7 +13,7 @@ export interface User extends ProfileViewBasic {
 
 export interface ModeratorData {
   user_did: string;
-  feed_uri: string;
+  uri: string;
   feed_name: string;
   role: UserRole;
   profiles: ProfileViewBasic;

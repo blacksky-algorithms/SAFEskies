@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       reason,
       toServices,
       targetedUserDid,
-      feedUri,
+      uri,
       feedName,
       additionalInfo,
     } = await request.json();
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       !reason ||
       !toServices ||
       !targetedUserDid ||
-      !feedUri
+      !uri
     ) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -41,11 +41,7 @@ export async function POST(request: Request) {
     }
 
     // Check if the user has permission to perform the moderation action
-    const hasPermission = await canPerformAction(
-      userDID,
-      'post_delete',
-      feedUri
-    );
+    const hasPermission = await canPerformAction(userDID, 'post_delete', uri);
 
     if (!hasPermission) {
       return NextResponse.json(
@@ -59,7 +55,7 @@ export async function POST(request: Request) {
       to_services: toServices.map(
         (item: { label: string; value: string }) => item.value
       ),
-      feed_uri: feedUri,
+      uri,
       action: 'post_delete' as ModAction,
     };
     // Create the moderation log entry

@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const filters: LogFilters = {
-      feedUri: searchParams.get('feedUri') || undefined,
+      uri: searchParams.get('uri') || undefined,
       action: searchParams.get('action') as ModAction | null,
       performedBy: searchParams.get('performedBy') || undefined,
       targetUser: searchParams.get('targetUser') || undefined,

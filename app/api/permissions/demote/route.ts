@@ -3,10 +3,10 @@ import { canPerformAction, setFeedRole } from '@/repos/permission';
 
 export async function POST(request: Request) {
   try {
-    const { modDid, feedUri, setByUserDid, feedName } = await request.json();
+    const { modDid, uri, setByUserDid, feedName } = await request.json();
 
     // Validate required fields
-    if (!modDid || !feedUri || !setByUserDid || !feedName) {
+    if (!modDid || !uri || !setByUserDid || !feedName) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     const hasPermission = await canPerformAction(
       setByUserDid,
       'mod_demote',
-      feedUri
+      uri
     );
 
     if (!hasPermission) {
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
     const success = await setFeedRole(
       modDid,
-      feedUri,
+      uri,
       'user',
       setByUserDid,
       feedName

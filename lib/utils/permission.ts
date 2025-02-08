@@ -22,23 +22,23 @@ export function canPerformWithRole(role: UserRole, action: ModAction): boolean {
 
 export const groupModeratorsByFeed = (
   permissions: {
-    feed_uri: string;
+    uri: string;
     user_did: string;
     role: UserRole;
   }[]
 ) => {
   return permissions.reduce(
     (acc, perm) => {
-      if (!acc[perm.feed_uri]) {
-        acc[perm.feed_uri] = [];
+      if (!acc[perm.uri]) {
+        acc[perm.uri] = [];
       }
-      acc[perm.feed_uri].push(perm);
+      acc[perm.uri].push(perm);
       return acc;
     },
     {} as Record<
       string,
       {
-        feed_uri: string;
+        uri: string;
         user_did: string;
         role: UserRole;
       }[]
@@ -58,7 +58,7 @@ export function buildFeedPermissions(
     string,
     {
       role: UserRole;
-      feed_uri: string;
+      uri: string;
       feed_name: string;
       user_did: string;
       created_by?: string;
@@ -72,7 +72,7 @@ export function buildFeedPermissions(
     }
     permissionsMap.set(feed.uri, {
       user_did: userDid,
-      feed_uri: feed.uri,
+      uri: feed.uri,
       feed_name: feed.displayName || feed.uri.split('/').pop() || '',
       role: 'admin',
       created_by: userDid,
@@ -81,14 +81,14 @@ export function buildFeedPermissions(
   });
 
   existingPermissions.forEach((perm) => {
-    if (!perm.feed_uri || !perm.feed_name || !perm.role) {
+    if (!perm.uri || !perm.feed_name || !perm.role) {
       throw new Error(
-        'Invalid permission data: Each permission must have a valid feed_uri, feed_name, and role.'
+        'Invalid permission data: Each permission must have a valid uri, feed_name, and role.'
       );
     }
-    const existing = permissionsMap.get(perm.feed_uri);
+    const existing = permissionsMap.get(perm.uri);
     if (!existing || ROLE_PRIORITY[perm.role] > ROLE_PRIORITY[existing.role]) {
-      permissionsMap.set(perm.feed_uri, { ...perm, user_did: userDid });
+      permissionsMap.set(perm.uri, { ...perm, user_did: userDid });
     }
   });
 
@@ -98,7 +98,7 @@ export function buildFeedPermissions(
 export const determineUserRolesByFeed = (
   existingPermissions: {
     role: UserRole;
-    feed_uri: string;
+    uri: string;
     feed_name: string;
   }[],
   createdFeeds: { uri: string; displayName?: string }[]
@@ -110,24 +110,24 @@ export const determineUserRolesByFeed = (
       role: 'admin',
       displayName:
         feed.displayName || feed.uri.split('/').pop() || 'Unknown Feed',
-      feedUri: feed.uri,
+      uri: feed.uri,
     };
   });
 
   existingPermissions.forEach((permission) => {
-    const currentEntry = rolesByFeed[permission.feed_uri] || {
+    const currentEntry = rolesByFeed[permission.uri] || {
       role: 'user',
       displayName: permission.feed_name || 'Unknown Feed',
-      feedUri: permission.feed_uri,
+      uri: permission.uri,
     };
 
-    rolesByFeed[permission.feed_uri] = {
+    rolesByFeed[permission.uri] = {
       role:
         ROLE_PRIORITY[permission.role] > ROLE_PRIORITY[currentEntry.role]
           ? permission.role
           : currentEntry.role,
       displayName: currentEntry.displayName,
-      feedUri: permission.feed_uri,
+      uri: permission.uri,
     };
   });
 

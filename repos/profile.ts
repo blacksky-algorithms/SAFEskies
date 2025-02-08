@@ -41,7 +41,7 @@ export const saveProfile = async (
       const { error: permissionError } = await SupabaseInstance.from(
         'feed_permissions'
       ).upsert(feedPermissions, {
-        onConflict: 'user_did,feed_uri',
+        onConflict: 'user_did,uri',
       });
 
       if (permissionError) {
@@ -125,7 +125,7 @@ export const getProfile = async () => {
       await Promise.all([
         getProfileDetails(userDid),
         SupabaseInstance.from('feed_permissions')
-          .select('feed_uri, feed_name, role')
+          .select('uri, feed_name, role')
           .eq('user_did', userDid),
         getActorFeeds(userDid),
       ]);
@@ -148,7 +148,7 @@ export const getProfile = async () => {
         permissionsResponse.data || []
       );
       await SupabaseInstance.from('feed_permissions').upsert(feedPermissions, {
-        onConflict: 'user_did,feed_uri',
+        onConflict: 'user_did,uri',
       });
     }
 

@@ -3,7 +3,7 @@ import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/
 
 export interface Log {
   id: string;
-  feed_uri: string;
+  uri: string;
   performed_by: string;
   action: ModAction;
   target_post_uri: string | null;
@@ -24,11 +24,11 @@ export interface LogFilters {
   targetPost?: string;
   dateRange?: { fromDate: string; toDate: string };
   sortBy: 'ascending' | 'descending';
-  feedUri?: string;
+  uri?: string;
 }
 export interface LogEntry {
   id: string;
-  feed_uri: string;
+  uri: string;
   performed_by: string;
   action: ModAction;
   target_post_uri?: string | null;

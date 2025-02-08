@@ -23,16 +23,12 @@ interface ReportDataState {
 }
 
 interface UseModerationOptions {
-  feedUri: string;
+  uri: string;
   feedName?: string;
   feed: FeedViewPost[];
 }
 
-export function useModeration({
-  feedUri,
-  feedName,
-  feed,
-}: UseModerationOptions) {
+export function useModeration({ uri, feedName, feed }: UseModerationOptions) {
   const { openModalInstance, closeModalInstance } = useModal();
   const { toast } = useToast();
   const [isReportSubmitting, setIsReportSubmitting] = useState(false);
@@ -72,7 +68,7 @@ export function useModeration({
     reason: ReasonType;
     toServices: { label: string; value: string }[];
     targetedUserDid: string;
-    feedUri: string;
+    uri: string;
     feedName: string | undefined;
     additionalInfo: string | undefined;
   }) => {
@@ -123,7 +119,7 @@ export function useModeration({
         reason: reportData.reason.reason,
         toServices: reportData.toServices,
         targetedUserDid: postToModerate.post.author.did,
-        feedUri,
+        uri,
         feedName: feedName || 'Unnamed Feed',
         additionalInfo: reportData.additionalInfo,
       };

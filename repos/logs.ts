@@ -10,7 +10,7 @@ import { getDateTimeRange } from '@/lib/utils/logs';
 const applyFiltersToQuery = (query: any, filters: LogFilters) => {
   // Mapping filter keys to database column names
   const fieldMapping: Array<{ key: keyof LogFilters; column: string }> = [
-    { key: 'feedUri', column: 'feed_uri' },
+    { key: 'uri', column: 'uri' },
     { key: 'action', column: 'action' },
     { key: 'performedBy', column: 'performed_by' },
     { key: 'targetUser', column: 'target_user_did' },

@@ -48,7 +48,7 @@ export function FeedSelector({
             {feeds.map((item) => {
               const isDisabled = isFeedDisabled(item);
               return (
-                <div key={item.cid as string} className='flex flex-col gap-1'>
+                <div key={item.uri} className='flex flex-col gap-1'>
                   <Checkbox
                     id={`select-feed-${item.uri}`}
                     label={(item.displayName as string) || 'Unnamed Feed'}

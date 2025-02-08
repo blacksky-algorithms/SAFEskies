@@ -12,21 +12,25 @@ import { ModAction } from '@/lib/types/moderation';
 
 export const setFeedRole = async (
   targetUserDid: string,
-  feedUri: string,
+  uri: string,
   role: UserRole,
   setByUserDid: string,
   feedName: string
 ): Promise<boolean> => {
-  const canSetRole = await canPerformAction(
-    setByUserDid,
-    'mod_promote',
-    feedUri
-  );
-
+  const canSetRole = await canPerformAction(setByUserDid, 'mod_promote', uri);
+  console.log({
+    user_did: targetUserDid,
+    uri,
+    feed_name: feedName,
+    role: role,
+    created_by: setByUserDid,
+    created_at: new Date().toISOString(),
+  });
+  debugger;
   if (!canSetRole) {
     console.error('Permission denied to set feed role:', {
       setByUserDid,
-      feedUri,
+      uri,
     });
     return false;
   }
@@ -34,7 +38,7 @@ export const setFeedRole = async (
   try {
     const { error } = await SupabaseInstance.from('feed_permissions').upsert({
       user_did: targetUserDid,
-      feed_uri: feedUri,
+      uri,
       feed_name: feedName,
       role: role,
       created_by: setByUserDid,
@@ -47,7 +51,7 @@ export const setFeedRole = async (
     }
 
     await createModerationLog({
-      feed_uri: feedUri,
+      uri,
       performed_by: setByUserDid,
       action: role === 'mod' ? 'mod_promote' : 'mod_demote', // TODO: Extend to all actions
       target_user_did: targetUserDid,
@@ -63,12 +67,12 @@ export const setFeedRole = async (
 
 export const getFeedRole = async (
   userDid: string,
-  feedUri: string
+  uri: string
 ): Promise<UserRole> => {
   const { data, error } = await SupabaseInstance.from('feed_permissions')
     .select('role')
     .eq('user_did', userDid)
-    .eq('feed_uri', feedUri)
+    .eq('uri', uri)
     .single();
 
   if (error || !data) return 'user';
@@ -78,10 +82,10 @@ export const getFeedRole = async (
 export const canPerformAction = async (
   userDid: string,
   action: ModAction,
-  feedUri: string | null
+  uri: string | null
 ): Promise<boolean> => {
-  if (!userDid || !feedUri) return false;
-  const feedRole = await getFeedRole(userDid, feedUri);
+  if (!userDid || !uri) return false;
+  const feedRole = await getFeedRole(userDid, uri);
 
   return canPerformWithRole(feedRole, action);
 };
@@ -94,8 +98,8 @@ export const getModeratorsByFeeds = async (feeds: Feed[]) => {
     const { data: permissions } = await SupabaseInstance.from(
       'feed_permissions'
     )
-      .select('feed_uri, user_did, role')
-      .in('feed_uri', feedUris)
+      .select('uri, user_did, role')
+      .in('uri', feedUris)
       .eq('role', 'mod');
 
     if (!permissions) {
@@ -131,7 +135,7 @@ export const getAllModeratorsForAdmin = async (adminDid: string) => {
     const { data: adminFeeds, error: feedsError } = await SupabaseInstance.from(
       'feed_permissions'
     )
-      .select('feed_uri')
+      .select('uri')
       .eq('user_did', adminDid)
       .eq('role', 'admin');
 
@@ -144,7 +148,7 @@ export const getAllModeratorsForAdmin = async (adminDid: string) => {
       .select(
         `
         user_did,
-        feed_uri,
+        uri,
         feed_name,
         role,
         profiles!feed_permissions_user_did_fkey (
@@ -156,8 +160,8 @@ export const getAllModeratorsForAdmin = async (adminDid: string) => {
       `
       )
       .in(
-        'feed_uri',
-        adminFeeds.map((f) => f.feed_uri)
+        'uri',
+        adminFeeds.map((f) => f.uri)
       )
       .in('role', ['mod', 'admin'])) as unknown as {
       data: ModeratorData[];
