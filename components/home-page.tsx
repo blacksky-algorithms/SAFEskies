@@ -5,12 +5,14 @@ import { TabGroup, TabPanel } from '@/components/tab/tab';
 import { useSearchParams, useRouter } from 'next/navigation';
 import cc from 'classcat';
 import { useEffect } from 'react';
+import { PermissionPill } from '@/components/permission-pill';
+import { UserRole } from '@/lib/types/permission';
 
 interface Props {
   feeds: {
     description?: string;
     displayName?: string;
-    type: string;
+    type: UserRole;
     uri: string;
   }[];
 }
@@ -40,18 +42,7 @@ export const HomePage = ({ feeds }: Props) => {
       ])}
     >
       <span>{feed.displayName}</span>
-      <span
-        className={cc([
-          '',
-          {
-            'bg-app-primary rounded-full px-2 py-1 text-xs':
-              !!feed.type && feed.type !== 'user',
-            hidden: !feed?.type || feed.type === 'user',
-          },
-        ])}
-      >
-        {feed.type}
-      </span>
+      <PermissionPill type={feed.type} />
     </div>
   ));
 

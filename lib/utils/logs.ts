@@ -10,14 +10,17 @@ export function getDateTimeRange(dateRange: {
   return { fromDateTime, toDateTime };
 }
 
-export function getLogsByFeedLinks(user: User | null) {
+export function getLinksByFeed(user: User | null, type: 'logs' | 'feed') {
   if (!user) return [];
   return Object.values(user.rolesByFeed).reduce(
     (acc: { label: string; href: string }[], { displayName, uri, role }) => {
       if (canPerformWithRole(role, 'post_delete')) {
         acc.push({
           label: displayName,
-          href: `/logs?uri=${encodeURIComponent(uri)}`,
+          href:
+            type === 'logs'
+              ? `/${type}?uri=${encodeURIComponent(uri)}`
+              : `/?uri=${encodeURIComponent(uri)}`,
         });
       }
       return acc;

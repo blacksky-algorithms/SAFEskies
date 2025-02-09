@@ -9,7 +9,7 @@ import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { Modal } from '@/components/modals';
 import { User } from '@/lib/types/user';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getLogsByFeedLinks } from '@/lib/utils/logs';
+import { getLinksByFeed } from '@/lib/utils/logs';
 import { LogEntry } from './components/log-entry';
 import cc from 'classcat';
 import { TabGroup, TabPanel } from '@/components/tab/tab';
@@ -21,7 +21,7 @@ export const Logs = ({ user }: { user: User }) => {
   const uri = searchParams.get('uri');
   const { logs, isLoading, error, userCanViewAdminActions } = useLogs();
 
-  const logsByFeedLinks = useMemo(() => getLogsByFeedLinks(user), [user]);
+  const logsByFeedLinks = useMemo(() => getLinksByFeed(user, 'logs'), [user]);
 
   const tabsData = useMemo(
     () => [

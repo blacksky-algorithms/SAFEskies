@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { User } from '@/lib/types/user';
 import { SideDrawerLink } from '../components/side-drawer-link';
-import { getLogsByFeedLinks } from '@/lib/utils/logs';
+import { getLinksByFeed } from '@/lib/utils/logs';
 
 interface ModSideDrawerContentProps {
   user: User | null;
@@ -12,7 +12,8 @@ export const ModSideDrawerContent = ({
   user,
   handleLinkClick,
 }: ModSideDrawerContentProps) => {
-  const logsByFeedLinks = useMemo(() => getLogsByFeedLinks(user), [user]);
+  const logsByFeedLinks = useMemo(() => getLinksByFeed(user, 'logs'), [user]);
+  const feedLinks = useMemo(() => getLinksByFeed(user, 'feed'), [user]);
   if (!user) return null;
 
   return (
@@ -23,11 +24,20 @@ export const ModSideDrawerContent = ({
         </h2>
         <ul className='space-y-1'>
           <SideDrawerLink label='Home' href='/' onClick={handleLinkClick} />
+          {feedLinks.length > 0 ? (
+            <SideDrawerLink
+              label='Feeds'
+              onClick={handleLinkClick}
+              nestedLinks={feedLinks}
+              permission='mod'
+            />
+          ) : null}
           {logsByFeedLinks.length > 0 ? (
             <SideDrawerLink
               label='Logs'
               onClick={handleLinkClick}
               nestedLinks={logsByFeedLinks}
+              permission='mod'
             />
           ) : null}
         </ul>

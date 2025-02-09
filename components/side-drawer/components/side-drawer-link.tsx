@@ -1,12 +1,15 @@
 import React from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import cc from 'classcat';
+import { UserRole } from '@/lib/types/permission';
+import { PermissionPill } from '@/components/permission-pill';
 
 interface SideDrawerLinkProps {
   label: string;
   href?: string;
   nestedLinks?: { label: string; href: string }[];
   onClick?: (path: string) => void;
+  permission?: UserRole;
 }
 
 export const SideDrawerLink = ({
@@ -14,6 +17,7 @@ export const SideDrawerLink = ({
   href,
   nestedLinks,
   onClick,
+  permission,
 }: SideDrawerLinkProps) => {
   const pathname = usePathname();
   const params = useSearchParams();
@@ -24,11 +28,13 @@ export const SideDrawerLink = ({
 
   return (
     <li className='space-y-1'>
-      {nestedLinks ? (
+      {nestedLinks && !href ? (
         <p
           className={cc([
-            'block py-2 text-app rounded-lg',
-            { 'cursor-pointer hover:bg-app-secondary-hover ': !nestedLinks },
+            'block py-2 px-4 text-app rounded-lg',
+            {
+              'cursor-pointer hover:bg-app-secondary-hover ': !!href,
+            },
           ])}
         >
           {label}
@@ -40,15 +46,20 @@ export const SideDrawerLink = ({
           }}
           href={href || ''}
           className={cc([
-            'block py-2 text-app rounded-lg',
-            { 'cursor-pointer hover:bg-app-secondary-hover ': !nestedLinks },
+            'block py-2 px-4  text-app rounded-lg',
+            {
+              'cursor-pointer hover:bg-app-secondary-hover ': !!href,
+              'font-semibold text-app-primary bg-app-secondary-hover':
+                href === pathname ||
+                href === `${pathname}?${params.toString()}`,
+            },
           ])}
         >
           {label}
         </a>
       )}
       {nestedLinks && (
-        <div className='pl-4 space-y-1'>
+        <div className='pl-6 space-y-1'>
           {nestedLinks.map((link) => {
             return (
               <a
@@ -56,15 +67,18 @@ export const SideDrawerLink = ({
                 onClick={() => handleLinkClick(link.href)}
                 href={link.href}
                 className={cc([
-                  'block px-4 py-2 hover:bg-app-secondary-hover rounded-lg',
+                  'block py-2 px-4 hover:bg-app-secondary-hover rounded-lg',
                   {
-                    'font-semibold text-app-primary':
+                    'font-semibold text-app-primary bg-app-secondary-hover ':
                       link.href === pathname ||
                       link.href === `${pathname}?${params.toString()}`,
                   },
                 ])}
               >
-                {link.label}
+                <span className='flex gap-4'>
+                  {permission && <PermissionPill type={permission} />}
+                  {link.label}
+                </span>
               </a>
             );
           })}

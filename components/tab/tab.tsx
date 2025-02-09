@@ -28,13 +28,13 @@ export function TabGroup({
       onChange={onTabChange}
       className='w-full'
     >
-      <TabList className='flex space-x-1 bg-app-background p-1 overflow-auto'>
+      <TabList className='flex space-x-1 bg-app-background p-1 overflow-auto tablet:hidden'>
         {data.map((tab, index) => (
           <HeadlessTab
             key={index}
             className={({ selected }) =>
               cc([
-                'w-full text-center px-4 py-2 cursor-pointer',
+                'w-full flex items-center justify-center text-center px-4 py-2 cursor-pointer outline-none',
                 {
                   'border-b-4 border-b-app-primary':
                     selected && data.length > 1,
