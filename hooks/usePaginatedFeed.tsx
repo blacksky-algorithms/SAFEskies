@@ -1,5 +1,6 @@
 import { useReducer, useEffect, useRef, useCallback } from 'react';
 import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { useSearchParams } from 'next/navigation';
 
 type FeedState = {
   feed: FeedViewPost[];
@@ -7,9 +8,11 @@ type FeedState = {
   isFetching: boolean;
   hasNextPage: boolean;
   error: string | null;
+  uri: string | null;
 };
 
 type FeedAction =
+  | { type: 'URI_CHANGE'; payload: string | null }
   | { type: 'FETCH_START' }
   | {
       type: 'FETCH_SUCCESS';
@@ -25,11 +28,14 @@ const initialState: FeedState = {
   isFetching: false,
   hasNextPage: true,
   error: null,
+  uri: null,
 };
 
 // Move reducer to a separate function for clarity
 function feedReducer(state: FeedState, action: FeedAction): FeedState {
   switch (action.type) {
+    case 'URI_CHANGE':
+      return { ...state, uri: action.payload };
     case 'FETCH_START':
       return { ...state, isFetching: true, error: null };
     case 'FETCH_SUCCESS':
@@ -62,17 +68,26 @@ function feedReducer(state: FeedState, action: FeedAction): FeedState {
 
 interface UsePaginatedFeedParams {
   limit?: number;
-  uri: string | null;
+  uri?: string;
 }
 
-export function usePaginatedFeed({ limit = 50, uri }: UsePaginatedFeedParams) {
+export function usePaginatedFeed(
+  options: UsePaginatedFeedParams | undefined = {}
+) {
+  const limit = options.limit || 10;
   const [state, dispatch] = useReducer(feedReducer, initialState);
   const cursorRef = useRef(state.cursor);
 
+  const searchParams = useSearchParams();
+  const uri = options.uri ?? searchParams.get('uri');
   // Keep cursor reference updated
   useEffect(() => {
     cursorRef.current = state.cursor;
   }, [state.cursor]);
+
+  useEffect(() => {
+    dispatch({ type: 'URI_CHANGE', payload: uri });
+  }, [uri]);
 
   const fetchFeedData = useCallback(
     async (refresh = false) => {
