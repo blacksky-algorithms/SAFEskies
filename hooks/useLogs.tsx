@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Log, LogFilters } from '@/lib/types/logs';
 import { ModAction } from '@/lib/types/moderation';
-import { fetchLogs } from '@/lib/utils/logs';
+import { fetchLogs } from '@/repos/logs';
 import { useSearchParams } from 'next/navigation';
 import { userCanViewAdminActions } from '@/lib/utils/permission';
 import { useProfileData } from '@/hooks/useProfileData';
