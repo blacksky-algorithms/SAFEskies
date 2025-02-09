@@ -94,7 +94,7 @@ export const ReportPostModal = ({
         <Button
           onClick={onReport}
           intent={VisualIntent.Error}
-          className='w-fit self-end'
+          className='w-fit self-end pb-6'
           submitting={isReportSubmitting}
           disabled={isReportSubmitting || isDisabled}
         >

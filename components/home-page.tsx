@@ -61,7 +61,7 @@ export const HomePage = ({ feeds }: Props) => {
       >
         {tabHeaders.map((_, index) => (
           <TabPanel key={`feed-${index}`}>
-            <Feed displayName={feeds[activeTab].displayName} />
+            <Feed displayName={feeds?.[activeTab]?.displayName} />
           </TabPanel>
         ))}
       </TabGroup>

@@ -1,6 +1,5 @@
 'use client';
 
-// import { useMemo } from 'react';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { useLogs } from '@/hooks/useLogs';
 import { LogFilters } from './components/log-filters';
@@ -59,32 +58,6 @@ export const Logs = ({ user }: { user: User }) => {
     router.push(selectedTab.href);
   };
 
-  //   title: (
-  //     <div
-  //       key={tab.href}
-  //       className={cc([
-  //         'flex items-center gap-2',
-  //         { 'justify-center': tabsData.length === 1 },
-  //       ])}
-  //     >
-  //       <span>{tab.label}</span>
-  //     </div>
-  //   ),
-  //   TabContent: logs.length ? (
-  //     <div className='px-4 h-full overflow-auto max-h-page pt-4 pb-56'>
-  //       {logs.map((log) => (
-  //         <LogEntry
-  //           key={log.id}
-  //           log={log}
-  //           canViewAdminActions={userCanViewAdminActions}
-  //         />
-  //       ))}
-  //     </div>
-  //   ) : (
-  //     <p className='text-app-secondary text-center py-4'>No logs found</p>
-  //   ),
-  // }));
-
   return (
     <>
       <div className='grid grid-cols-1 gap-4 md:grid-cols-3 h-full'>
@@ -100,7 +73,7 @@ export const Logs = ({ user }: { user: User }) => {
                 <div className='px-4 h-full overflow-auto max-h-page pt-4 pb-56'>
                   {isLoading ? (
                     <div className='flex items-center justify-center p-20 h-full'>
-                      <LoadingSpinner />
+                      <LoadingSpinner size='lg' />
                     </div>
                   ) : error ? (
                     <div className='text-app-error text-center py-4'>

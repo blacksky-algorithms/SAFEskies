@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 import '@/styles/globals.css';
 
 import { Providers } from '@/contexts';
@@ -8,8 +7,13 @@ import { SideDrawerContent } from '@/components/side-drawer/side-drawer-content'
 import { getHighestRoleForUser } from '@/repos/permission';
 import { getProfile } from '@/repos/profile';
 
-export const metadata: Metadata = {
-  title: 'SAFEskies',
+import type { Viewport } from 'next';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default async function RootLayout({

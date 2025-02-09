@@ -15,8 +15,6 @@ export const AdminSideDrawerContent = ({
   const logsLinks = useMemo(() => getLinksByFeed(user, 'logs'), [user]);
   const feedLinks = useMemo(() => getLinksByFeed(user, 'feed'), [user]);
 
-  console.log({ feedLinks });
-
   if (!user) return null;
 
   return (
