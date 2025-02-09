@@ -2,40 +2,28 @@
 
 import {
   Tab as HeadlessTab,
-  TabGroup,
+  TabGroup as HeadlessTabGroup,
   TabList,
-  TabPanel,
-  TabPanels,
+  TabPanels as HeadlessTabPanels,
+  TabPanel as HeadlessTabPanel,
 } from '@headlessui/react';
 import cc from 'classcat';
-import { ReactNode, useEffect, useRef } from 'react';
+import { PropsWithChildren, ReactNode } from 'react';
 
-interface TabItem {
-  title: string | ReactNode;
-  TabContent: ReactNode;
-}
-
-interface TabsProps {
-  data: TabItem[];
+interface TabGroupProps {
+  data: string[] | ReactNode[];
   activeTab?: number;
   onTabChange?: (index: number) => void;
 }
 
-export function Tabs({ data, activeTab, onTabChange }: TabsProps) {
-  const activeTabRef = useRef<HTMLHeadingElement>(null);
-
-  useEffect(() => {
-    if (activeTabRef.current) {
-      activeTabRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'nearest',
-      });
-    }
-  }, []); // a hack to scroll to the active tab on mount after refreshing on mobile - do better natalie
-
+export function TabGroup({
+  data,
+  activeTab,
+  onTabChange,
+  children,
+}: PropsWithChildren<TabGroupProps>) {
   return (
-    <TabGroup
+    <HeadlessTabGroup
       selectedIndex={activeTab}
       onChange={onTabChange}
       className='w-full'
@@ -55,24 +43,19 @@ export function Tabs({ data, activeTab, onTabChange }: TabsProps) {
             }
           >
             <h2
-              ref={activeTabRef}
-              id={`feed-title-${tab.title}`}
+              id={`feed-title-${tab}`}
               className='text-2xl font-bold whitespace-nowrap'
             >
-              {tab.title}
+              {tab}
             </h2>
           </HeadlessTab>
         ))}
       </TabList>
-      <TabPanels>
-        {data.map((tab, index) => (
-          <TabPanel key={index}>{tab.TabContent}</TabPanel>
-        ))}
-      </TabPanels>
-    </TabGroup>
+      <HeadlessTabPanels>{children}</HeadlessTabPanels>
+    </HeadlessTabGroup>
   );
 }
 
-export const Tab = ({ children }: { children: ReactNode }) => {
-  return <TabPanel>{children}</TabPanel>;
-};
+export function TabPanel({ children }: { children: ReactNode }) {
+  return <HeadlessTabPanel>{children}</HeadlessTabPanel>;
+}

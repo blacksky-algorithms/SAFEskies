@@ -1,7 +1,7 @@
 import { ModManagementCard } from '@/components/mod-management-card';
 import { FeedRoleInfo } from '@/lib/types/user';
-import { Tabs } from '@/components/tab/tab';
 import { getModeratorsByFeeds } from '@/repos/permission';
+import { TabGroup, TabPanel } from '@/components/tab/tab';
 import { getProfile } from '@/repos/profile';
 
 export default async function Page() {
@@ -38,18 +38,24 @@ export default async function Page() {
     ),
   }));
 
+  const tabHeaders = tabs.map((tab) => tab.title);
+
   return (
     <section className='flex flex-col items-center h-full p-4 w-full'>
       <header className='p-4'>
         <h2 className='text-2xl font-bold'>Moderator Management</h2>
       </header>
-      {tabs.length > 0 ? (
-        <Tabs data={tabs} />
-      ) : (
-        <p className='text-app-secondary mt-6'>
-          You don&apos;t have admin access to any feeds.
-        </p>
-      )}
+      <TabGroup data={tabHeaders}>
+        {tabHeaders.map((_, index) => (
+          <TabPanel key={`feed-${index}`}>
+            <ModManagementCard
+              moderators={moderatorsByFeed[index].moderators}
+              feed={moderatorsByFeed[index].feed}
+              currentUserDid={profile.did}
+            />
+          </TabPanel>
+        ))}
+      </TabGroup>
     </section>
   );
 }

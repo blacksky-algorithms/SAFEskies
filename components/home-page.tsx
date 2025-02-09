@@ -1,7 +1,7 @@
 'use client';
 
 import { Feed } from '@/components/feed/feed';
-import { Tabs } from '@/components/tab/tab';
+import { TabGroup, TabPanel } from '@/components/tab/tab';
 import { useSearchParams, useRouter } from 'next/navigation';
 import cc from 'classcat';
 import { useEffect } from 'react';
@@ -31,32 +31,29 @@ export const HomePage = ({ feeds }: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uri]);
 
-  const tabs = feeds.map((feed, index) => ({
-    title: (
-      <div
-        key={feed.uri}
+  const tabHeaders = feeds.map((feed) => (
+    <div
+      key={feed.uri}
+      className={cc([
+        'flex items-center gap-2',
+        { 'justify-center ': feeds.length === 1 },
+      ])}
+    >
+      <span>{feed.displayName}</span>
+      <span
         className={cc([
-          'flex items-center gap-2',
-          { 'justify-center ': feeds.length === 1 },
+          '',
+          {
+            'bg-app-primary rounded-full px-2 py-1 text-xs':
+              !!feed.type && feed.type !== 'user',
+            hidden: !feed?.type || feed.type === 'user',
+          },
         ])}
       >
-        <span>{feed.displayName}</span>
-        <span
-          className={cc([
-            '',
-            {
-              'bg-app-primary rounded-full px-2 py-1 text-xs':
-                !!feed.type && feed.type !== 'user',
-              hidden: !feed?.type || feed.type === 'user',
-            },
-          ])}
-        >
-          {feed.type}
-        </span>
-      </div>
-    ),
-    TabContent: <Feed key={`feed-${index}`} feedName={feed.displayName} />,
-  }));
+        {feed.type}
+      </span>
+    </div>
+  ));
 
   const handleTabChange = (index: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -66,7 +63,17 @@ export const HomePage = ({ feeds }: Props) => {
 
   return (
     <div className='container mx-auto p-4'>
-      <Tabs data={tabs} activeTab={activeTab} onTabChange={handleTabChange} />
+      <TabGroup
+        data={tabHeaders}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+      >
+        {tabHeaders.map((_, index) => (
+          <TabPanel key={`feed-${index}`}>
+            <Feed displayName={feeds[activeTab].displayName} />
+          </TabPanel>
+        ))}
+      </TabGroup>
     </div>
   );
 };
