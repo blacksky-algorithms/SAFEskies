@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from 'react';
+import { useState, ChangeEvent, useEffect } from 'react';
 import {
   FeedViewPost,
   PostView,
@@ -13,6 +13,9 @@ import {
 } from '@/lib/constants/moderation';
 import { ReasonType } from '@atproto/api/dist/client/types/com/atproto/moderation/defs';
 import { VisualIntent } from '@/enums/styles';
+import { canPerformAction } from '@/repos/permission';
+import { useProfileData } from './useProfileData';
+import { useSearchParams } from 'next/navigation';
 
 interface ReportDataState {
   post: PostView | null;
@@ -23,13 +26,13 @@ interface ReportDataState {
 }
 
 interface UseModerationOptions {
-  uri: string;
-  feedName?: string;
+  displayName?: string;
   feed: FeedViewPost[];
 }
 
-export function useModeration({ uri, feedName, feed }: UseModerationOptions) {
+export function useModeration({ displayName, feed }: UseModerationOptions) {
   const { openModalInstance, closeModalInstance } = useModal();
+  const { profile, isLoading } = useProfileData();
   const { toast } = useToast();
   const [isReportSubmitting, setIsReportSubmitting] = useState(false);
   const [reportData, setReportData] = useState<ReportDataState>({
@@ -40,10 +43,16 @@ export function useModeration({ uri, feedName, feed }: UseModerationOptions) {
     additionalInfo: '',
   });
 
+  const searchParams = useSearchParams();
+  const uri = searchParams.get('uri');
+
+  const [isMod, setIsMod] = useState(false);
+
   const handleModAction = (post: PostView) => {
     setReportData((prev) => ({
       ...prev,
       moderatedPostUri: post.uri,
+      post,
     }));
     openModalInstance(MODAL_INSTANCE_IDS.MOD_MENU, true);
   };
@@ -88,6 +97,7 @@ export function useModeration({ uri, feedName, feed }: UseModerationOptions) {
 
   const handleReportPost = async () => {
     if (
+      !reportData.post ||
       !reportData.moderatedPostUri ||
       !reportData.reason ||
       feed.length === 0
@@ -101,26 +111,15 @@ export function useModeration({ uri, feedName, feed }: UseModerationOptions) {
     }
 
     try {
-      const postToModerate = feed.find(
-        (post) => post.post.uri === reportData.moderatedPostUri
-      );
-      if (!postToModerate) {
-        toast({
-          title: 'Error',
-          message: 'No Post Selected.',
-          intent: VisualIntent.Error,
-        });
-        return;
-      }
       setIsReportSubmitting(true);
 
       const payload = {
         targetedPostUri: reportData.moderatedPostUri,
         reason: reportData.reason.reason,
         toServices: reportData.toServices,
-        targetedUserDid: postToModerate.post.author.did,
-        uri,
-        feedName: feedName || 'Unnamed Feed',
+        targetedUserDid: reportData.post.author.did,
+        uri: reportData.post.uri,
+        feedName: displayName || 'Unnamed Feed',
         additionalInfo: reportData.additionalInfo,
       };
 
@@ -133,6 +132,7 @@ export function useModeration({ uri, feedName, feed }: UseModerationOptions) {
         ...prev,
         moderatedPostUri: null,
         toServices: [MODERATION_SERVICES[0]],
+        post: null,
       }));
       toast({
         title: 'Success',
@@ -175,7 +175,24 @@ export function useModeration({ uri, feedName, feed }: UseModerationOptions) {
       ...prev,
       moderatedPostUri: null,
       toServices: [MODERATION_SERVICES[0]],
+      post: null,
     }));
+
+  useEffect(() => {
+    const checkRole = async () => {
+      if (!profile || isLoading) {
+        setIsMod(false);
+        return;
+      }
+      const hasModPermissions = await canPerformAction(
+        profile.did,
+        'post_delete',
+        uri
+      );
+      setIsMod(hasModPermissions);
+    };
+    checkRole();
+  }, [uri, profile, isLoading]);
 
   return {
     reportData,
@@ -187,5 +204,6 @@ export function useModeration({ uri, feedName, feed }: UseModerationOptions) {
     handleAddtlInfoChange,
     isModServiceChecked,
     onClose,
+    isMod,
   };
 }
