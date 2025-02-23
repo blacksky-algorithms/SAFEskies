@@ -1,8 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
 import { LoadingSpinner } from '@/components/loading-spinner';
-import { Tabs } from '@/components/tab/tab';
 import { useLogs } from '@/hooks/useLogs';
 import { LogFilters } from './components/log-filters';
 import { LogsWrapper } from './components/logs-header';
@@ -10,9 +8,11 @@ import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { Modal } from '@/components/modals';
 import { User } from '@/lib/types/user';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getLogsByFeedLinks } from '@/lib/utils/logs';
+import { getLinksByFeed } from '@/lib/utils/logs';
 import { LogEntry } from './components/log-entry';
 import cc from 'classcat';
+import { TabGroup, TabPanel } from '@/components/tab/tab';
+import { useMemo } from 'react';
 
 export const Logs = ({ user }: { user: User }) => {
   const router = useRouter();
@@ -20,7 +20,7 @@ export const Logs = ({ user }: { user: User }) => {
   const uri = searchParams.get('uri');
   const { logs, isLoading, error, userCanViewAdminActions } = useLogs();
 
-  const logsByFeedLinks = useMemo(() => getLogsByFeedLinks(user), [user]);
+  const logsByFeedLinks = useMemo(() => getLinksByFeed(user, 'logs'), [user]);
 
   const tabsData = useMemo(
     () => [
@@ -32,6 +32,18 @@ export const Logs = ({ user }: { user: User }) => {
     ],
     [logsByFeedLinks]
   );
+
+  const tabsHeaders = tabsData.map((tab) => (
+    <div
+      key={tab.href}
+      className={cc([
+        'flex items-center gap-2',
+        { 'justify-center': tabsData.length === 1 },
+      ])}
+    >
+      <span>{tab.label}</span>
+    </div>
+  ));
 
   const activeTab = useMemo(
     () =>
@@ -46,53 +58,40 @@ export const Logs = ({ user }: { user: User }) => {
     router.push(selectedTab.href);
   };
 
-  const tabs = tabsData.map((tab) => ({
-    title: (
-      <div
-        key={tab.href}
-        className={cc([
-          'flex items-center gap-2',
-          { 'justify-center': tabsData.length === 1 },
-        ])}
-      >
-        <span>{tab.label}</span>
-      </div>
-    ),
-    TabContent: logs.length ? (
-      <div className='px-4 h-full overflow-auto max-h-page pt-4 pb-56'>
-        {logs.map((log) => (
-          <LogEntry
-            key={log.id}
-            log={log}
-            canViewAdminActions={userCanViewAdminActions}
-          />
-        ))}
-      </div>
-    ) : (
-      <p className='text-app-secondary text-center py-4'>No logs found</p>
-    ),
-  }));
-
   return (
     <>
       <div className='grid grid-cols-1 gap-4 md:grid-cols-3 h-full'>
         <div className='col-span-2'>
           <LogsWrapper />
-          {isLoading ? (
-            <div className='flex items-center justify-center p-20 h-full'>
-              <LoadingSpinner />
-            </div>
-          ) : error ? (
-            <div className='text-app-error text-center py-4'>
-              <p>Error loading logs: {error}</p>
-            </div>
-          ) : (
-            <Tabs
-              data={tabs}
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
-            />
-          )}
+          <TabGroup
+            data={tabsHeaders}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+          >
+            {tabsHeaders.map((_, index) => (
+              <TabPanel key={`log-panel-${index}`}>
+                <div className='px-4 h-full overflow-auto max-h-page pt-4 pb-56'>
+                  {isLoading ? (
+                    <div className='flex items-center justify-center p-20 h-full'>
+                      <LoadingSpinner size='lg' />
+                    </div>
+                  ) : error ? (
+                    <div className='text-app-error text-center py-4'>
+                      <p>Error loading logs: {error}</p>
+                    </div>
+                  ) : (
+                    logs.map((log) => (
+                      <LogEntry
+                        key={log.id}
+                        log={log}
+                        canViewAdminActions={userCanViewAdminActions}
+                      />
+                    ))
+                  )}
+                </div>
+              </TabPanel>
+            ))}
+          </TabGroup>
         </div>
         <div className='hidden tablet:flex flex-col space-y-4 p-4 border-l border-l-app-border'>
           <LogFilters canViewAdminActions={userCanViewAdminActions} />

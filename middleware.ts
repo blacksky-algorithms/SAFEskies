@@ -46,7 +46,7 @@ export async function middleware(req: NextRequest) {
 
     if (req.nextUrl.pathname.startsWith('/admin')) {
       if (userHighestRole !== 'admin') {
-        return NextResponse.redirect(new URL('/not-authorized', req.url));
+        return NextResponse.redirect(new URL('/', req.url));
       }
     }
 
@@ -55,7 +55,7 @@ export async function middleware(req: NextRequest) {
       req.nextUrl.pathname.startsWith('/logs')
     ) {
       if (!['admin', 'mod'].includes(userHighestRole)) {
-        return NextResponse.redirect(new URL('/not-authorized', req.url));
+        return NextResponse.redirect(new URL('/', req.url));
       }
     }
 
@@ -71,8 +71,8 @@ export const config = {
     // Protected routes
     '/admin/:path*',
     '/mod/:path*',
-    // The root admin and mod paths
     '/admin',
     '/mod',
+    '/logs',
   ],
 };

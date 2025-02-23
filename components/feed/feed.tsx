@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { usePaginatedFeed } from '@/hooks/usePaginatedFeed';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
@@ -17,22 +16,15 @@ import { ModMenuModal } from '../modals/mod-menu';
 import { ReportPostModal } from '../modals/report-post';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useModeration } from '@/hooks/useModeration';
-import { useProfileData } from '@/hooks/useProfileData';
-import { canPerformAction } from '@/repos/permission';
 
 interface FeedProps {
   onRefreshComplete?: () => void;
-  feedName: string | undefined;
+  displayName: string | undefined;
 }
 
-export const Feed = ({ onRefreshComplete, feedName }: FeedProps) => {
-  const searchParams = useSearchParams();
-  const uri = searchParams.get('uri');
+export const Feed = ({ onRefreshComplete, displayName }: FeedProps) => {
   const { feed, error, isFetching, hasNextPage, fetchNextPage, refreshFeed } =
-    usePaginatedFeed({
-      limit: 10,
-      uri,
-    });
+    usePaginatedFeed();
 
   const { containerRef, isRefreshing, handleTouchStart, handleTouchMove } =
     usePullToRefresh({
@@ -42,26 +34,8 @@ export const Feed = ({ onRefreshComplete, feedName }: FeedProps) => {
       },
     });
 
-  const { profile, isLoading } = useProfileData();
   const { openModalInstance, closeModalInstance } = useModal();
   const [viewedPostUri, setViewedPostUri] = useState<string | null>(null);
-  const [showModMenu, setShowModMenu] = useState(false);
-
-  useEffect(() => {
-    const checkRole = async () => {
-      if (!profile || isLoading) {
-        setShowModMenu(false);
-        return;
-      }
-      const hasModPermissions = await canPerformAction(
-        profile.did,
-        'post_delete',
-        uri
-      );
-      setShowModMenu(hasModPermissions);
-    };
-    checkRole();
-  }, [uri, profile, isLoading]);
 
   const {
     reportData,
@@ -73,7 +47,8 @@ export const Feed = ({ onRefreshComplete, feedName }: FeedProps) => {
     handleReportToChange,
     isModServiceChecked,
     onClose,
-  } = useModeration({ uri: uri!, feedName, feed });
+    isMod,
+  } = useModeration({ displayName, feed });
 
   useEffect(() => {
     if (error) {
@@ -145,7 +120,7 @@ export const Feed = ({ onRefreshComplete, feedName }: FeedProps) => {
                       }
                       rootPost={rootPost as PostView}
                       onModAction={handleModAction}
-                      showModMenu={showModMenu}
+                      showModMenu={isMod}
                     />
                   </li>
                 );
@@ -177,7 +152,7 @@ export const Feed = ({ onRefreshComplete, feedName }: FeedProps) => {
         uri={viewedPostUri}
         onClose={() => setViewedPostUri(null)}
         onModAction={handleModAction}
-        showModMenu={showModMenu}
+        showModMenu={isMod}
       />
       <ModMenuModal
         onClose={onClose}

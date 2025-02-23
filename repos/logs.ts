@@ -7,6 +7,7 @@ import { getDateTimeRange } from '@/lib/utils/logs';
  * Applies filters to the query based on the provided LogFilters.
  * It will only apply a filter if the value is not null/undefined and (if a string) not empty.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const applyFiltersToQuery = (query: any, filters: LogFilters) => {
   // Mapping filter keys to database column names
   const fieldMapping: Array<{ key: keyof LogFilters; column: string }> = [
@@ -107,4 +108,31 @@ export async function createModerationLog(
     entry
   );
   if (error) throw error;
+}
+
+/**
+ * Fetches logs.
+ */
+export async function fetchLogs(filters: LogFilters): Promise<Log[]> {
+  const params = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (!value) return;
+
+    if (key === 'dateRange' && value.fromDate && value.toDate) {
+      params.set('fromDate', value.fromDate);
+      params.set('toDate', value.toDate);
+    } else {
+      params.set(key, String(value));
+    }
+  });
+
+  const response = await fetch(`/api/logs?${params.toString()}`);
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || 'Failed to fetch logs');
+  }
+
+  const data = await response.json();
+  return data.logs;
 }

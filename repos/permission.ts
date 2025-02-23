@@ -18,15 +18,7 @@ export const setFeedRole = async (
   feedName: string
 ): Promise<boolean> => {
   const canSetRole = await canPerformAction(setByUserDid, 'mod_promote', uri);
-  console.log({
-    user_did: targetUserDid,
-    uri,
-    feed_name: feedName,
-    role: role,
-    created_by: setByUserDid,
-    created_at: new Date().toISOString(),
-  });
-  debugger;
+
   if (!canSetRole) {
     console.error('Permission denied to set feed role:', {
       setByUserDid,

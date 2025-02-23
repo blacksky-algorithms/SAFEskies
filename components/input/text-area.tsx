@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import cc from 'classcat';
 
 interface TextareaProps
@@ -15,15 +15,24 @@ export const Textarea = ({
   id,
   maxLength,
   className,
+  onChange,
   ...props
 }: TextareaProps) => {
   const [charCount, setCharCount] = useState(0);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setCharCount(event.target.value.length);
+  const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = event.target.value;
+    setCharCount(newValue.length);
+    if (onChange) {
+      onChange(event);
+    }
   };
 
-  const isOverLimit = maxLength !== undefined && charCount > maxLength;
+  // If a maxLength is provided, calculate remaining characters.
+  const remainingChars =
+    typeof maxLength === 'number' ? maxLength - charCount : charCount;
+  const isOverLimit =
+    typeof maxLength === 'number' ? charCount > maxLength : false;
 
   return (
     <div className='flex flex-col space-y-2'>
@@ -40,13 +49,12 @@ export const Textarea = ({
             'font-medium rounded-md transition-all duration-150 focus:outline-none focus:ring-2 w-full p-4',
             {
               'border border-app-border bg-app-background text-app focus:ring-app-primary':
-                !error,
-              'border border-app-error bg-app-error-light text-app-error focus:ring-app-error':
-                !!error,
+                !error && !isOverLimit,
+              'border border-app-error text-app-error focus:ring-app-error':
+                error || isOverLimit,
             },
             className,
           ])}
-          maxLength={undefined}
           onChange={handleInputChange}
           {...props}
         />
@@ -56,7 +64,7 @@ export const Textarea = ({
             { 'text-app-error': isOverLimit },
           ])}
         >
-          {maxLength !== undefined ? maxLength - charCount : charCount}
+          {typeof maxLength === 'number' ? remainingChars : charCount}
         </span>
       </div>
       {error && <span className='text-sm text-app-error'>{error}</span>}

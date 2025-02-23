@@ -3,7 +3,6 @@ import { Modal } from '@/components/modals';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { User } from '@/lib/types/user';
 import { LogoutButton } from '../button/logout-button';
-import cc from 'classcat';
 import { UserRole } from '@/lib/types/permission';
 
 interface Props {
@@ -17,26 +16,13 @@ export const SideDrawer = ({ user, highestRole }: Props) => {
       id={MODAL_INSTANCE_IDS.SIDE_DRAWER}
       title={
         <span className='flex items-center space-x-4'>
-          <span>{user?.displayName || user?.handle || 'User'}</span>
-
-          <span
-            className={cc([
-              '',
-              {
-                'bg-app-primary rounded-full px-2 py-1 text-xs':
-                  !!highestRole && highestRole !== 'user',
-                hidden: !highestRole || highestRole === 'user',
-              },
-            ])}
-          >
-            {highestRole}
-          </span>
+          {user?.displayName || user?.handle || 'Hey there!'}
         </span>
       }
       size='full'
       noContentPadding
     >
-      <div className='flex justify-between flex-col h-full'>
+      <div>
         <SideDrawerContent user={user} highestRole={highestRole} />
         <div className='mt-auto border-t border-app-border pt-4'>
           <LogoutButton />

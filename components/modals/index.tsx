@@ -148,7 +148,7 @@ export const Modal = ({
                   className={cc([
                     'flex-1 min-h-0 overflow-auto',
                     {
-                      'pb-6': size === 'full',
+                      'pb-10': size === 'full',
                     },
                   ])}
                 >

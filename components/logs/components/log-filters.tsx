@@ -21,7 +21,6 @@ export const LogFilters = memo(
     const isFiltersModalOpen = isOpen(MODAL_INSTANCE_IDS.LOG_FILTERS);
 
     const updateFilter = (key: string, value: string | null) => {
-      console.log({ key, value });
       const params = new URLSearchParams(searchParams);
       if (value) {
         params.set(key, value);
