@@ -1,61 +1,11 @@
-import {
-  buildFeedPermissions,
-  determineUserRolesByFeed,
-} from '@/lib/utils/permission';
 import { SupabaseInstance } from '@/repos/supabase';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { AtprotoAgent } from '@/repos/atproto-agent';
 import { shouldUpdateProfile } from '@/lib/utils/profile';
-import { getActorFeeds } from '@/repos/actor';
-import { getSession } from '@/repos/iron';
+
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
-
-export const saveProfile = async (
-  blueSkyProfileData: ProfileViewBasic,
-  createdFeeds: Feed[]
-): Promise<boolean> => {
-  try {
-    // Save basic profile data
-    const { error: profileError } = await SupabaseInstance.from('profiles')
-      .upsert({
-        did: blueSkyProfileData.did,
-        handle: blueSkyProfileData.handle,
-        displayName: blueSkyProfileData.displayName,
-        avatar: blueSkyProfileData.avatar,
-        associated: blueSkyProfileData.associated,
-        labels: blueSkyProfileData.labels,
-      })
-      .eq('did', blueSkyProfileData.did);
-
-    if (profileError) {
-      console.error('Error saving user profile:', profileError);
-      return false;
-    }
-
-    const feedPermissions = buildFeedPermissions(
-      blueSkyProfileData.did,
-      createdFeeds
-    );
-
-    if (feedPermissions.length > 0) {
-      const { error: permissionError } = await SupabaseInstance.from(
-        'feed_permissions'
-      ).upsert(feedPermissions, {
-        onConflict: 'user_did,uri',
-      });
-
-      if (permissionError) {
-        console.error('Error saving feed permissions:', permissionError);
-        return false;
-      }
-    }
-
-    return true;
-  } catch (error) {
-    console.error('Error in saveProfile:', error);
-    return false;
-  }
-};
+import { User } from '@/lib/types/user';
+import { fetchWithAuth } from '@/lib/api';
 
 export const getProfileDetails = async (
   userDid: string
@@ -111,59 +61,16 @@ export const getProfileDetails = async (
   }
 };
 
-export const getProfile = async () => {
-  const session = await getSession();
-  if (!session.user) {
-    return null;
-  }
-
+export const getProfile = async (): Promise<User | null> => {
   try {
-    const userDid = session.user.did;
-
-    // Fetch the user's latest profile from Supabase and actor feeds in parallel
-    const [profileData, permissionsResponse, actorFeedsResponse] =
-      await Promise.all([
-        getProfileDetails(userDid),
-        SupabaseInstance.from('feed_permissions')
-          .select('uri, feed_name, role')
-          .eq('user_did', userDid),
-        getActorFeeds(userDid),
-      ]);
-
-    if (!profileData || permissionsResponse.error) {
-      console.error(
-        'Error fetching profile or feed permissions:',
-        permissionsResponse.error
-      );
+    const response = await fetchWithAuth('/api/profile');
+    if (!response?.ok) {
       return null;
     }
-
-    const createdFeeds = actorFeedsResponse?.feeds || [];
-
-    // Build and update feed permissions if necessary
-    if (createdFeeds.length > 0) {
-      const feedPermissions = buildFeedPermissions(
-        userDid,
-        createdFeeds,
-        permissionsResponse.data || []
-      );
-      await SupabaseInstance.from('feed_permissions').upsert(feedPermissions, {
-        onConflict: 'user_did,uri',
-      });
-    }
-
-    // Determine and return roles by feed
-    const feedRoles = determineUserRolesByFeed(
-      permissionsResponse.data || [],
-      createdFeeds
-    );
-
-    return {
-      ...profileData,
-      rolesByFeed: feedRoles,
-    };
+    const data = await response?.json();
+    return data.profile;
   } catch (error) {
-    console.error('Error in getProfile:', error);
+    console.error('Error fetching profile:', error);
     return null;
   }
 };
@@ -196,13 +103,14 @@ export const getDisplayNameByDID = async (did: string): Promise<string> => {
   }
 };
 
-export const fetchProfile = async (
+export const logIn = async (
   handle: string
 ): Promise<{
   status: number;
   url: string | null;
   error: string | null;
 }> => {
+  console.log('login -> handle', handle);
   try {
     const response = await fetch(
       `${
@@ -213,13 +121,13 @@ export const fetchProfile = async (
         credentials: 'include',
       }
     );
-
+    console.log('response', response);
     if (!response.ok) {
       const data = await response.json();
       throw new Error(data.error || 'Failed to sign in');
     }
-
     const { url } = await response.json();
+
     return { error: null, url, status: 200 };
   } catch (error: unknown) {
     return {

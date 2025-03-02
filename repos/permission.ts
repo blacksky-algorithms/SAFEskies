@@ -1,4 +1,4 @@
-import { UserRole } from '@/lib/types/permission';
+import { FeedRoleInfo, UserRole } from '@/lib/types/permission';
 import { ModeratorData } from '@/lib/types/user';
 import {
   canPerformWithRole,
@@ -9,6 +9,8 @@ import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedG
 import { getBulkProfileDetails } from '@/repos/profile';
 import { createModerationLog } from '@/repos/logs';
 import { ModAction } from '@/lib/types/moderation';
+import { ADMIN_ACTIONS } from '@/lib/constants/moderation';
+import { User } from '@/lib/types/user';
 
 export const setFeedRole = async (
   targetUserDid: string,
@@ -178,19 +180,4 @@ export const getAllModeratorsForAdmin = async (adminDid: string) => {
     console.error('Error fetching moderators for admin:', error);
     throw error;
   }
-};
-
-export const getHighestRoleForUser = async (
-  userDid: string | undefined
-): Promise<UserRole> => {
-  if (!userDid) return 'user';
-  const { data, error } = await SupabaseInstance.from('feed_permissions')
-    .select('role')
-    .eq('user_did', userDid);
-
-  if (error || !data) return 'user';
-
-  if (data.some((element) => element.role === 'admin')) return 'admin';
-  if (data.some((element) => element.role === 'mod')) return 'mod';
-  return 'user';
 };

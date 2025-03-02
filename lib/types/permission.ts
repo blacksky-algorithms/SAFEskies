@@ -4,12 +4,12 @@ import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/
 export type UserRole = 'admin' | 'mod' | 'user';
 
 export type FeedRoleInfo = {
-  role: UserRole;
+  type: UserRole;
   displayName: string;
   uri: string;
 };
 
-export type ModeratorWithProfile = ProfileViewBasic & { role: UserRole };
+export type ModeratorWithProfile = ProfileViewBasic & { type: UserRole };
 
 export type FeedWithModerators = {
   feed: Feed;

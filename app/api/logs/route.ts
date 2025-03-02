@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import { getLogs } from '@/repos/logs';
 import { LogFilters } from '@/lib/types/logs';
 import { ModAction } from '@/lib/types/moderation';
-import { userCanViewAdminActions } from '@/lib/utils/permission';
 import { ADMIN_ACTIONS } from '@/lib/constants/moderation';
 import { getProfile } from '@/repos/profile';
+import { userCanViewAdminActions } from '@/lib/utils/permission';
 
 export async function GET(request: Request) {
   try {

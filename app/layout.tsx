@@ -4,10 +4,10 @@ import { Providers } from '@/contexts';
 import { preferredLanguages } from '@/lib/constants';
 import { BaseLayout } from '@/components/layouts/base-layout';
 import { SideDrawerContent } from '@/components/side-drawer/side-drawer-content';
-import { getHighestRoleForUser } from '@/repos/permission';
 import { getProfile } from '@/repos/profile';
 
 import type { Viewport } from 'next';
+import { getHighestRoleForUser } from '@/lib/utils/permission';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -22,7 +22,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getProfile();
-  const highestRole = await getHighestRoleForUser(user?.did);
+
+  const highestRole = await getHighestRoleForUser(user?.rolesByFeed);
 
   return (
     <html lang={preferredLanguages}>

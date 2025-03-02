@@ -22,12 +22,12 @@ export const HomePage = ({ feeds }: Props) => {
   const searchParams = useSearchParams();
   const uri = searchParams.get('uri');
   const activeTab = feeds.findIndex((feed) => feed.uri === uri) || 0;
+  console.log({ feeds });
 
   useEffect(() => {
     if (!uri) {
       const params = new URLSearchParams(searchParams.toString());
       params.set('uri', feeds[0].uri);
-      params.delete('redirected');
       router.push(`?${params.toString()}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

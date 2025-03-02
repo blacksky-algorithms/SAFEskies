@@ -17,7 +17,7 @@ export default async function Page() {
   }
 
   const adminFeeds = Object.entries(profile.rolesByFeed || {})
-    .filter(([, roleInfo]) => (roleInfo as FeedRoleInfo).role === 'admin')
+    .filter(([, roleInfo]) => (roleInfo as FeedRoleInfo).type === 'admin')
     .map(([uri, roleInfo]) => ({
       uri,
       displayName: (roleInfo as FeedRoleInfo).displayName || 'Unnamed Feed',

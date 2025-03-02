@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getSession } from '@/repos/iron';
+import { cookies } from 'next/headers';
 
 export async function POST() {
   try {
-    const session = await getSession();
-    await session.destroy();
-    await session.save();
+    const cookieStore = await cookies();
+    cookieStore.delete('authToken');
 
     return NextResponse.json({ success: true });
   } catch (error) {

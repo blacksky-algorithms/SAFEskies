@@ -10,16 +10,16 @@ export function getDateTimeRange(dateRange: {
   return { fromDateTime, toDateTime };
 }
 
-export function getLinksByFeed(user: User | null, type: 'logs' | 'feed') {
+export function getLinksByFeed(user: User | null, linkType: 'logs' | 'feed') {
   if (!user) return [];
-  return Object.values(user.rolesByFeed).reduce(
-    (acc: { label: string; href: string }[], { displayName, uri, role }) => {
-      if (canPerformWithRole(role, 'post_delete')) {
+  return user.rolesByFeed.reduce(
+    (acc: { label: string; href: string }[], { displayName, uri, type }) => {
+      if (canPerformWithRole(type, 'post_delete')) {
         acc.push({
           label: displayName,
           href:
-            type === 'logs'
-              ? `/${type}?uri=${encodeURIComponent(uri)}`
+            linkType === 'logs'
+              ? `/${linkType}?uri=${encodeURIComponent(uri)}`
               : `/?uri=${encodeURIComponent(uri)}`,
         });
       }

@@ -3,9 +3,9 @@ import { Log, LogFilters } from '@/lib/types/logs';
 import { ModAction } from '@/lib/types/moderation';
 import { fetchLogs } from '@/repos/logs';
 import { useSearchParams } from 'next/navigation';
-import { userCanViewAdminActions } from '@/lib/utils/permission';
 import { useProfileData } from '@/hooks/useProfileData';
 import { User } from '@/lib/types/user';
+import { userCanViewAdminActions } from '@/lib/utils/permission';
 
 export function useLogs() {
   const searchParams = useSearchParams();

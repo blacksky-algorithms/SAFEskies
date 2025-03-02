@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { Button } from '../button';
 import { Input } from '../input';
-import { fetchProfile } from '@/repos/profile';
+import { logIn } from '@/repos/profile';
 
 export const Login = () => {
   const router = useRouter();
@@ -44,11 +44,11 @@ export const Login = () => {
     setState((prev) => ({ ...prev, isSubmitting: true }));
 
     try {
-      const result = await fetchProfile(trimmedHandle);
+      const result = await logIn(trimmedHandle);
       if (result.error || !result.url) {
         throw new Error(result.error || 'Failed to sign in');
       }
-
+      console.log({ result });
       router.push(result.url);
     } catch (error) {
       setState((prev) => ({
