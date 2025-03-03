@@ -1,3 +1,6 @@
+'use client';
+export const dynamic = 'force-dynamic';
+
 import { Login } from '@/components/login';
 
 export default async function page() {
