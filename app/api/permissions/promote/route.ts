@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 import { fetchWithAuth } from '@/lib/api';
 import { NextResponse } from 'next/server';
 

@@ -9,6 +9,8 @@ import { getProfile } from '@/repos/profile';
 import type { Viewport } from 'next';
 import { getHighestRoleForUser } from '@/lib/utils/permission';
 
+export const dynamic = 'force-dynamic';
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
