@@ -16,7 +16,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
     };
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}${url}`,
+      `${process.env.NEXT_PUBLIC_SAFE_SKIES_API}${url}`,
       { ...options, headers }
     );
 

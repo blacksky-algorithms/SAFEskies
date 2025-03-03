@@ -7,6 +7,7 @@ import cc from 'classcat';
 import { useEffect } from 'react';
 import { PermissionPill } from '@/components/permission-pill';
 import { UserRole } from '@/lib/types/permission';
+import Cookies from 'js-cookie';
 
 interface Props {
   feeds: {
@@ -32,6 +33,16 @@ export const HomePage = ({ feeds }: Props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uri]);
+
+  useEffect(() => {
+    const needsRefresh = Cookies.get('needsRefresh');
+
+    if (needsRefresh) {
+      Cookies.remove('needsRefresh');
+
+      window.location.reload();
+    }
+  }, []);
 
   const tabHeaders = feeds.map((feed) => (
     <div
