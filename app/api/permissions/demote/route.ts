@@ -1,11 +1,14 @@
+export const dynamic = 'force-dynamic';
+
+import { fetchWithAuth } from '@/lib/api';
 import { NextResponse } from 'next/server';
-import { canPerformAction, setFeedRole } from '@/repos/permission';
 
 export async function POST(request: Request) {
   try {
-    const { modDid, uri, setByUserDid, feedName } = await request.json();
+    const body = await request.json();
+    const { modDid, uri, setByUserDid, feedName } = body;
 
-    // Validate required fields
+    // Validate required fields.
     if (!modDid || !uri || !setByUserDid || !feedName) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -13,38 +16,25 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if the user has permission to demote moderators
-    const hasPermission = await canPerformAction(
-      setByUserDid,
-      'mod_demote',
-      uri
-    );
+    // Forward the request to the Node API endpoint.
+    const response = await fetchWithAuth('/api/permissions/demote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ modDid, uri, setByUserDid, feedName }),
+    });
 
-    if (!hasPermission) {
+    if (!response || !response.ok) {
+      const data = response ? await response.json() : {};
       return NextResponse.json(
-        { error: 'Insufficient permissions to demote moderator' },
-        { status: 403 }
+        { error: data.error || 'Failed to demote moderator' },
+        { status: response ? response.status : 500 }
       );
     }
 
-    const success = await setFeedRole(
-      modDid,
-      uri,
-      'user',
-      setByUserDid,
-      feedName
-    );
-
-    if (!success) {
-      return NextResponse.json(
-        { error: 'Failed to demote moderator' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ success: true });
+    const result = await response.json();
+    return NextResponse.json(result);
   } catch (error) {
-    console.error('Error demoting moderator:', error);
+    console.error('Error in demote moderator API proxy:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

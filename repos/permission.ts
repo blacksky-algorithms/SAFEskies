@@ -1,4 +1,4 @@
-import { FeedRoleInfo, UserRole } from '@/lib/types/permission';
+import { UserRole } from '@/lib/types/permission';
 import { ModeratorData } from '@/lib/types/user';
 import {
   canPerformWithRole,

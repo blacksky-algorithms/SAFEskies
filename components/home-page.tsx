@@ -59,11 +59,13 @@ export const HomePage = ({ feeds }: Props) => {
         activeTab={activeTab}
         onTabChange={handleTabChange}
       >
-        {tabHeaders.map((_, index) => (
-          <TabPanel key={`feed-${index}`}>
-            <Feed displayName={feeds?.[activeTab]?.displayName} />
-          </TabPanel>
-        ))}
+        {tabHeaders.map((_, index) => {
+          return (
+            <TabPanel key={`feed-${index}`}>
+              <Feed displayName={feeds?.[activeTab]?.displayName} />
+            </TabPanel>
+          );
+        })}
       </TabGroup>
     </div>
   );

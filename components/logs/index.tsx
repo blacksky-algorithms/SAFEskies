@@ -18,7 +18,7 @@ export const Logs = ({ user }: { user: User }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const uri = searchParams.get('uri');
-  const { logs, isLoading, error, userCanViewAdminActions } = useLogs();
+  const { logs, isLoading, error } = useLogs();
 
   const logsByFeedLinks = useMemo(() => getLinksByFeed(user, 'logs'), [user]);
 
@@ -80,13 +80,7 @@ export const Logs = ({ user }: { user: User }) => {
                       <p>Error loading logs: {error}</p>
                     </div>
                   ) : (
-                    logs.map((log) => (
-                      <LogEntry
-                        key={log.id}
-                        log={log}
-                        canViewAdminActions={userCanViewAdminActions}
-                      />
-                    ))
+                    logs.map((log) => <LogEntry key={log.id} log={log} />)
                   )}
                 </div>
               </TabPanel>
@@ -94,7 +88,7 @@ export const Logs = ({ user }: { user: User }) => {
           </TabGroup>
         </div>
         <div className='hidden tablet:flex flex-col space-y-4 p-4 border-l border-l-app-border'>
-          <LogFilters canViewAdminActions={userCanViewAdminActions} />
+          <LogFilters />
         </div>
       </div>
       <Modal
@@ -103,7 +97,7 @@ export const Logs = ({ user }: { user: User }) => {
         size='full'
       >
         <div className='flex flex-col space-y-4 p-4 overflow-auto max-h-page'>
-          <LogFilters canViewAdminActions={userCanViewAdminActions} />
+          <LogFilters />
         </div>
       </Modal>
     </>

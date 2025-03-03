@@ -4,8 +4,6 @@ import { ModAction } from '@/lib/types/moderation';
 import { fetchLogs } from '@/repos/logs';
 import { useSearchParams } from 'next/navigation';
 import { useProfileData } from '@/hooks/useProfileData';
-import { User } from '@/lib/types/user';
-import { userCanViewAdminActions } from '@/lib/utils/permission';
 
 export function useLogs() {
   const searchParams = useSearchParams();
@@ -15,12 +13,10 @@ export function useLogs() {
     logs: Log[];
     isLoading: boolean;
     error: string | null;
-    userCanViewAdminActions: boolean;
   }>({
     logs: [],
     isLoading: true,
     error: null,
-    userCanViewAdminActions: false,
   });
 
   useEffect(() => {
@@ -44,7 +40,7 @@ export function useLogs() {
       if (!profile) {
         return;
       }
-      const canViewAdminActions = userCanViewAdminActions(profile as User);
+
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
 
@@ -55,7 +51,6 @@ export function useLogs() {
           logs,
           isLoading: false,
           error: null,
-          userCanViewAdminActions: canViewAdminActions,
         });
       } catch (err) {
         console.error('Error fetching logs:', err);
@@ -63,7 +58,6 @@ export function useLogs() {
           logs: [],
           isLoading: false,
           error: 'Failed to fetch logs',
-          userCanViewAdminActions: false,
         });
       }
     };
