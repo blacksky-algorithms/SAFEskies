@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     }
 
     // Forward the request to the Node API endpoint.
-    const response = await fetchWithAuth('/api/permissions/demote', {
+    const response = await fetchWithAuth('/api/permissions/admin/demote', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ modDid, uri, setByUserDid, feedName }),

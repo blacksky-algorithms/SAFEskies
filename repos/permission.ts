@@ -9,8 +9,8 @@ import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedG
 import { getBulkProfileDetails } from '@/repos/profile';
 import { createModerationLog } from '@/repos/logs';
 import { ModAction } from '@/lib/types/moderation';
-import { ADMIN_ACTIONS } from '@/lib/constants/moderation';
-import { User } from '@/lib/types/user';
+// import { ADMIN_ACTIONS } from '@/lib/constants/moderation';
+// import { User } from '@/lib/types/user';
 
 export const setFeedRole = async (
   targetUserDid: string,

@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     }
 
     // Forward the request to your Node API promote endpoint.
-    const response = await fetchWithAuth('/api/permissions/promote', {
+    const response = await fetchWithAuth('/api/permissions/admin/promote', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ targetUserDid, uri, setByUserDid, feedName }),

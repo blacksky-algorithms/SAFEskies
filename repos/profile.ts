@@ -3,7 +3,6 @@ import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/
 import { AtprotoAgent } from '@/repos/atproto-agent';
 import { shouldUpdateProfile } from '@/lib/utils/profile';
 
-import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 import { User } from '@/lib/types/user';
 import { fetchWithAuth } from '@/lib/api';
 
@@ -110,7 +109,6 @@ export const logIn = async (
   url: string | null;
   error: string | null;
 }> => {
-  console.log('login -> handle', handle);
   try {
     const response = await fetch(
       `${
@@ -121,7 +119,7 @@ export const logIn = async (
         credentials: 'include',
       }
     );
-    console.log('response', response);
+
     if (!response.ok) {
       const data = await response.json();
       throw new Error(data.error || 'Failed to sign in');
