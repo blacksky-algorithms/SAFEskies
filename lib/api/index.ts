@@ -19,9 +19,6 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
       `${process.env.NEXT_PUBLIC_SAFE_SKIES_API}${url}`,
       { ...options, headers }
     );
-    // if (!response.ok) {
-    //   throw new Error(`HTTP error! status: ${response.status}`);
-    // }
 
     return response;
   } catch (e) {

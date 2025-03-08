@@ -10,7 +10,7 @@ import { useToast } from '@/contexts/toast-context';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
-import { useFeedRoles } from '@/hooks/useFeedRoles';
+import { useCheckFeedRoles } from '@/hooks/useCheckFeedRoles';
 import { PromoteModState } from '@/lib/types/moderation';
 import { promoteToModerator } from '@/repos/permission';
 
@@ -31,7 +31,7 @@ export const PromoteModForm = ({
   const [state, setState] = useState<PromoteModState>(INITIAL_STATE);
 
   const { toast } = useToast();
-  const { checkFeedRole, isLoading: isRoleCheckLoading } = useFeedRoles();
+  const { checkFeedRole, isLoading: isRoleCheckLoading } = useCheckFeedRoles();
 
   const checkExistingRoles = useCallback(
     async (user: ProfileViewBasic) => {

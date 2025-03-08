@@ -10,7 +10,6 @@ export interface Log {
   target_user_did: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
-  // TODO: Add these fields to the LogEntry type
   ip_address?: string | null;
   user_agent?: string | null;
   performed_by_profile: ProfileViewBasic;
@@ -35,7 +34,4 @@ export interface LogEntry {
   target_user_did: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
-  // TODO: Add these fields to the LogEntry type
-  ip_address?: string | null;
-  user_agent?: string | null;
 }

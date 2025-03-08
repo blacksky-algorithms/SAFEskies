@@ -10,11 +10,3 @@ export interface FeedRoleInfo {
 export interface User extends ProfileViewBasic {
   rolesByFeed: FeedRoleInfo[];
 }
-
-export interface ModeratorData {
-  user_did: string;
-  uri: string;
-  feed_name: string;
-  role: UserRole;
-  profiles: ProfileViewBasic;
-}

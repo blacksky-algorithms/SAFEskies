@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { UserRole } from '@/lib/types/permission';
 
-export const useFeedRoles = () => {
+export const useCheckFeedRoles = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

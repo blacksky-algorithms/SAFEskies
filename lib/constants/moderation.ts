@@ -5,11 +5,6 @@ export type ModerationService = {
   value: 'blacksky' | 'ozone';
 };
 
-export const MODERATION_SERVICES = [
-  { label: 'Blacksky Moderation Service', value: 'blacksky' },
-  { label: 'Ozone Moderation Service', value: 'ozone' },
-].filter((service) => service.value === 'blacksky');
-
 export const ADMIN_ACTIONS: Partial<ModAction>[] = [
   'mod_promote',
   'mod_demote',

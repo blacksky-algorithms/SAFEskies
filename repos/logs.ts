@@ -1,7 +1,5 @@
 import { Log, LogFilters } from '@/lib/types/logs';
 
-// import { getDateTimeRange } from '@/lib/utils/logs';
-
 /**
  * Fetches logs.
  */

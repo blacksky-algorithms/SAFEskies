@@ -1,39 +1,15 @@
-import {
-  useState,
-  useReducer,
-  useCallback,
-  useEffect,
-  ChangeEvent,
-} from 'react';
+import { useState, useReducer, useCallback, ChangeEvent } from 'react';
 import {
   FeedViewPost,
   PostView,
 } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { ModAction, ReportOption } from '@/lib/types/moderation';
+import { ReportOption } from '@/lib/types/moderation';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
 import { useToast } from '@/contexts/toast-context';
-import {
-  MODERATION_SERVICES,
-  ModerationService,
-} from '@/lib/constants/moderation';
+import { ModerationService } from '@/lib/constants/moderation';
 import { VisualIntent } from '@/enums/styles';
-import { useProfileData } from './useProfileData';
 import { useSearchParams } from 'next/navigation';
-
-// TODO: use node implementation
-const canPerformAction = async (
-  userDid: string,
-  action: ModAction,
-  uri: string | null
-): Promise<boolean> => {
-  // if (!userDid || !uri) return false;
-  // return true;
-  // const feedRole = await getFeedRole(userDid, uri);
-
-  // return canPerformWithRole(feedRole, action);
-  return true;
-};
 
 interface ReportDataState {
   post: PostView | null;
@@ -84,7 +60,7 @@ const reportDataReducer = (
       return {
         post: null,
         reason: null,
-        toServices: [MODERATION_SERVICES[0] as ModerationService],
+        toServices: [],
         moderatedPostUri: null,
         additionalInfo: '',
       };
