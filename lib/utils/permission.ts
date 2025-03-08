@@ -63,30 +63,3 @@ export function userCanViewAdminActions(user: User): boolean {
     ADMIN_ACTIONS.some((action) => canPerformWithRole(roleInfo.type, action))
   );
 }
-
-export async function reportToBlacksky(uris: { uri: string }[]) {
-  console.log('reporting to blacksky', uris);
-  return null;
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_RSKY_FEEDGEN}/queue/posts/delete`!,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-RSKY-KEY': process.env.RSKY_API_KEY!,
-        },
-        body: JSON.stringify(uris),
-      }
-    );
-    console.log({ response });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error:', error);
-    throw error;
-  }
-}

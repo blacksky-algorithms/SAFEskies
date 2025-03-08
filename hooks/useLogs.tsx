@@ -24,7 +24,7 @@ export function useLogs() {
       const params = Object.fromEntries(searchParams.entries());
 
       return {
-        action: (params.action as ModAction) || null,
+        action: (params.action as ModAction) || undefined,
         performedBy: params.performedBy,
         targetUser: params.targetUser,
         targetPost: params.targetPost,
@@ -46,7 +46,7 @@ export function useLogs() {
 
         const filters = getFiltersFromParams();
         const logs = await fetchLogs(filters);
-
+        console.log({ logs, filters });
         setState({
           logs,
           isLoading: false,
