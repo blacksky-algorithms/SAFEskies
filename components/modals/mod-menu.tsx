@@ -1,14 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { VisualIntent } from '@/enums/styles';
 import { Modal } from '@/components/modals';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
-import { REPORT_OPTIONS } from '@/lib/constants/moderation';
 import { IconButton } from '../button/icon-button';
 import { ModReasonButton } from '../button/mod-reason-button';
 import { ReportOption } from '@/lib/types/moderation';
 import { useModal } from '@/contexts/modal-context';
+import { fetchReportOptions } from '@/repos/moderation';
 
 interface ModMenuProps {
   onClose: () => void;
@@ -20,6 +20,31 @@ export const ModMenuModal = ({
   handleSelectReportReason,
 }: ModMenuProps) => {
   const { isOpen } = useModal();
+  const [state, setState] = React.useState<{
+    isLoading: boolean;
+    options: ReportOption[];
+  }>({ isLoading: true, options: [] });
+
+  useEffect(() => {
+    const setOptionsToState = async () => {
+      if (state?.options?.length === 0) {
+        const response = await fetchReportOptions();
+
+        setState((prev) => ({
+          ...prev,
+          options: response.options,
+          isLoading: false,
+        }));
+      } else {
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+        }));
+      }
+    };
+    setOptionsToState();
+  }, [state?.options?.length]);
+
   return (
     <>
       <Modal
@@ -31,7 +56,7 @@ export const ModMenuModal = ({
         showBackButton={isOpen(MODAL_INSTANCE_IDS.HYDRATED_POST)}
       >
         <div className='flex flex-col overflow-y-auto space-y-4 '>
-          {REPORT_OPTIONS.map((option) => (
+          {state.options.map((option) => (
             <ModReasonButton
               key={option.id}
               reason={option}

@@ -1,4 +1,3 @@
-import { REPORT_OPTIONS } from '@/lib/constants/moderation';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 
@@ -18,4 +17,9 @@ export type ModAction =
   | 'mod_promote'
   | 'mod_demote';
 
-export type ReportOption = (typeof REPORT_OPTIONS)[number];
+export interface ReportOption {
+  id: string;
+  title: string;
+  description: string;
+  reason: string;
+}
