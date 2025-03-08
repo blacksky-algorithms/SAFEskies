@@ -1,12 +1,9 @@
 'use client';
 
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import { Modal } from '@/components/modals';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
-import {
-  MODERATION_SERVICES,
-  ModerationService,
-} from '@/lib/constants/moderation';
+import { ModerationService } from '@/lib/constants/moderation';
 import { ReportOption } from '@/lib/types/moderation';
 import { ModReasonButton } from '@/components/button/mod-reason-button';
 import { Checkbox } from '@/components/input/checkbox';
@@ -26,6 +23,12 @@ interface Props {
   isDisabled: boolean;
 }
 
+type ReportPostState = {
+  isLoading: boolean;
+  services: ModerationService[] | [];
+  error: string | null;
+};
+
 export const ReportPostModal = ({
   onClose,
   onReport,
@@ -36,6 +39,48 @@ export const ReportPostModal = ({
   isModServiceChecked,
   isDisabled,
 }: Props) => {
+  const [state, setState] = useState<ReportPostState>({
+    isLoading: true,
+    services: [],
+    error: null,
+  });
+
+  useEffect(() => {
+    async function fetchServices() {
+      try {
+        const response = await fetch(`/api/moderation/services`, {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setState((prev) => ({
+          ...prev,
+          services: data.services,
+          isLoading: false,
+        }));
+      } catch (e: unknown) {
+        console.error('Error fetching moderation services:', e);
+        setState((prev) => ({
+          ...prev,
+          error: e instanceof Error ? e.message : 'An unknown error occurred',
+          isLoading: false,
+        }));
+      } finally {
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+        }));
+      }
+    }
+
+    fetchServices();
+  }, []);
+  console.log({ state });
   return (
     <Modal
       id={MODAL_INSTANCE_IDS.REPORT_POST}
@@ -54,7 +99,7 @@ export const ReportPostModal = ({
             className={cc([
               'bg-app-secondary-hover rounded-xl p-4 flex flex-col space-y-2',
               {
-                'bg-app-secondary-hover ring-offset-1 ring-4  ring-app-error':
+                'bg-app-secondary-hover ring-offset-1 ring-4 mx-2 ring-app-error':
                   isDisabled,
               },
             ])}
@@ -64,7 +109,7 @@ export const ReportPostModal = ({
                 You must select at least one moderation service
               </p>
             ) : null}
-            {MODERATION_SERVICES.map((service) => {
+            {state.services.map((service) => {
               return (
                 <li
                   key={service.value}
@@ -94,7 +139,7 @@ export const ReportPostModal = ({
         <Button
           onClick={onReport}
           intent={VisualIntent.Error}
-          className='w-fit self-end pb-6'
+          className='w-fit self-end mb-6'
           submitting={isReportSubmitting}
           disabled={isReportSubmitting || isDisabled}
         >
