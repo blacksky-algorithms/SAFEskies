@@ -6,7 +6,7 @@ import { BaseLayout } from '@/components/layouts/base-layout';
 import { SideDrawerContent } from '@/components/side-drawer/side-drawer-content';
 import { getProfile } from '@/repos/profile';
 
-import type { Viewport } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { getHighestRoleForUser } from '@/lib/utils/permission';
 
 export const dynamic = 'force-dynamic';
@@ -16,6 +16,10 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+};
+
+export const metadata: Metadata = {
+  title: 'SAFEskies',
 };
 
 export default async function RootLayout({

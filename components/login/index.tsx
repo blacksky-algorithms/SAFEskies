@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { Button } from '../button';
 import { Input } from '../input';
-import { logIn } from '@/repos/profile';
+import { logIn } from '@/repos/auth';
 
 export const Login = () => {
   const router = useRouter();

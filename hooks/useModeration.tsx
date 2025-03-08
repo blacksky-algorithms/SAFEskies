@@ -9,7 +9,7 @@ import {
   FeedViewPost,
   PostView,
 } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { ReportOption } from '@/lib/types/moderation';
+import { ModAction, ReportOption } from '@/lib/types/moderation';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
 import { useToast } from '@/contexts/toast-context';
@@ -19,9 +19,21 @@ import {
 } from '@/lib/constants/moderation';
 import { reportModerationEvent } from '@/repos/moderation';
 import { VisualIntent } from '@/enums/styles';
-import { canPerformAction } from '@/repos/permission';
 import { useProfileData } from './useProfileData';
 import { useSearchParams } from 'next/navigation';
+
+// TODO: move to node implementation
+const canPerformAction = async (
+  userDid: string,
+  action: ModAction,
+  uri: string | null
+): Promise<boolean> => {
+  if (!userDid || !uri) return false;
+  return true;
+  // const feedRole = await getFeedRole(userDid, uri);
+
+  // return canPerformWithRole(feedRole, action);
+};
 
 interface ReportDataState {
   post: PostView | null;

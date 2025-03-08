@@ -11,8 +11,8 @@ import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
 import { useFeedRoles } from '@/hooks/useFeedRoles';
-import { usePermissions } from '@/hooks/usePermissions';
 import { PromoteModState } from '@/lib/types/moderation';
+import { promoteToModerator } from '@/repos/permission';
 
 export const PromoteModForm = ({
   feeds,
@@ -32,7 +32,6 @@ export const PromoteModForm = ({
 
   const { toast } = useToast();
   const { checkFeedRole, isLoading: isRoleCheckLoading } = useFeedRoles();
-  const { promoteToModerator } = usePermissions();
 
   const checkExistingRoles = useCallback(
     async (user: ProfileViewBasic) => {
@@ -124,7 +123,7 @@ export const PromoteModForm = ({
           })
         )
       );
-
+      console.log({ results });
       if (results.some((result) => !result.success)) {
         throw new Error('Failed to promote moderator for some feeds');
       }

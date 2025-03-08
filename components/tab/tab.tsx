@@ -14,6 +14,7 @@ interface TabGroupProps {
   data: string[] | ReactNode[];
   activeTab?: number;
   onTabChange?: (index: number) => void;
+  onlyMobile?: boolean;
 }
 
 export function TabGroup({
@@ -21,6 +22,7 @@ export function TabGroup({
   activeTab,
   onTabChange,
   children,
+  onlyMobile = true,
 }: PropsWithChildren<TabGroupProps>) {
   return (
     <HeadlessTabGroup
@@ -28,7 +30,12 @@ export function TabGroup({
       onChange={onTabChange}
       className='w-full'
     >
-      <TabList className='flex space-x-1 bg-app-background p-1 overflow-auto tablet:hidden'>
+      <TabList
+        className={cc([
+          'flex space-x-1 bg-app-background p-1 overflow-auto ',
+          { 'tablet:hidden': onlyMobile },
+        ])}
+      >
         {data.map((tab, index) => (
           <HeadlessTab
             key={index}

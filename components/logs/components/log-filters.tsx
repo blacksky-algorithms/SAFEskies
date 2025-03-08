@@ -12,6 +12,7 @@ import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 
 export const LogFilters = memo(() => {
   const searchParams = useSearchParams();
+  const uri = searchParams.get('uri') || '';
   const router = useRouter();
   const { closeModalInstance, isOpen } = useModal();
 
@@ -33,7 +34,7 @@ export const LogFilters = memo(() => {
   };
 
   const clearFilters = () => {
-    router.push('/logs');
+    router.push(`/logs?uri=${uri}`);
     setActorDisplayName('Search Bluesky');
     if (isFiltersModalOpen) {
       closeModalInstance(MODAL_INSTANCE_IDS.LOG_FILTERS);

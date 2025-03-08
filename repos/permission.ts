@@ -1,183 +1,102 @@
-import { UserRole } from '@/lib/types/permission';
-import { ModeratorData } from '@/lib/types/user';
-import {
-  canPerformWithRole,
-  groupModeratorsByFeed,
-} from '@/lib/utils/permission';
-import { SupabaseInstance } from '@/repos/supabase';
-import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
-import { getBulkProfileDetails } from '@/repos/profile';
-import { createModerationLog } from '@/repos/logs';
-import { ModAction } from '@/lib/types/moderation';
-// import { ADMIN_ACTIONS } from '@/lib/constants/moderation';
-// import { User } from '@/lib/types/user';
+import { fetchWithAuth } from '@/lib/api';
 
-export const setFeedRole = async (
-  targetUserDid: string,
-  uri: string,
-  role: UserRole,
-  setByUserDid: string,
-  feedName: string
-): Promise<boolean> => {
-  const canSetRole = await canPerformAction(setByUserDid, 'mod_promote', uri);
-
-  if (!canSetRole) {
-    console.error('Permission denied to set feed role:', {
+export const promoteToModerator = async ({
+  targetUserDid,
+  uri,
+  setByUserDid,
+  feedName,
+}: {
+  targetUserDid: string;
+  uri: string;
+  setByUserDid: string;
+  feedName: string;
+}) => {
+  const response = await fetch('/api/permissions/promote', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      targetUserDid,
+      uri,
       setByUserDid,
-      uri,
-    });
-    return false;
+      feedName,
+    }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || 'Failed to promote moderator');
   }
 
-  try {
-    const { error } = await SupabaseInstance.from('feed_permissions').upsert({
-      user_did: targetUserDid,
+  return response.json();
+};
+
+export const demoteModerator = async ({
+  modDid,
+  uri,
+  setByUserDid,
+  feedName,
+}: {
+  modDid: string;
+  uri: string;
+  setByUserDid: string;
+  feedName: string;
+}) => {
+  const response = await fetch('/api/permissions/demote', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      modDid,
       uri,
-      feed_name: feedName,
-      role: role,
-      created_by: setByUserDid,
-      created_at: new Date().toISOString(),
-    });
+      setByUserDid,
+      feedName,
+    }),
+  });
 
-    if (error) {
-      console.error('Error upserting feed role:', error);
-      return false;
-    }
-
-    await createModerationLog({
-      uri,
-      performed_by: setByUserDid,
-      action: role === 'mod' ? 'mod_promote' : 'mod_demote', // TODO: Extend to all actions
-      target_user_did: targetUserDid,
-      metadata: { role, feed_name: feedName },
-    });
-
-    return true;
-  } catch (error) {
-    console.error('Error setting feed role:', error);
-    return false;
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || 'Failed to demote moderator');
   }
+
+  return response.json();
 };
 
-export const getFeedRole = async (
-  userDid: string,
-  uri: string
-): Promise<UserRole> => {
-  const { data, error } = await SupabaseInstance.from('feed_permissions')
-    .select('role')
-    .eq('user_did', userDid)
-    .eq('uri', uri)
-    .single();
-
-  if (error || !data) return 'user';
-  return data.role;
-};
-
-export const canPerformAction = async (
-  userDid: string,
-  action: ModAction,
-  uri: string | null
-): Promise<boolean> => {
-  if (!userDid || !uri) return false;
-  const feedRole = await getFeedRole(userDid, uri);
-
-  return canPerformWithRole(feedRole, action);
-};
-
-export const getModeratorsByFeeds = async (feeds: Feed[]) => {
-  if (!feeds.length) return [];
-
+export const fetchModsByFeed = async (
+  uri: string,
+  displayName: string
+): Promise<{
+  status: number;
+  feed: { uri: string; displayName: string };
+  moderators: { did: string; handle: string }[];
+  error?: string | null;
+}> => {
   try {
-    const feedUris = feeds.map((feed) => feed.uri);
-    const { data: permissions } = await SupabaseInstance.from(
-      'feed_permissions'
-    )
-      .select('uri, user_did, role')
-      .in('uri', feedUris)
-      .eq('role', 'mod');
-
-    if (!permissions) {
-      return feeds.map((feed) => ({ feed, moderators: [] }));
-    }
-
-    const moderatorsByFeedUri = groupModeratorsByFeed(permissions);
-
-    return await Promise.all(
-      feeds.map(async (feed) => {
-        const feedModerators = moderatorsByFeedUri[feed.uri] || [];
-        const userDids = feedModerators.map(
-          (mod: { user_did: string }) => mod.user_did
-        );
-        const profiles = await getBulkProfileDetails(userDids);
-
-        const moderators = profiles.map((profile, index) => ({
-          ...profile,
-          role: feedModerators[index].role,
-        }));
-
-        return { feed, moderators };
-      })
+    const response = await fetchWithAuth(
+      `/api/permissions/admin/moderators?feed=${encodeURIComponent(uri)}`,
+      { method: 'GET' }
     );
-  } catch (error) {
-    console.error('Error fetching moderators by feeds:', error);
-    throw error;
-  }
-};
+    if (!response || !response.ok) {
+      throw new Error('Failed to fetch moderators for feed ' + uri);
+    }
+    const data = await response.json();
 
-export const getAllModeratorsForAdmin = async (adminDid: string) => {
-  try {
-    const { data: adminFeeds, error: feedsError } = await SupabaseInstance.from(
-      'feed_permissions'
-    )
-      .select('uri')
-      .eq('user_did', adminDid)
-      .eq('role', 'admin');
-
-    if (feedsError) throw feedsError;
-    if (!adminFeeds?.length) return [];
-
-    const { data: moderators, error: modsError } = (await SupabaseInstance.from(
-      'feed_permissions'
-    )
-      .select(
-        `
-        user_did,
-        uri,
-        feed_name,
-        role,
-        profiles!feed_permissions_user_did_fkey (
-          did,
-          handle,
-          displayName,
-          avatar
-        )
-      `
-      )
-      .in(
-        'uri',
-        adminFeeds.map((f) => f.uri)
-      )
-      .in('role', ['mod', 'admin'])) as unknown as {
-      data: ModeratorData[];
-      error: unknown;
+    return {
+      status: 200,
+      error: null,
+      feed: { uri, displayName },
+      moderators: data.moderators,
     };
-
-    if (modsError) throw modsError;
-    if (!moderators) return [];
-
-    return Array.from(
-      new Map(
-        moderators.map((mod) => [
-          mod.profiles.did,
-          {
-            ...mod.profiles,
-            role: mod.role,
-          },
-        ])
-      ).values()
-    );
-  } catch (error) {
-    console.error('Error fetching moderators for admin:', error);
-    throw error;
+  } catch (error: unknown) {
+    return {
+      status: 500,
+      error:
+        (error instanceof Error ? error.message : 'Failed to sign in') ||
+        'Failed to sign in',
+      feed: { uri: '', displayName: '' },
+      moderators: [],
+    };
   }
 };

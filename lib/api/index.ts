@@ -2,6 +2,7 @@
 import { cookies } from 'next/headers';
 
 export async function fetchWithAuth(url: string, options: RequestInit = {}) {
+  console.log('fetchWithAuth', url, options);
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('authToken')?.value;
@@ -19,7 +20,6 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
       `${process.env.NEXT_PUBLIC_SAFE_SKIES_API}${url}`,
       { ...options, headers }
     );
-
     // if (!response.ok) {
     //   throw new Error(`HTTP error! status: ${response.status}`);
     // }

@@ -1,10 +1,10 @@
-import { ModManagementCard } from '@/components/mod-management-card';
-import { FeedRoleInfo } from '@/lib/types/user';
-import { getModeratorsByFeeds } from '@/repos/permission';
+import { ModManagementCard } from '@/components/mod-management-card/mod-management-card';
 import { TabGroup, TabPanel } from '@/components/tab/tab';
 import { getProfile } from '@/repos/profile';
+import { fetchModsByFeed } from '@/repos/permission';
 
 export default async function Page() {
+  // Fetch the logged-in user's profile (this may come from cookies, etc.)
   const profile = await getProfile();
 
   if (!profile) {
@@ -16,17 +16,14 @@ export default async function Page() {
     );
   }
 
-  const adminFeeds = Object.entries(profile.rolesByFeed || {})
-    .filter(([, roleInfo]) => (roleInfo as FeedRoleInfo).type === 'admin')
-    .map(([uri, roleInfo]) => ({
-      uri,
-      displayName: (roleInfo as FeedRoleInfo).displayName || 'Unnamed Feed',
-    }));
-
-  const moderatorsByFeed = await getModeratorsByFeeds(adminFeeds);
+  const moderatorsByFeed = await Promise.all(
+    profile.rolesByFeed.map(async ({ uri, displayName }) => {
+      return await fetchModsByFeed(uri, displayName);
+    })
+  );
 
   const tabs = moderatorsByFeed.map(({ feed, moderators }) => ({
-    title: (feed.displayName as string) || '',
+    title: feed.displayName,
     TabContent: (
       <div className='mt-6'>
         <ModManagementCard
@@ -45,15 +42,9 @@ export default async function Page() {
       <header className='p-4'>
         <h2 className='text-2xl font-bold'>Moderator Management</h2>
       </header>
-      <TabGroup data={tabHeaders}>
-        {tabHeaders.map((_, index) => (
-          <TabPanel key={`feed-${index}`}>
-            <ModManagementCard
-              moderators={moderatorsByFeed[index].moderators}
-              feed={moderatorsByFeed[index].feed}
-              currentUserDid={profile.did}
-            />
-          </TabPanel>
+      <TabGroup data={tabHeaders} onlyMobile={false}>
+        {tabs.map((tab, index) => (
+          <TabPanel key={`feed-${index}`}>{tab.TabContent}</TabPanel>
         ))}
       </TabGroup>
     </section>

@@ -1,34 +1,43 @@
-// app/api/permissions/check-existing-role/route.ts
+// app/api/permissions/admin/check-role/route.ts
+import { fetchWithAuth } from '@/lib/api';
 import { NextResponse } from 'next/server';
-import { getFeedRole } from '@/repos/permission';
-import { UserRole } from '@/lib/types/permission';
 
 export async function GET(request: Request) {
-  // Get the URL parameters
-  const { searchParams } = new URL(request.url);
-  const userDid = searchParams.get('userDid');
-  const uri = searchParams.get('uri');
-
-  // Validate required parameters
-  if (!userDid || !uri) {
-    return NextResponse.json(
-      { error: 'Missing required parameters' },
-      { status: 400 }
-    );
-  }
-
   try {
-    // Get the user's role for this feed
-    const role: UserRole = await getFeedRole(userDid, uri);
+    // Parse query parameters from the incoming request URL.
+    const { searchParams } = new URL(request.url);
+    const targetDid = searchParams.get('targetDid');
+    const uri = searchParams.get('uri');
 
-    return NextResponse.json({ role });
+    if (!targetDid || !uri) {
+      return NextResponse.json(
+        { error: 'Missing required parameters: targetDid and uri' },
+        { status: 400 }
+      );
+    }
+
+    // Build the URL for the Node API endpoint.
+    const endpoint = `/api/permissions/admin/check-role?targetDid=${encodeURIComponent(
+      targetDid
+    )}&uri=${encodeURIComponent(uri)}`;
+
+    // Forward the request to your Node API using fetchWithAuth.
+    const response = await fetchWithAuth(endpoint, { method: 'GET' });
+
+    if (!response || !response.ok) {
+      const data = response ? await response.json() : {};
+      return NextResponse.json(
+        { error: data.error || 'Failed to check role' },
+        { status: response ? response.status : 500 }
+      );
+    }
+
+    const result = await response.json();
+    return NextResponse.json(result);
   } catch (error) {
-    // Log the error server-side for debugging
-    console.error('Error checking feed role:', error);
-
-    // Return a user-friendly error response
+    console.error('Error in check-role API proxy:', error);
     return NextResponse.json(
-      { error: 'Failed to check user role' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

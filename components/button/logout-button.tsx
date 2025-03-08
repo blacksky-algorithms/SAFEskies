@@ -5,6 +5,7 @@ import { Button } from '.';
 import { useRouter } from 'next/navigation';
 import { useModal } from '@/contexts/modal-context';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
+import { logOut } from '@/repos/auth';
 
 export const LogoutButton = () => {
   const router = useRouter();
@@ -17,12 +18,7 @@ export const LogoutButton = () => {
     setIsLoggingOut(true);
 
     try {
-      const response = await fetch('/api/auth/log-out', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await logOut();
 
       if (!response.ok) {
         const data = await response.json();

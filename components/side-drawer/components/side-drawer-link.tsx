@@ -75,9 +75,11 @@ export const SideDrawerLink = ({
                   },
                 ])}
               >
-                <span className='flex gap-4'>
-                  {permission && <PermissionPill type={permission} />}
+                <span className='flex justify-between'>
                   {link.label}
+                  {permission && label === 'Feeds' && (
+                    <PermissionPill type={permission} />
+                  )}
                 </span>
               </a>
             );

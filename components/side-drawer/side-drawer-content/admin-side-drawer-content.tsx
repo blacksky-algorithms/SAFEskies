@@ -40,7 +40,6 @@ export const AdminSideDrawerContent = ({
         {logsLinks.length > 0 ? (
           <SideDrawerLink
             label='Logs'
-            href='/logs'
             onClick={handleLinkClick}
             nestedLinks={logsLinks}
             permission='admin'

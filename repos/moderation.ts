@@ -1,3 +1,4 @@
+import { reportToBlacksky } from '@/lib/utils/permission';
 import { ReasonType } from '@atproto/api/dist/client/types/com/atproto/moderation/defs';
 
 export const reportModerationEvent = async (payload: {
@@ -10,13 +11,21 @@ export const reportModerationEvent = async (payload: {
   additionalInfo: string | undefined;
 }) => {
   try {
-    await fetch('/api/permissions/mod-event', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+    const {
+      targetedPostUri,
+      //  reason,
+      toServices,
+      // uri
+    } = payload;
+    if (
+      toServices.some(
+        (service: { label: string; value: string }) =>
+          service.value === 'blacksky'
+      )
+    ) {
+      // TODO: MOVE TO NODE
+      await reportToBlacksky([{ uri: targetedPostUri }]);
+    }
   } catch (error) {
     console.error('Error logging moderation event:', error);
     throw error;
