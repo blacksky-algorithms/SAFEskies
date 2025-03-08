@@ -80,7 +80,7 @@ export const ReportPostModal = ({
 
     fetchServices();
   }, []);
-  console.log({ state });
+
   return (
     <Modal
       id={MODAL_INSTANCE_IDS.REPORT_POST}

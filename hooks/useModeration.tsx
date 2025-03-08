@@ -100,7 +100,6 @@ interface UseModerationOptions {
 
 export function useModeration({ displayName, feed }: UseModerationOptions) {
   const { openModalInstance, closeModalInstance } = useModal();
-  const { profile, isLoading } = useProfileData();
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const uri = searchParams.get('uri');
@@ -109,7 +108,7 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
   const [reportData, dispatch] = useReducer(reportDataReducer, {
     post: null,
     reason: null,
-    toServices: [MODERATION_SERVICES[0]],
+    toServices: [],
     moderatedPostUri: null,
     additionalInfo: '',
   } as ReportDataState);
@@ -150,7 +149,8 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
       !reportData.post ||
       !reportData.moderatedPostUri ||
       !reportData.reason ||
-      feed.length === 0
+      feed.length === 0 ||
+      reportData.toServices.length === 0
     ) {
       toast({
         title: 'Error',
@@ -160,7 +160,7 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
       return;
     }
     setIsReportSubmitting(true);
-    console.log({ reportData });
+
     try {
       const payload = [
         {
@@ -175,7 +175,7 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
           metadata: { post: reportData.post },
         },
       ];
-      // Call the Next API route we created, which will proxy to our node API.
+      console.log({ payload });
       const response = await fetch('/api/moderation/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -186,8 +186,8 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
         const data = await response.json();
         throw new Error(data.error || 'Failed to report post');
       }
-      const result = await response.json();
-      console.log('Reported post: result: ', result);
+      await response.json();
+
       closeModalInstance(MODAL_INSTANCE_IDS.REPORT_POST);
       closeModalInstance(MODAL_INSTANCE_IDS.MOD_MENU);
       dispatch({ type: 'RESET' });
@@ -197,8 +197,8 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
         intent: VisualIntent.Success,
       });
     } catch (error) {
-      // console.error('Error reporting post:', error);
-      console.log('catch it: ', error);
+      console.error('Error reporting post:', error);
+
       toast({
         title: 'Error',
         message: 'Unable to report post. Please try again later.',
@@ -208,78 +208,12 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
       setIsReportSubmitting(false);
     }
   }, [reportData, feed]);
-  // const handleReportPost = useCallback(async () => {
-  //   if (
-  //     !reportData.post ||
-  //     !reportData.moderatedPostUri ||
-  //     !reportData.reason ||
-  //     feed.length === 0
-  //   ) {
-  //     toast({
-  //       title: 'Error',
-  //       message: 'No Post Selected.',
-  //       intent: VisualIntent.Error,
-  //     });
-  //     return;
-  //   }
-  //   setIsReportSubmitting(true);
-  //   try {
-  //     const payload = {
-  //       targetedPostUri: reportData.moderatedPostUri,
-  //       reason: reportData.reason.reason,
-  //       toServices: reportData.toServices,
-  //       targetedUserDid: reportData.post.author.did,
-  //       uri: reportData.post.uri,
-  //       feedName: displayName || 'Unnamed Feed',
-  //       additionalInfo: reportData.additionalInfo,
-  //     };
-  //     await reportModerationEvent(payload);
-  //     closeModalInstance(MODAL_INSTANCE_IDS.REPORT_POST);
-  //     closeModalInstance(MODAL_INSTANCE_IDS.MOD_MENU);
-  //     dispatch({ type: 'RESET' });
-  //     toast({
-  //       title: 'Success',
-  //       message: 'Post reported successfully',
-  //       intent: VisualIntent.Success,
-  //     });
-  //   } catch (error) {
-  //     console.error('Error reporting post:', error);
-  //     toast({
-  //       title: 'Error',
-  //       message: 'Unable to report post. Please try again later.',
-  //       intent: VisualIntent.Error,
-  //     });
-  //   } finally {
-  //     setIsReportSubmitting(false);
-  //   }
-  // }, [reportData, feed, displayName, closeModalInstance, toast]);
 
   const isModServiceChecked = useCallback(
     (service: ModerationService) =>
       reportData.toServices.some((item) => item.value === service.value),
     [reportData.toServices]
   );
-
-  // useEffect(() => {
-  //   const checkRole = async () => {
-  //     if (!profile || isLoading) {
-  //       setIsMod(false);
-  //       return;
-  //     }
-  //     try {
-  //       const hasModPermissions = await canPerformAction(
-  //         profile.did,
-  //         'post_delete',
-  //         uri
-  //       );
-  //       setIsMod(hasModPermissions);
-  //     } catch (err) {
-  //       console.error('Error checking permissions:', err);
-  //       setIsMod(false);
-  //     }
-  //   };
-  //   checkRole();
-  // }, [uri, profile, isLoading]);
 
   return {
     reportData,

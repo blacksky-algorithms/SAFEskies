@@ -2,7 +2,6 @@ import { fetchWithAuth } from '@/lib/api';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-  console.log("aihrgijrgiha'righ'waihgh");
   try {
     const body = await request.json();
 
@@ -16,9 +15,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to report' }, { status: 500 });
     }
 
-    // Log the raw text to help debug if JSON parsing fails.
     const rawText = await response.text();
-    console.log('Raw response:', rawText);
 
     // Try parsing the raw text as JSON.
     let data;

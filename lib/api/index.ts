@@ -15,7 +15,6 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
       ...options.headers,
       Authorization: `Bearer ${token}`,
     };
-    console.log(`${process.env.NEXT_PUBLIC_SAFE_SKIES_API}${url}`);
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_SAFE_SKIES_API}${url}`,
       { ...options, headers }
