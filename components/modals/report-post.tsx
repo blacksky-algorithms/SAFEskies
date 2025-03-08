@@ -109,7 +109,7 @@ export const ReportPostModal = ({
                 You must select at least one moderation service
               </p>
             ) : null}
-            {state.services.map((service) => {
+            {state?.services?.map((service) => {
               return (
                 <li
                   key={service.value}

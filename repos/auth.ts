@@ -44,7 +44,7 @@ export const logOut = async () => {
     const cookieStore = await cookies();
     cookieStore.delete('authToken');
 
-    return NextResponse.json({ success: true });
+    return { success: true };
   } catch (error) {
     console.error('Error during logout:', error);
     return NextResponse.json({ error: 'Failed to logout' }, { status: 500 });

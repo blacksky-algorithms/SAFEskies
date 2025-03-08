@@ -18,15 +18,8 @@ export const LogoutButton = () => {
     setIsLoggingOut(true);
 
     try {
-      const response = await logOut();
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to logout');
-      }
-      router.push('/');
-
-      router.refresh();
+      await logOut();
+      window.location.href = '/';
     } catch (error) {
       console.error('Logout error:', error);
       router.push('/');
