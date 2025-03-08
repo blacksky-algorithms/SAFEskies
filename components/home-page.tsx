@@ -23,7 +23,6 @@ export const HomePage = ({ feeds }: Props) => {
   const searchParams = useSearchParams();
   const uri = searchParams.get('uri');
   const activeTab = feeds.findIndex((feed) => feed.uri === uri) || 0;
-  console.log({ feeds });
 
   useEffect(() => {
     if (!uri) {

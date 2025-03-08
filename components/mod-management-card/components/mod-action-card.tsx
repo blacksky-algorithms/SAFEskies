@@ -19,7 +19,6 @@ export const ModActionCard = ({
   onDemote,
   uri,
 }: ModActionCardProps) => {
-  console.log({ moderator });
   return (
     <article className='bg-app-background border border-app-border rounded-md shadow-sm p-4 flex'>
       <div className='mr-4'>

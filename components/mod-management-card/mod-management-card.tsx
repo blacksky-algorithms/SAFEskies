@@ -31,7 +31,7 @@ export const ModManagementCard = ({
     error: null,
     pendingDemotions: new Set(),
   });
-  console.log({ feed });
+
   const { toast } = useToast();
 
   const handleDemote = async (modDid: string) => {

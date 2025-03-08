@@ -48,7 +48,6 @@ export const Login = () => {
       if (result.error || !result.url) {
         throw new Error(result.error || 'Failed to sign in');
       }
-      console.log({ result });
       router.push(result.url);
     } catch (error) {
       setState((prev) => ({

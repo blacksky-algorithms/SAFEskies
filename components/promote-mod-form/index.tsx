@@ -123,7 +123,7 @@ export const PromoteModForm = ({
           })
         )
       );
-      console.log({ results });
+
       if (results.some((result) => !result.success)) {
         throw new Error('Failed to promote moderator for some feeds');
       }

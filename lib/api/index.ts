@@ -1,8 +1,8 @@
 'use server';
+
 import { cookies } from 'next/headers';
 
 export async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  console.log('fetchWithAuth', url, options);
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('authToken')?.value;

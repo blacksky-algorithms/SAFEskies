@@ -14,7 +14,6 @@ const ActionLabel: Record<ModAction, string> = {
 };
 
 export const LogEntry = ({ log }: { log: Log }) => {
-  console.log({ log });
   return (
     <div className='rounded-lg border border-app-border bg-app-background shadow-sm mb-4'>
       <div className='pt-6 px-6 py-4'>
