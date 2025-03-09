@@ -15,7 +15,10 @@ export async function GET(request: NextRequest) {
 
   // Instead of modifying the existing URL, create a new URL without the token.
   // For example, redirect to the home page.
-  const redirectUrl = new URL('/', request.nextUrl.origin).toString();
+  const redirectUrl = new URL(
+    '/',
+    process.env.NEXT_PUBLIC_CLIENT_URL
+  ).toString();
 
   return new Response(
     `<!DOCTYPE html>
