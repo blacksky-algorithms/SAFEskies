@@ -1,3 +1,5 @@
+'use server';
+
 import { HomePage } from '@/components/home-page';
 import { getProfile } from '@/repos/profile';
 import { getUserFeeds } from '@/repos/feeds';
