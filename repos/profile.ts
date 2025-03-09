@@ -9,8 +9,7 @@ export const getProfile = async (): Promise<User | null> => {
     }
     const data = await response?.json();
     return data.profile;
-  } catch (error) {
-    console.error('Error fetching profile:', error);
+  } catch (error: unknown) {
     return null;
   }
 };

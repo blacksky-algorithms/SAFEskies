@@ -172,12 +172,13 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
         message: 'Post reported successfully',
         intent: VisualIntent.Success,
       });
-    } catch (error) {
-      console.error('Error reporting post:', error);
-
+    } catch (error: unknown) {
       toast({
         title: 'Error',
-        message: 'Unable to report post. Please try again later.',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Unable to report post. Please try again later.',
         intent: VisualIntent.Error,
       });
     } finally {

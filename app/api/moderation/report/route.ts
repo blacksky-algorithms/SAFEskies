@@ -22,9 +22,14 @@ export async function POST(request: Request) {
     try {
       data = JSON.parse(rawText);
     } catch (jsonError) {
-      console.error('JSON parse error:', jsonError);
       return NextResponse.json(
-        { error: 'Invalid JSON returned from backend', raw: rawText },
+        {
+          error:
+            jsonError instanceof Error
+              ? jsonError.message
+              : 'Invalid JSON returned from backend',
+          raw: rawText,
+        },
         { status: response.status }
       );
     }
@@ -37,10 +42,11 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(data);
-  } catch (error) {
-    console.error('Error in promote moderator API proxy:', error);
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
       { status: 500 }
     );
   }

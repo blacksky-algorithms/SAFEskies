@@ -43,11 +43,12 @@ export const getUserFeeds = async (userDid?: string) => {
     );
     const data = await response?.json();
     return data;
-  } catch (error) {
-    console.error('Error fetching user feeds:', error);
+  } catch (error: unknown) {
     return {
       feeds: [],
       defaultFeed: DEFAULT_FEED,
+      error:
+        error instanceof Error ? error.message : 'Error fetching user feeds',
     };
   }
 };

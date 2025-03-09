@@ -21,7 +21,5 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
     );
 
     return response;
-  } catch (e) {
-    console.error(e);
-  }
+  } catch {}
 }

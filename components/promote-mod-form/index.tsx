@@ -60,11 +60,13 @@ export const PromoteModForm = ({
           disabledFeeds: disabledFeedUris,
           isLoading: false,
         }));
-      } catch (error) {
-        console.error('Error checking roles:', error);
+      } catch (error: unknown) {
         setState((prev) => ({
           ...prev,
-          error: 'Failed to check user roles',
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Failed to check user roles',
           isLoading: false,
         }));
       }
@@ -135,8 +137,7 @@ export const PromoteModForm = ({
       });
 
       setState(INITIAL_STATE);
-    } catch (error) {
-      console.error('Error promoting moderator:', error);
+    } catch (error: unknown) {
       setState((prev) => ({
         ...prev,
         error:

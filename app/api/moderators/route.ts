@@ -29,10 +29,11 @@ export async function GET(request: Request) {
     // Return the data received from the Node API.
     const result = await response.json();
     return NextResponse.json(result);
-  } catch (error) {
-    console.error('Error in Next API moderators route:', error);
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
       { status: 500 }
     );
   }

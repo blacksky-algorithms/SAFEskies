@@ -22,8 +22,7 @@ export const FilterByModInput = ({ updateFilter, performedBy }: Props) => {
         }
         const data = await response.json();
         setState({ mods: data.moderators, error: null });
-      } catch (error) {
-        console.error('Error fetching moderators:', error);
+      } catch (error: unknown) {
         setState({
           mods: [],
           error:

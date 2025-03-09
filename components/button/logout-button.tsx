@@ -20,8 +20,7 @@ export const LogoutButton = () => {
     try {
       await logOut();
       window.location.href = '/';
-    } catch (error) {
-      console.error('Logout error:', error);
+    } catch {
       router.push('/');
     } finally {
       setIsLoggingOut(false);
@@ -31,7 +30,7 @@ export const LogoutButton = () => {
 
   return (
     <Button type='button' onClick={handleClick} disabled={isLoggingOut}>
-      {isLoggingOut ? 'Logging out...' : 'Logout'}
+      {isLoggingOut ? 'Logging out...' : 'Log Out'}
     </Button>
   );
 };

@@ -28,7 +28,7 @@ export const useCheckFeedRoles = () => {
 
       const data = await response.json();
       return data.role as UserRole;
-    } catch (error) {
+    } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to check role';
       setError(message);

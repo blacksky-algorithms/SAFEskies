@@ -55,8 +55,7 @@ export async function middleware(req: NextRequest) {
     }
 
     return NextResponse.next();
-  } catch (error) {
-    console.error('Middleware error:', error);
+  } catch (error: unknown) {
     return NextResponse.redirect(new URL('/oauth/login', req.url));
   }
 }

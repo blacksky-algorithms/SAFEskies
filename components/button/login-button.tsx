@@ -14,8 +14,7 @@ export const LoginButton = () => {
 
     try {
       await router.push('/oauth/login');
-    } catch (error) {
-      console.error('Login failed:', error);
+    } catch {
     } finally {
       setIsSubmitting(false);
     }
@@ -28,7 +27,7 @@ export const LoginButton = () => {
       submitting={isSubmitting}
       disabled={isSubmitting}
     >
-      Login with Bluesky
+      Log In with Bluesky
     </Button>
   );
 };

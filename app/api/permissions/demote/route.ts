@@ -31,10 +31,11 @@ export async function POST(request: Request) {
 
     const result = await response.json();
     return NextResponse.json(result);
-  } catch (error) {
-    console.error('Error in demote moderator API proxy:', error);
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
       { status: 500 }
     );
   }

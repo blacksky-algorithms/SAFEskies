@@ -52,12 +52,12 @@ export function useLogs() {
           isLoading: false,
           error: null,
         });
-      } catch (err) {
-        console.error('Error fetching logs:', err);
+      } catch (error: unknown) {
         setState({
           logs: [],
           isLoading: false,
-          error: 'Failed to fetch logs',
+          error:
+            error instanceof Error ? error.message : 'Failed to fetch logs',
         });
       }
     };

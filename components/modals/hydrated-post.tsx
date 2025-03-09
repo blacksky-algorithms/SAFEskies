@@ -57,8 +57,11 @@ export const HydratedPostModal = ({
         error: null,
         showReplies: {},
       });
-    } catch (error) {
-      console.error('Error fetching post thread:', error);
+    } catch (error: unknown) {
+      setState((prev) => ({
+        ...prev,
+        error: error instanceof Error ? error.message : 'something went wrong',
+      }));
     }
   }, [uri]);
 

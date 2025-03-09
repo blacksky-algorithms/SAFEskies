@@ -63,11 +63,13 @@ export const ReportPostModal = ({
           services: data.services,
           isLoading: false,
         }));
-      } catch (e: unknown) {
-        console.error('Error fetching moderation services:', e);
+      } catch (error: unknown) {
         setState((prev) => ({
           ...prev,
-          error: e instanceof Error ? e.message : 'An unknown error occurred',
+          error:
+            error instanceof Error
+              ? error.message
+              : 'An unknown error occurred',
           isLoading: false,
         }));
       } finally {

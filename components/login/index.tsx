@@ -49,7 +49,7 @@ export const Login = () => {
         throw new Error(result.error || 'Failed to sign in');
       }
       router.push(result.url);
-    } catch (error) {
+    } catch (error: unknown) {
       setState((prev) => ({
         ...prev,
         error:

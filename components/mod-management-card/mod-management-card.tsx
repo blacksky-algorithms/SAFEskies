@@ -67,9 +67,7 @@ export const ModManagementCard = ({
         message: 'Successfully demoted moderator',
         intent: VisualIntent.Success,
       });
-    } catch (error) {
-      console.error('Error demoting moderator:', error);
-
+    } catch (error: unknown) {
       setState((prev) => ({
         ...prev,
         pendingDemotions: new Set(

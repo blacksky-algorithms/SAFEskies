@@ -7,8 +7,7 @@ export const fetchReportOptions = async () => {
       throw new Error('Failed to fetch report options');
     }
     return response.json();
-  } catch (error) {
-    console.error('Error fetching report options:', error);
+  } catch (error: unknown) {
     throw error;
   }
 };
