@@ -46,7 +46,7 @@ export function useLogs() {
 
         const filters = getFiltersFromParams();
         const logs = await fetchLogs(filters);
-        console.log({ logs, filters });
+
         setState({
           logs,
           isLoading: false,

@@ -151,7 +151,7 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
           metadata: { post: reportData.post },
         },
       ];
-      console.log({ payload });
+
       const response = await fetch('/api/moderation/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

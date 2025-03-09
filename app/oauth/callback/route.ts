@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const refreshCookie = `needsRefresh=true; Path=/; SameSite=Strict`;
     // Remove the token from the URL by setting it to an empty string.
     // This avoids leaving the token in the final URL particularly on netlify deploys.
-    request.nextUrl.searchParams.delete('token', '');
+    request.nextUrl.searchParams.set('token', '');
     request.nextUrl.searchParams.set('uri', '');
     const redirectUrl = request.nextUrl.toString();
 
