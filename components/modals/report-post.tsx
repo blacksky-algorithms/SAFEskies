@@ -11,6 +11,7 @@ import { Textarea } from '@/components/input/text-area';
 import { Button } from '@/components/button';
 import { VisualIntent } from '@/enums/styles';
 import cc from 'classcat';
+import { useSearchParams } from 'next/navigation';
 
 interface Props {
   onClose: () => void;
@@ -45,10 +46,15 @@ export const ReportPostModal = ({
     error: null,
   });
 
+  const searchParams = useSearchParams();
+
+  const uri = searchParams?.get('uri');
+
   useEffect(() => {
     async function fetchServices() {
+      if (!uri) return;
       try {
-        const response = await fetch(`/api/moderation/services`, {
+        const response = await fetch(`/api/moderation/services?uri=${uri}`, {
           method: 'GET',
           credentials: 'include',
         });
@@ -81,7 +87,7 @@ export const ReportPostModal = ({
     }
 
     fetchServices();
-  }, []);
+  }, [uri]);
 
   return (
     <Modal

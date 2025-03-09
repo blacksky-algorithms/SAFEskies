@@ -37,10 +37,17 @@ export const fetchFeed = async ({
 };
 
 export const getUserFeeds = async (userDid?: string) => {
+  if (!userDid) {
+    return {
+      feeds: [],
+      defaultFeed: DEFAULT_FEED,
+    };
+  }
   try {
     const response = await fetchWithAuth(
-      `/feeds/user-feeds?userDid=${userDid}`
+      `/api/feeds/user-feeds?userDid=${userDid}`
     );
+
     const data = await response?.json();
     return data;
   } catch (error: unknown) {

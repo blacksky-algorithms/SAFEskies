@@ -1,12 +1,18 @@
 import { fetchWithAuth } from '@/lib/api';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    // Forward the GET request with the query param to the Node API.
-    const response = await fetchWithAuth('/api/moderation/services', {
-      method: 'GET',
-    });
+    const { searchParams } = new URL(request.url);
+
+    const uri = searchParams.get('uri');
+
+    const response = await fetchWithAuth(
+      `/api/moderation/services?uri=${uri}`,
+      {
+        method: 'GET',
+      }
+    );
     const data = await response?.json();
     return NextResponse.json(data);
   } catch (error: unknown) {
