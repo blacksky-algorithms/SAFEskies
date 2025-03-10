@@ -9,6 +9,7 @@ import { ModReasonButton } from '../button/mod-reason-button';
 import { ReportOption } from '@/lib/types/moderation';
 import { useModal } from '@/contexts/modal-context';
 import { fetchReportOptions } from '@/repos/moderation';
+import { useProfileData } from '@/hooks/useProfileData';
 
 interface ModMenuProps {
   onClose: () => void;
@@ -24,6 +25,8 @@ export const ModMenuModal = ({
     isLoading: boolean;
     options: ReportOption[];
   }>({ isLoading: true, options: [] });
+
+  const { profile } = useProfileData();
 
   useEffect(() => {
     const setOptionsToState = async () => {
@@ -44,6 +47,10 @@ export const ModMenuModal = ({
     };
     setOptionsToState();
   }, [state?.options?.length]);
+
+  if (!profile?.did) {
+    return null;
+  }
 
   return (
     <>
