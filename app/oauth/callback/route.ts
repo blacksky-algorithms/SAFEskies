@@ -1,6 +1,6 @@
 'use server';
 
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get('token');
@@ -13,30 +13,10 @@ export async function GET(request: NextRequest) {
   const authTokenCookie = `authToken=${token}; Path=/; HttpOnly; SameSite=Strict`;
   const refreshCookie = `needsRefresh=true; Path=/; SameSite=Strict`;
 
-  // Instead of modifying the existing URL, create a new URL without the token.
-  // For example, redirect to the home page.
-  const redirectUrl = new URL(
-    '/',
-    process.env.NEXT_PUBLIC_CLIENT_URL
-  ).toString();
-
-  return new Response(
-    `<!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta http-equiv="refresh" content="0;url=${redirectUrl}" />
-        <title>Redirecting...</title>
-      </head>
-      <body>
-        <p>Redirecting...</p>
-      </body>
-    </html>`,
-    {
-      status: 302,
-      headers: {
-        'Set-Cookie': `${authTokenCookie}, ${refreshCookie}`,
-        Location: redirectUrl,
-      },
-    }
-  );
+  return NextResponse.redirect(`${request.nextUrl.origin}/?uri=`, {
+    status: 302,
+    headers: {
+      'Set-Cookie': `${authTokenCookie}, ${refreshCookie}`,
+    },
+  });
 }
