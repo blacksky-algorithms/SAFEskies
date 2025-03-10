@@ -12,6 +12,7 @@ import { Button } from '@/components/button';
 import { VisualIntent } from '@/enums/styles';
 import cc from 'classcat';
 import { useSearchParams } from 'next/navigation';
+import { useProfileData } from '@/hooks/useProfileData';
 
 interface Props {
   onClose: () => void;
@@ -22,6 +23,7 @@ interface Props {
   handleReportToChange: (reportTo: ModerationService) => void;
   isModServiceChecked: (service: ModerationService) => boolean;
   isDisabled: boolean;
+  updateShowModMenu: (val: boolean) => void;
 }
 
 type ReportPostState = {
@@ -39,6 +41,7 @@ export const ReportPostModal = ({
   handleReportToChange,
   isModServiceChecked,
   isDisabled,
+  updateShowModMenu,
 }: Props) => {
   const [state, setState] = useState<ReportPostState>({
     isLoading: true,
@@ -49,10 +52,11 @@ export const ReportPostModal = ({
   const searchParams = useSearchParams();
 
   const uri = searchParams?.get('uri');
-
+  const { profile } = useProfileData();
+  console.log(profile);
   useEffect(() => {
     async function fetchServices() {
-      if (!uri) return;
+      if (!uri || !profile?.did) return;
       try {
         const response = await fetch(`/api/moderation/services?uri=${uri}`, {
           method: 'GET',
@@ -69,6 +73,7 @@ export const ReportPostModal = ({
           services: data.services,
           isLoading: false,
         }));
+        updateShowModMenu(data.services.length > 0 && !!profile.did);
       } catch (error: unknown) {
         setState((prev) => ({
           ...prev,
@@ -83,11 +88,16 @@ export const ReportPostModal = ({
           ...prev,
           isLoading: false,
         }));
+        updateShowModMenu(state.services.length > 0 && !!profile.did);
       }
     }
 
     fetchServices();
-  }, [uri]);
+  }, [uri, profile?.did]);
+
+  if (state.services.length === 0) {
+    return null;
+  }
 
   return (
     <Modal

@@ -88,7 +88,6 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
     moderatedPostUri: null,
     additionalInfo: '',
   } as ReportDataState);
-  const [isMod, setIsMod] = useState(true); // TODO: refine this
 
   const handleModAction = useCallback(
     (post: PostView) => {
@@ -202,6 +201,5 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
     handleAddtlInfoChange,
     isModServiceChecked,
     onClose,
-    isMod,
   };
 }
