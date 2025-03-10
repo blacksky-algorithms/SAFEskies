@@ -74,7 +74,7 @@ export const ReportPostModal = ({
           isLoading: false,
         }));
 
-        updateShowModMenu(data?.services?.length > 0 && !!profile.did);
+        updateShowModMenu(true);
       } catch (error: unknown) {
         setState((prev) => ({
           ...prev,
