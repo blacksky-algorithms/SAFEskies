@@ -73,7 +73,7 @@ export const ReportPostModal = ({
           services: data.services,
           isLoading: false,
         }));
-        updateShowModMenu(data.services.length > 0 && !!profile.did);
+        updateShowModMenu(data?.services?.length > 0 && !!profile.did);
       } catch (error: unknown) {
         setState((prev) => ({
           ...prev,
@@ -88,14 +88,14 @@ export const ReportPostModal = ({
           ...prev,
           isLoading: false,
         }));
-        updateShowModMenu(state.services.length > 0 && !!profile.did);
+        // updateShowModMenu(state?.services?.length > 0 && !!profile.did);
       }
     }
 
     fetchServices();
   }, [uri, profile?.did]);
 
-  if (state.services.length === 0) {
+  if (state?.services?.length === 0) {
     return null;
   }
 
