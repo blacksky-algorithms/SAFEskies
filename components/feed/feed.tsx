@@ -36,7 +36,7 @@ export const Feed = ({ onRefreshComplete, displayName }: FeedProps) => {
 
   const { openModalInstance, closeModalInstance } = useModal();
   const [viewedPostUri, setViewedPostUri] = useState<string | null>(null);
-  const [showModMenu, setShowModMenu] = useState(false);
+  const [showModMenu, setShowModMenu] = useState(true);
   const {
     reportData,
     isReportSubmitting,

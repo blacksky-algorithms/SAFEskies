@@ -53,7 +53,7 @@ export const ReportPostModal = ({
 
   const uri = searchParams?.get('uri');
   const { profile } = useProfileData();
-  console.log(profile);
+
   useEffect(() => {
     async function fetchServices() {
       if (!uri || !profile?.did) return;
@@ -73,6 +73,7 @@ export const ReportPostModal = ({
           services: data.services,
           isLoading: false,
         }));
+
         updateShowModMenu(data?.services?.length > 0 && !!profile.did);
       } catch (error: unknown) {
         setState((prev) => ({
