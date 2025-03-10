@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   const authTokenCookie = `authToken=${token}; Path=/; HttpOnly; SameSite=Strict`;
   const refreshCookie = `needsRefresh=true; Path=/; SameSite=Strict`;
 
-  return NextResponse.redirect(`${request.nextUrl.origin}/?uri=`, {
+  return NextResponse.redirect(`${process.env.NEXT_PUBLIC_CLIENT_URL}/?uri=`, {
     status: 302,
     headers: {
       'Set-Cookie': `${authTokenCookie}, ${refreshCookie}`,
