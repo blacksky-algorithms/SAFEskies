@@ -1,18 +1,15 @@
 'use client';
 
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent } from 'react';
 import { Modal } from '@/components/modals';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
-import { ModerationService } from '@/lib/constants/moderation';
-import { ReportOption } from '@/lib/types/moderation';
+import { ModerationService, ReportOption } from '@/lib/types/moderation';
 import { ModReasonButton } from '@/components/button/mod-reason-button';
 import { Checkbox } from '@/components/input/checkbox';
 import { Textarea } from '@/components/input/text-area';
 import { Button } from '@/components/button';
 import { VisualIntent } from '@/enums/styles';
 import cc from 'classcat';
-import { useSearchParams } from 'next/navigation';
-import { useProfileData } from '@/hooks/useProfileData';
 
 interface Props {
   onClose: () => void;
@@ -23,14 +20,8 @@ interface Props {
   handleReportToChange: (reportTo: ModerationService) => void;
   isModServiceChecked: (service: ModerationService) => boolean;
   isDisabled: boolean;
-  updateShowModMenu: (val: boolean) => void;
+  services: ModerationService[];
 }
-
-type ReportPostState = {
-  isLoading: boolean;
-  services: ModerationService[] | [];
-  error: string | null;
-};
 
 export const ReportPostModal = ({
   onClose,
@@ -41,65 +32,8 @@ export const ReportPostModal = ({
   handleReportToChange,
   isModServiceChecked,
   isDisabled,
-  updateShowModMenu,
+  services,
 }: Props) => {
-  const [state, setState] = useState<ReportPostState>({
-    isLoading: true,
-    services: [],
-    error: null,
-  });
-
-  const searchParams = useSearchParams();
-
-  const uri = searchParams?.get('uri');
-  const { profile } = useProfileData();
-
-  useEffect(() => {
-    async function fetchServices() {
-      if (!uri || !profile?.did) return;
-      try {
-        const response = await fetch(`/api/moderation/services?uri=${uri}`, {
-          method: 'GET',
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setState((prev) => ({
-          ...prev,
-          services: data.services,
-          isLoading: false,
-        }));
-
-        updateShowModMenu(true);
-      } catch (error: unknown) {
-        setState((prev) => ({
-          ...prev,
-          error:
-            error instanceof Error
-              ? error.message
-              : 'An unknown error occurred',
-          isLoading: false,
-        }));
-      } finally {
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-        }));
-        // updateShowModMenu(state?.services?.length > 0 && !!profile.did);
-      }
-    }
-
-    fetchServices();
-  }, [uri, profile?.did]);
-
-  if (state?.services?.length === 0) {
-    return null;
-  }
-
   return (
     <Modal
       id={MODAL_INSTANCE_IDS.REPORT_POST}
@@ -128,7 +62,7 @@ export const ReportPostModal = ({
                 You must select at least one moderation service
               </p>
             ) : null}
-            {state?.services?.map((service) => {
+            {services?.map((service) => {
               return (
                 <li
                   key={service.value}

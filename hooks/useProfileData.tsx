@@ -40,7 +40,9 @@ export function useProfileData(): UseProfileDataResult {
   };
 
   useEffect(() => {
-    fetchProfile();
+    if (!profile?.did) {
+      fetchProfile();
+    }
   }, []);
 
   return {

@@ -7,7 +7,7 @@ import { ReportOption } from '@/lib/types/moderation';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
 import { useToast } from '@/contexts/toast-context';
-import { ModerationService } from '@/lib/constants/moderation';
+import { ModerationService } from '@/lib/types/moderation';
 import { VisualIntent } from '@/enums/styles';
 import { useSearchParams } from 'next/navigation';
 
@@ -72,9 +72,14 @@ const reportDataReducer = (
 interface UseModerationOptions {
   displayName?: string;
   feed: FeedViewPost[];
+  services: ModerationService[] | [];
 }
 
-export function useModeration({ displayName, feed }: UseModerationOptions) {
+export function useModeration({
+  displayName,
+  feed,
+  services,
+}: UseModerationOptions) {
   const { openModalInstance, closeModalInstance } = useModal();
   const { toast } = useToast();
   const searchParams = useSearchParams();
@@ -84,7 +89,7 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
   const [reportData, dispatch] = useReducer(reportDataReducer, {
     post: null,
     reason: null,
-    toServices: [],
+    toServices: services,
     moderatedPostUri: null,
     additionalInfo: '',
   } as ReportDataState);

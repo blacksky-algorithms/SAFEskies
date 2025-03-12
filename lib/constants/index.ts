@@ -5,7 +5,7 @@ export const CONTENT_LABELS = ['porn', 'sexual', 'nudity', 'graphic-media'];
 export const preferredLanguages = 'en-US, en';
 
 export const DEFAULT_FEED = {
-  uri: 'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot',
-  displayName: "What's Hot",
+  uri: 'at://did:plc:w4xbfzo7kqfes5zb7r6qv3rw/app.bsky.feed.generator/blacksky',
+  displayName: 'Blacksy',
   type: 'user' as UserRole,
 } as const;

@@ -38,3 +38,9 @@ export interface ReportData {
   targetedPost?: PostRecord;
   targetedProfile?: User;
 }
+
+export interface ModerationService {
+  value: 'blacksky' | 'ozone';
+  label: 'Blacksky Moderation Service' | 'Ozone Moderation Service';
+  admin_did: string | null;
+}

@@ -46,10 +46,12 @@ export const EmbedRenderer = ({
   content,
   labels,
   hideRecord,
+  isSignedIn,
 }: {
   content: AppBskyFeedDefs.PostView['embed'];
   labels: AppBskyFeedDefs.PostView['labels'];
   hideRecord?: boolean;
+  isSignedIn: boolean;
 }) => {
   const labelInfo = useMemo(() => labelsToInfo(labels), [labels]);
   const [isLabelVisible, setIsLabelVisible] = useState(!!labelInfo);
@@ -92,8 +94,7 @@ export const EmbedRenderer = ({
         const pwiOptOut = !!record.author.labels?.find(
           (label) => label.val === '!no-unauthenticated'
         );
-        if (pwiOptOut) {
-          // TODO: talk to Rudy about how to handle this
+        if (pwiOptOut && !isSignedIn) {
           return (
             <Info>
               The author of the quoted post has requested their posts not be
@@ -126,6 +127,7 @@ export const EmbedRenderer = ({
                 content={embed}
                 labels={record.labels}
                 hideRecord
+                isSignedIn={isSignedIn}
               />
             ))}
           </div>
@@ -199,6 +201,7 @@ export const EmbedRenderer = ({
             content={content.media}
             labels={labels}
             hideRecord={hideRecord}
+            isSignedIn={isSignedIn}
           />
           <EmbedRenderer
             content={{
@@ -207,6 +210,7 @@ export const EmbedRenderer = ({
             }}
             labels={content.record.record.labels}
             hideRecord={hideRecord}
+            isSignedIn={isSignedIn}
           />
         </div>
       );

@@ -16,13 +16,22 @@ import { ModMenuModal } from '../modals/mod-menu';
 import { ReportPostModal } from '../modals/report-post';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useModeration } from '@/hooks/useModeration';
+import { ModerationService } from '@/lib/types/moderation';
 
 interface FeedProps {
   onRefreshComplete?: () => void;
   displayName: string | undefined;
+  services: ModerationService[] | [];
+  isSignedIn: boolean;
 }
 
-export const Feed = ({ onRefreshComplete, displayName }: FeedProps) => {
+export const Feed = ({
+  onRefreshComplete,
+  displayName,
+  services,
+  isSignedIn,
+}: FeedProps) => {
+  const hasModServices = services.length > 0;
   const { feed, error, isFetching, hasNextPage, fetchNextPage, refreshFeed } =
     usePaginatedFeed();
 
@@ -36,7 +45,7 @@ export const Feed = ({ onRefreshComplete, displayName }: FeedProps) => {
 
   const { openModalInstance, closeModalInstance } = useModal();
   const [viewedPostUri, setViewedPostUri] = useState<string | null>(null);
-  const [showModMenu, setShowModMenu] = useState(true);
+
   const {
     reportData,
     isReportSubmitting,
@@ -47,9 +56,8 @@ export const Feed = ({ onRefreshComplete, displayName }: FeedProps) => {
     handleReportToChange,
     isModServiceChecked,
     onClose,
-  } = useModeration({ displayName, feed });
+  } = useModeration({ displayName, feed, services });
 
-  const updateShowModMenu = (val: boolean) => setShowModMenu(val);
   useEffect(() => {
     if (error) {
       openModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR, true);
@@ -120,7 +128,8 @@ export const Feed = ({ onRefreshComplete, displayName }: FeedProps) => {
                       }
                       rootPost={rootPost as PostView}
                       onModAction={handleModAction}
-                      showModMenu={showModMenu}
+                      showModMenu={hasModServices}
+                      isSignedIn={isSignedIn}
                     />
                   </li>
                 );
@@ -152,23 +161,28 @@ export const Feed = ({ onRefreshComplete, displayName }: FeedProps) => {
         uri={viewedPostUri}
         onClose={() => setViewedPostUri(null)}
         onModAction={handleModAction}
-        showModMenu={showModMenu}
+        showModMenu={hasModServices}
+        isSignedIn={isSignedIn}
       />
-      <ModMenuModal
-        onClose={onClose}
-        handleSelectReportReason={handleSelectReportReason}
-      />
-      <ReportPostModal
-        onClose={onClose}
-        onReport={handleReportPost}
-        reason={reportData.reason}
-        isReportSubmitting={isReportSubmitting}
-        handleReportToChange={handleReportToChange}
-        isModServiceChecked={isModServiceChecked}
-        isDisabled={reportData.toServices.length === 0}
-        handleAddtlInfoChange={handleAddtlInfoChange}
-        updateShowModMenu={updateShowModMenu}
-      />
+      {hasModServices ? (
+        <>
+          <ModMenuModal
+            onClose={onClose}
+            handleSelectReportReason={handleSelectReportReason}
+          />
+          <ReportPostModal
+            onClose={onClose}
+            onReport={handleReportPost}
+            reason={reportData.reason}
+            isReportSubmitting={isReportSubmitting}
+            handleReportToChange={handleReportToChange}
+            isModServiceChecked={isModServiceChecked}
+            isDisabled={reportData.toServices.length === 0}
+            handleAddtlInfoChange={handleAddtlInfoChange}
+            services={services}
+          />
+        </>
+      ) : null}
     </>
   );
 };

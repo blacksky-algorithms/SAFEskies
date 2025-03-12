@@ -16,6 +16,7 @@ interface HydratedPostModalProps {
   onClose?: () => void;
   onModAction: (post: PostView) => void;
   showModMenu: boolean;
+  isSignedIn: boolean;
 }
 
 interface HydratedPostState {
@@ -30,6 +31,7 @@ export const HydratedPostModal = ({
   onClose,
   onModAction,
   showModMenu,
+  isSignedIn,
 }: HydratedPostModalProps) => {
   const [state, setState] = useState<HydratedPostState>({
     thread: null,
@@ -92,6 +94,7 @@ export const HydratedPostModal = ({
               rootPost={(reply.parent?.post as PostView) || null}
               onModAction={onModAction}
               showModMenu={showModMenu}
+              isSignedIn={isSignedIn}
             />
             {reply.replies && reply.replies.length > 0 && (
               <Button
@@ -139,6 +142,7 @@ export const HydratedPostModal = ({
                 rootPost={(state.thread.parent?.post as PostView) || null}
                 onModAction={onModAction}
                 showModMenu={showModMenu}
+                isSignedIn={isSignedIn}
               />
               {state.thread.replies?.map((reply) =>
                 renderReply(reply as ThreadViewPost)

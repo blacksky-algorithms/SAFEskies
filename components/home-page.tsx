@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { PermissionPill } from '@/components/permission-pill';
 import { UserRole } from '@/lib/types/permission';
 import Cookies from 'js-cookie';
+import { ModerationService } from '@/lib/types/moderation';
 
 interface Props {
   feeds: {
@@ -16,9 +17,11 @@ interface Props {
     type: UserRole;
     uri: string;
   }[];
+  services: ModerationService[] | [];
+  isSignedIn: boolean;
 }
 
-export const HomePage = ({ feeds }: Props) => {
+export const HomePage = ({ feeds, services, isSignedIn }: Props) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const uri = searchParams.get('uri');
@@ -72,7 +75,11 @@ export const HomePage = ({ feeds }: Props) => {
         {tabHeaders.map((_, index) => {
           return (
             <TabPanel key={`feed-${index}`}>
-              <Feed displayName={feeds?.[activeTab]?.displayName} />
+              <Feed
+                displayName={feeds?.[activeTab]?.displayName}
+                services={services}
+                isSignedIn={isSignedIn}
+              />
             </TabPanel>
           );
         })}

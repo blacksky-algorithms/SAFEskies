@@ -20,6 +20,7 @@ interface PostProps {
   rootPost?: PostView | null;
   onModAction: (post: PostView) => void;
   showModMenu: boolean;
+  isSignedIn: boolean;
 }
 
 export const Post = ({
@@ -28,6 +29,7 @@ export const Post = ({
   rootPost,
   onModAction,
   showModMenu,
+  isSignedIn,
 }: PostProps) => {
   const renderThreadPost = (postData: PostView | null, id: string) => {
     if (!postData) return null;
@@ -51,7 +53,11 @@ export const Post = ({
         {textRecord?.text && (
           <PostText text={textRecord.text} facets={textRecord.facets} />
         )}
-        <EmbedRenderer content={embed} labels={postData.labels} />
+        <EmbedRenderer
+          content={embed}
+          labels={postData.labels}
+          isSignedIn={isSignedIn}
+        />
       </article>
     );
   };
@@ -97,7 +103,11 @@ export const Post = ({
           {(post.record as TextRecord)?.text && (
             <PostText text={(post.record as TextRecord).text} />
           )}
-          <EmbedRenderer content={post.embed} labels={post.labels} />
+          <EmbedRenderer
+            content={post.embed}
+            labels={post.labels}
+            isSignedIn={isSignedIn}
+          />
         </div>
         <PostFooter
           showModMenu={showModMenu}
