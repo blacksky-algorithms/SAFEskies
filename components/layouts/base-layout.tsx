@@ -1,5 +1,5 @@
 import { Header } from '@/components/header';
-import { SideDrawer } from '@/components/side-drawer';
+import { UserNavigationModal } from '@/components/modals/user-navigation-modal';
 import { UserRole } from '@/lib/types/permission';
 import { User } from '@/lib/types/user';
 import { PropsWithChildren } from 'react';
@@ -30,7 +30,7 @@ export const BaseLayout = ({
           {children}
         </main>
       </div>
-      <SideDrawer user={user} highestRole={highestRole} />
+      <UserNavigationModal user={user} highestRole={highestRole} />
     </div>
   );
 };

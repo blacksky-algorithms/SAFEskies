@@ -25,6 +25,7 @@ export const Modal = ({
   noContentPadding,
   fullWidthMobile,
   showBackButton,
+  footer,
 }: ModalProps) => {
   const {
     isOpen,
@@ -34,6 +35,7 @@ export const Modal = ({
     areModalsStacking,
   } = useModal();
   const isMounted = useRef(false);
+  const isFullSize = size === 'full';
 
   const derivedShowBackButton =
     areModalsStacking && showBackButton !== false
@@ -49,11 +51,12 @@ export const Modal = ({
     };
   }, [id, registerModal, unregisterModal]);
 
+  // Define size classes for non-full modals
   const sizeClasses = {
     small: 'w-full max-w-sm',
     medium: 'w-full max-w-md',
     large: 'w-full max-w-2xl',
-    full: 'w-screen h-screen max-w-screen max-h-screen',
+    full: 'w-screen h-screen max-w-none max-h-none', // Updated for full-size
   };
 
   const handleClose = () => {
@@ -73,37 +76,59 @@ export const Modal = ({
         <TransitionChild>
           <DialogBackdrop className='fixed inset-0 bg-black bg-opacity-80' />
         </TransitionChild>
+
+        {/* Main container - adjust padding based on size */}
         <div
           className={cc([
             'fixed inset-0 flex justify-center',
-            { 'p-4': size !== 'full' && !fullWidthMobile },
-            { 'tablet:p-4': size !== 'full' && fullWidthMobile },
-            { 'items-end tablet:items-center': fullWidthMobile },
-            { 'items-center': !fullWidthMobile },
+            {
+              // Remove padding completely for full-size modals
+              'p-0': isFullSize,
+              // Keep existing padding logic for non-full modals
+              'p-4': !isFullSize && !fullWidthMobile,
+              'tablet:p-4': !isFullSize && fullWidthMobile,
+            },
+            { 'items-end tablet:items-center': fullWidthMobile && !isFullSize },
+            { 'items-center': !fullWidthMobile && !isFullSize },
+            // For full-size, don't center vertically
+            { 'items-start': isFullSize },
           ])}
         >
           <TransitionChild>
             <DialogPanel
               className={cc([
-                'bg-app-background shadow-lg relative flex flex-col w-full mx-auto',
+                'bg-app-background shadow-lg relative flex flex-col mx-auto',
+                // Apply different styles based on size
                 {
-                  'w-screen h-screen rounded-none overflow-hidden p-4':
-                    size === 'full',
-                  'rounded-xl overflow-y-auto min-h-0 max-h-[80dvh]':
-                    size !== 'full',
+                  // Full-size specific styles
+                  'rounded-none w-full h-full': isFullSize,
+                  // Ensure full modal has no max-height constraint and fills viewport
+                  'max-h-screen': isFullSize,
+                  // Non-full modal styles
+                  'rounded-xl min-h-0': !isFullSize,
+                  // Adjust overflow behavior
+                  'overflow-hidden': isFullSize,
+                  'overflow-y-auto max-h-[80dvh]': !isFullSize,
                 },
+                // Apply size classes
                 sizeClasses[size],
                 className,
               ])}
             >
+              {/* Close/back button positioning */}
               <IconButton
                 className={cc([
-                  'h-12 w-12 ',
+                  'h-12 w-12',
                   {
                     'self-end': !derivedShowBackButton,
                     'self-start': derivedShowBackButton,
-                    'mt-4 mr-4': size !== 'full' && !derivedShowBackButton,
-                    'mt-4': size !== 'full' && derivedShowBackButton,
+                    'mt-4 mr-4': !isFullSize && !derivedShowBackButton,
+                    'mt-4': !isFullSize && derivedShowBackButton,
+                    // Full-size modal button positioning
+                    'absolute top-2 right-2':
+                      isFullSize && !derivedShowBackButton,
+                    'absolute top-2 left-2':
+                      isFullSize && derivedShowBackButton,
                   },
                 ])}
                 onClick={handleClose}
@@ -111,13 +136,18 @@ export const Modal = ({
                 icon={derivedShowBackButton ? 'ChevronLeftIcon' : 'XMarkIcon'}
               />
 
+              {/* Content container */}
               <div
                 className={cc([
-                  'w-full h-full',
+                  'w-full',
+                  // For full-size modal, ensure it takes available height minus space for the buttons
+                  isFullSize ? 'h-[calc(100%-4rem)]' : 'h-full',
                   'flex flex-col',
                   {
-                    'px-6': size === 'full' && !noContentPadding,
-                    'p-6 ': size !== 'full',
+                    // Different padding for different sizes
+                    'px-6 pt-14': isFullSize && !noContentPadding, // Add top padding to account for absolute positioned button
+                    'p-6': !isFullSize,
+                    'pt-14': isFullSize && noContentPadding, // Still need top padding for the button
                   },
                 ])}
               >
@@ -127,33 +157,46 @@ export const Modal = ({
                     className={cc([
                       'text-lg font-bold',
                       {
-                        'pt-6 pb-4': size === 'full',
-                        'pb-4': size !== 'full',
-                        'sticky -top-6 pt-2  bg-app-background z-10 ':
-                          fullWidthMobile,
+                        'pt-6 pb-4': isFullSize,
+                        'pb-4': !isFullSize,
+                        'sticky -top-6 pt-2 bg-app-background z-10':
+                          fullWidthMobile && !isFullSize,
                       },
                     ])}
                   >
                     {title}
 
                     {subtitle ? (
-                      <p className='text-sm text-app-secondary pb-2   border-b border-app-border'>
+                      <p className='text-sm text-app-secondary pb-2 border-b border-app-border'>
                         {subtitle}
                       </p>
                     ) : null}
                   </DialogTitle>
                 )}
+
+                {/* Main content area */}
                 <div
                   id={`${id}-content`}
                   className={cc([
-                    'flex-1 min-h-0 overflow-auto',
+                    // For full-size, we want to take remaining space
+                    isFullSize ? 'flex-1' : 'min-h-0',
+                    // Allow scrolling within the content area
+                    'overflow-auto',
                     {
-                      'pb-10': size === 'full',
+                      // Add bottom padding for full-size modals
+                      'pb-4 tablet:pb-10': isFullSize,
                     },
                   ])}
                 >
                   {children}
                 </div>
+
+                {/* Footer section if provided */}
+                {footer && (
+                  <div className={cc(['mt-4', isFullSize ? 'pb-4' : ''])}>
+                    {footer}
+                  </div>
+                )}
               </div>
             </DialogPanel>
           </TransitionChild>
