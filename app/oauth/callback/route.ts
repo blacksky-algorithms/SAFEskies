@@ -9,10 +9,9 @@ export async function GET(request: NextRequest) {
     return new Response('Token is required', { status: 400 });
   }
 
-  // Set cookies with the token and any other flags.
   const authTokenCookie = `authToken=${token}; Path=/; HttpOnly; SameSite=Strict`;
   const refreshCookie = `needsRefresh=true; Path=/; SameSite=Strict`;
-
+  // Because we are hosting on netlify, we need to do a full redirect with the token param removed
   return NextResponse.redirect(`${process.env.NEXT_PUBLIC_CLIENT_URL}/?uri=`, {
     status: 302,
     headers: {
