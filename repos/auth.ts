@@ -20,7 +20,7 @@ export const logIn = async (
         credentials: 'include',
       }
     );
-
+    console.log({ response });
     if (!response.ok) {
       const data = await response.json();
       throw new Error(data.error || 'Failed to sign in');
@@ -29,6 +29,7 @@ export const logIn = async (
 
     return { error: null, url, status: 200 };
   } catch (error: unknown) {
+    console.log({ error });
     return {
       status: 500,
       error:
