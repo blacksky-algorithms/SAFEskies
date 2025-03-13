@@ -29,10 +29,11 @@ export async function GET(request: Request) {
       feed: response.feed,
       cursor: response.cursor,
     });
-  } catch (error) {
-    console.error('Error fetching feed:', error);
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: 'Failed to fetch feed' },
+      {
+        error: error instanceof Error ? error.message : 'Failed to fetch feed',
+      },
       { status: 500 }
     );
   }

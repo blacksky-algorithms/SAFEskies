@@ -1,26 +1,22 @@
 import { User } from '@/lib/types/user';
 import { canPerformWithRole } from '@/lib/utils/permission';
+import { UserRole } from '../types/permission';
 
-export function getDateTimeRange(dateRange: {
-  fromDate: string;
-  toDate: string;
-}) {
-  const fromDateTime = `${dateRange.fromDate} 00:00:00.000+00`;
-  const toDateTime = `${dateRange.toDate} 23:59:59.999+00`;
-  return { fromDateTime, toDateTime };
-}
-
-export function getLinksByFeed(user: User | null, type: 'logs' | 'feed') {
+export function getLinksByFeed(user: User | null, linkType: 'logs' | 'feed') {
   if (!user) return [];
-  return Object.values(user.rolesByFeed).reduce(
-    (acc: { label: string; href: string }[], { displayName, uri, role }) => {
-      if (canPerformWithRole(role, 'post_delete')) {
+  return user.rolesByFeed.reduce(
+    (
+      acc: { label: string; href: string; permission: UserRole }[],
+      { displayName, uri, type }
+    ) => {
+      if (canPerformWithRole(type, 'post_delete')) {
         acc.push({
           label: displayName,
           href:
-            type === 'logs'
-              ? `/${type}?uri=${encodeURIComponent(uri)}`
+            linkType === 'logs'
+              ? `/${linkType}?uri=${encodeURIComponent(uri)}`
               : `/?uri=${encodeURIComponent(uri)}`,
+          permission: type,
         });
       }
       return acc;

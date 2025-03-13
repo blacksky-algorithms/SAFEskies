@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { Button } from '../button';
 import { Input } from '../input';
+import { logIn } from '@/repos/auth';
 
 export const Login = () => {
   const router = useRouter();
@@ -43,23 +44,12 @@ export const Login = () => {
     setState((prev) => ({ ...prev, isSubmitting: true }));
 
     try {
-      const response = await fetch('/api/auth/sign-in', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ handle: trimmedHandle }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to sign in');
+      const result = await logIn(trimmedHandle);
+      if (result.error || !result.url) {
+        throw new Error(result.error || 'Failed to sign in');
       }
-
-      const { url } = await response.json();
-      router.push(url);
-    } catch (error) {
-      console.error('Login error:', error);
+      router.push(result.url);
+    } catch (error: unknown) {
       setState((prev) => ({
         ...prev,
         error:
@@ -71,6 +61,7 @@ export const Login = () => {
       setState((prev) => ({ ...prev, isSubmitting: false }));
     }
   };
+
   return (
     <section className='w-full max-w-2xl'>
       <form onSubmit={handleSubmit} className='space-y-5'>

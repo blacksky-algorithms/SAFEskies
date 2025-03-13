@@ -13,13 +13,7 @@ const ActionLabel: Record<ModAction, string> = {
   mod_demote: 'Moderator Removed',
 };
 
-export const LogEntry = ({
-  log,
-  canViewAdminActions,
-}: {
-  log: Log;
-  canViewAdminActions: boolean;
-}) => {
+export const LogEntry = ({ log }: { log: Log }) => {
   return (
     <div className='rounded-lg border border-app-border bg-app-background shadow-sm mb-4'>
       <div className='pt-6 px-6 py-4'>
@@ -30,13 +24,13 @@ export const LogEntry = ({
           </span>
         </div>
 
-        {canViewAdminActions && (
+        {log.performed_by_profile?.handle && (
           <p className='text-sm text-app-secondary'>
             By: @{log.performed_by_profile.handle}
           </p>
         )}
 
-        {log.target_user_profile && (
+        {log.target_user_profile?.handle && (
           <p className='text-sm text-app-secondary'>
             Target User: @{log.target_user_profile.handle}
           </p>

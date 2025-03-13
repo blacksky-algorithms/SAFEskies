@@ -3,11 +3,7 @@
 import React, { ChangeEvent } from 'react';
 import { Modal } from '@/components/modals';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
-import {
-  MODERATION_SERVICES,
-  ModerationService,
-} from '@/lib/constants/moderation';
-import { ReportOption } from '@/lib/types/moderation';
+import { ModerationService, ReportOption } from '@/lib/types/moderation';
 import { ModReasonButton } from '@/components/button/mod-reason-button';
 import { Checkbox } from '@/components/input/checkbox';
 import { Textarea } from '@/components/input/text-area';
@@ -24,6 +20,7 @@ interface Props {
   handleReportToChange: (reportTo: ModerationService) => void;
   isModServiceChecked: (service: ModerationService) => boolean;
   isDisabled: boolean;
+  services: ModerationService[];
 }
 
 export const ReportPostModal = ({
@@ -35,6 +32,7 @@ export const ReportPostModal = ({
   handleReportToChange,
   isModServiceChecked,
   isDisabled,
+  services,
 }: Props) => {
   return (
     <Modal
@@ -54,7 +52,7 @@ export const ReportPostModal = ({
             className={cc([
               'bg-app-secondary-hover rounded-xl p-4 flex flex-col space-y-2',
               {
-                'bg-app-secondary-hover ring-offset-1 ring-4  ring-app-error':
+                'bg-app-secondary-hover ring-offset-1 ring-4 mx-2 ring-app-error':
                   isDisabled,
               },
             ])}
@@ -64,7 +62,7 @@ export const ReportPostModal = ({
                 You must select at least one moderation service
               </p>
             ) : null}
-            {MODERATION_SERVICES.map((service) => {
+            {services?.map((service) => {
               return (
                 <li
                   key={service.value}
@@ -94,7 +92,7 @@ export const ReportPostModal = ({
         <Button
           onClick={onReport}
           intent={VisualIntent.Error}
-          className='w-fit self-end pb-6'
+          className='w-fit self-end mb-6'
           submitting={isReportSubmitting}
           disabled={isReportSubmitting || isDisabled}
         >

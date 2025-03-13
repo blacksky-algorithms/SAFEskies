@@ -26,9 +26,10 @@ export function useProfileData(): UseProfileDataResult {
 
       const data = await response.json();
       setProfile(data.profile);
-    } catch (err) {
-      console.error('Error fetching profile:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch profile');
+    } catch (error: unknown) {
+      setError(
+        error instanceof Error ? error.message : 'Failed to fetch profile'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -39,7 +40,9 @@ export function useProfileData(): UseProfileDataResult {
   };
 
   useEffect(() => {
-    fetchProfile();
+    if (!profile?.did) {
+      fetchProfile();
+    }
   }, []);
 
   return {

@@ -1,8 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
-import { type Session } from '@/repos/iron';
-import { getHighestRoleForUser } from '@/repos/permission';
+import { getProfile } from './repos/profile';
+import { getHighestRoleForUser } from './lib/utils/permission';
 
 export async function middleware(req: NextRequest) {
   const publicPaths = [
@@ -33,16 +31,13 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
-    const session = await getIronSession<Session>(await cookies(), {
-      cookieName: 'sid',
-      password: process.env.COOKIE_PASSWORD as string,
-    });
+    const profile = await getProfile();
 
-    if (!session?.user?.did) {
+    if (!profile?.did) {
       return NextResponse.redirect(new URL('/oauth/login', req.url));
     }
 
-    const userHighestRole = await getHighestRoleForUser(session.user.did);
+    const userHighestRole = await getHighestRoleForUser(profile.rolesByFeed);
 
     if (req.nextUrl.pathname.startsWith('/admin')) {
       if (userHighestRole !== 'admin') {
@@ -60,8 +55,7 @@ export async function middleware(req: NextRequest) {
     }
 
     return NextResponse.next();
-  } catch (error) {
-    console.error('Middleware error:', error);
+  } catch (error: unknown) {
     return NextResponse.redirect(new URL('/oauth/login', req.url));
   }
 }

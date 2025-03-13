@@ -1,54 +1,29 @@
 import { NextResponse } from 'next/server';
-import { getLogs } from '@/repos/logs';
-import { LogFilters } from '@/lib/types/logs';
-import { ModAction } from '@/lib/types/moderation';
-import { userCanViewAdminActions } from '@/lib/utils/permission';
-import { ADMIN_ACTIONS } from '@/lib/constants/moderation';
-import { getProfile } from '@/repos/profile';
+import { fetchWithAuth } from '@/lib/api';
 
 export async function GET(request: Request) {
   try {
-    const user = await getProfile();
+    const url = new URL(request.url);
 
-    if (!user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    const response = await fetchWithAuth(`/api/logs${url.search}`, {
+      method: 'GET',
+    });
+
+    if (!response || !response.ok) {
+      const errorData = response ? await response.json() : {};
+      return NextResponse.json(
+        { error: errorData.error || 'Failed to fetch logs' },
+        { status: response ? response.status : 500 }
+      );
     }
 
-    const { searchParams } = new URL(request.url);
-    const filters: LogFilters = {
-      uri: searchParams.get('uri') || undefined,
-      action: searchParams.get('action') as ModAction | null,
-      performedBy: searchParams.get('performedBy') || undefined,
-      targetUser: searchParams.get('targetUser') || undefined,
-      targetPost: searchParams.get('targetPost') || undefined,
-      sortBy: (searchParams.get('sortBy') || 'descending') as
-        | 'ascending'
-        | 'descending',
-      dateRange:
-        searchParams.has('fromDate') && searchParams.has('toDate')
-          ? {
-              fromDate: searchParams.get('fromDate')!,
-              toDate: searchParams.get('toDate')!,
-            }
-          : undefined,
-    };
-
-    // Determine if the user can view admin-level actions
-    const canViewAdminActions = userCanViewAdminActions(user);
-
-    // Fetch logs
-    let logs = await getLogs(filters);
-
-    // Filter out admin actions if the user lacks permission
-    if (!canViewAdminActions) {
-      logs = logs.filter((log) => !ADMIN_ACTIONS.includes(log.action));
-    }
-
-    return NextResponse.json({ logs });
-  } catch (error) {
-    console.error('Error fetching logs:', error);
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: 'Failed to fetch logs' },
+      {
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
       { status: 500 }
     );
   }

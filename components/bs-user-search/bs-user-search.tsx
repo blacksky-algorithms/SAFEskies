@@ -50,8 +50,11 @@ export const BSUserSearch = ({
       const data = await response.json();
 
       return { data: data.results.data.actors, success: true };
-    } catch (error) {
-      console.error('Error fetching users:', error);
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Something went wrong!',
+      };
     }
   }, [debouncedSearch]);
 
@@ -82,12 +85,14 @@ export const BSUserSearch = ({
             error: 'Something went wrong. Please try again later.',
           }));
         }
-      } catch (e) {
-        console.error('Error searching users:', e);
+      } catch (error: unknown) {
         setState((prevState) => ({
           ...prevState,
           loading: false,
-          error: 'Something went wrong. Please try again later.',
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Something went wrong. Please try again later.',
         }));
       }
     };

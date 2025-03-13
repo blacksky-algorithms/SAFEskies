@@ -1,84 +1,54 @@
 'use server';
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/repos/iron';
-import { AtprotoAgent } from '@/repos/atproto-agent';
-import { BlueskyOAuthClient } from '@/repos/blue-sky-oauth-client';
-import { getActorFeeds } from '@/repos/actor';
-import { User } from '@/lib/types/user';
-import { getProfile, saveProfile } from '@/repos/profile';
+import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
-export const getUsersBlueskyProfileData = async (
-  oAuthCallbackParams: URLSearchParams
-) => {
-  const { session } = await BlueskyOAuthClient.callback(oAuthCallbackParams);
+export const logIn = async (
+  handle: string
+): Promise<{
+  status: number;
+  url: string | null;
+  error: string | null;
+}> => {
+  try {
+    const response = await fetch(
+      `${
+        process.env.NEXT_PUBLIC_SAFE_SKIES_API
+      }/auth/signin?handle=${encodeURIComponent(handle)}`,
+      {
+        method: 'GET',
+        credentials: 'include',
+      }
+    );
 
-  if (!session?.did) {
-    throw new Error('Invalid session: No DID found.');
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || 'Failed to sign in');
+    }
+    const { url } = await response.json();
+
+    return { error: null, url, status: 200 };
+  } catch (error: unknown) {
+    return {
+      status: 500,
+      error:
+        (error instanceof Error ? error.message : 'Failed to sign in') ||
+        'Failed to sign in',
+      url: null,
+    };
   }
-
-  const atProtoAgentResponse = await AtprotoAgent.getProfile({
-    actor: session.did,
-  });
-
-  if (!atProtoAgentResponse.success || !atProtoAgentResponse.data) {
-    throw new Error('Failed to fetch atProtoAgentResponse.');
-  }
-
-  return atProtoAgentResponse.data;
 };
 
-export const handleOAuthCallback = async (request: NextRequest) => {
+export const logOut = async () => {
   try {
-    // 1. Get initial profile data
-    const profileData = await getUsersBlueskyProfileData(
-      request.nextUrl.searchParams
-    );
+    const cookieStore = await cookies();
+    cookieStore.delete('authToken');
 
-    // 2. Get user's feeds
-    const feedsResponse = await getActorFeeds(profileData.did);
-    const createdFeeds = feedsResponse?.feeds || [];
-
-    // 3. Initialize session with basic profile data and empty rolesByFeed
-    const ironSession = await getSession();
-    const initialUser: User = {
-      ...profileData,
-      rolesByFeed: {},
-    };
-    ironSession.user = initialUser;
-    await ironSession.save();
-
-    // 4. Save profile and initialize feed permissions
-    const success = await saveProfile(profileData, createdFeeds);
-    if (!success) {
-      throw new Error('Failed to save profile data');
-    }
-
-    // 5. Get complete profile with roles and update session
-    const completeProfile = await getProfile();
-    if (!completeProfile) {
-      throw new Error('Failed to retrieve complete profile');
-    }
-
-    ironSession.user = completeProfile;
-    await ironSession.save();
-
-    return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_URL}/?redirected=true`,
-      { status: 302 }
-    );
-  } catch (error) {
-    console.error('OAuth callback error:', error);
-    return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_URL}/oauth/login?error=${encodeURIComponent(
-        error instanceof Error ? error.message : 'An unknown error occurred.'
-      )}`,
-      {
-        headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate',
-          Pragma: 'no-cache',
-        },
-      }
+    return { success: true };
+  } catch (error: unknown) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to logout' },
+      { status: 500 }
     );
   }
 };

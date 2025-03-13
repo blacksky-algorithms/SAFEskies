@@ -5,8 +5,8 @@ export const getAdminUserFeeds = (profileRolesData?: User['rolesByFeed']) => {
     return [];
   }
   return Object.values(profileRolesData).reduce(
-    (acc, { role, uri: uri, displayName }) => {
-      if (role === 'admin') {
+    (acc, { type, uri: uri, displayName }) => {
+      if (type === 'admin') {
         acc.push({ uri, displayName });
       }
       return acc;

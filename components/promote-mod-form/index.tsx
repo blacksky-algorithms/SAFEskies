@@ -10,9 +10,9 @@ import { useToast } from '@/contexts/toast-context';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
-import { useFeedRoles } from '@/hooks/useFeedRoles';
-import { usePermissions } from '@/hooks/usePermissions';
+import { useCheckFeedRoles } from '@/hooks/useCheckFeedRoles';
 import { PromoteModState } from '@/lib/types/moderation';
+import { promoteToModerator } from '@/repos/permission';
 
 export const PromoteModForm = ({
   feeds,
@@ -31,8 +31,7 @@ export const PromoteModForm = ({
   const [state, setState] = useState<PromoteModState>(INITIAL_STATE);
 
   const { toast } = useToast();
-  const { checkFeedRole, isLoading: isRoleCheckLoading } = useFeedRoles();
-  const { promoteToModerator } = usePermissions();
+  const { checkFeedRole, isLoading: isRoleCheckLoading } = useCheckFeedRoles();
 
   const checkExistingRoles = useCallback(
     async (user: ProfileViewBasic) => {
@@ -61,11 +60,13 @@ export const PromoteModForm = ({
           disabledFeeds: disabledFeedUris,
           isLoading: false,
         }));
-      } catch (error) {
-        console.error('Error checking roles:', error);
+      } catch (error: unknown) {
         setState((prev) => ({
           ...prev,
-          error: 'Failed to check user roles',
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Failed to check user roles',
           isLoading: false,
         }));
       }
@@ -136,8 +137,7 @@ export const PromoteModForm = ({
       });
 
       setState(INITIAL_STATE);
-    } catch (error) {
-      console.error('Error promoting moderator:', error);
+    } catch (error: unknown) {
       setState((prev) => ({
         ...prev,
         error:

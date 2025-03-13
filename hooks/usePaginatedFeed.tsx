@@ -117,7 +117,7 @@ export function usePaginatedFeed(
           type: 'FETCH_SUCCESS',
           payload: { feed: data.feed, cursor: data.cursor },
         });
-      } catch (error) {
+      } catch (error: unknown) {
         dispatch({
           type: 'FETCH_ERROR',
           payload:

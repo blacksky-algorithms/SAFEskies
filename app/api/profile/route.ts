@@ -10,10 +10,12 @@ export async function GET() {
     }
 
     return NextResponse.json({ profile });
-  } catch (error) {
-    console.error('Error fetching profile:', error);
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: 'Failed to fetch profile' },
+      {
+        error:
+          error instanceof Error ? error.message : 'Failed to fetch profile',
+      },
       { status: 500 }
     );
   }

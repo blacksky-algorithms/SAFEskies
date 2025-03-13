@@ -1,19 +1,9 @@
-import { Feed } from '@atproto/api/dist/client/types/app/bsky/feed/describeFeedGenerator';
-import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
-
 export type UserRole = 'admin' | 'mod' | 'user';
 
 export type FeedRoleInfo = {
-  role: UserRole;
+  type: UserRole;
   displayName: string;
   uri: string;
-};
-
-export type ModeratorWithProfile = ProfileViewBasic & { role: UserRole };
-
-export type FeedWithModerators = {
-  feed: Feed;
-  moderators: ModeratorWithProfile[];
 };
 
 export type FeedPermission = {

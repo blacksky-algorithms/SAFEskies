@@ -16,13 +16,22 @@ import { ModMenuModal } from '../modals/mod-menu';
 import { ReportPostModal } from '../modals/report-post';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useModeration } from '@/hooks/useModeration';
+import { ModerationService } from '@/lib/types/moderation';
 
 interface FeedProps {
   onRefreshComplete?: () => void;
   displayName: string | undefined;
+  services: ModerationService[] | [];
+  isSignedIn: boolean;
 }
 
-export const Feed = ({ onRefreshComplete, displayName }: FeedProps) => {
+export const Feed = ({
+  onRefreshComplete,
+  displayName,
+  services,
+  isSignedIn,
+}: FeedProps) => {
+  const hasModServices = services.length > 0;
   const { feed, error, isFetching, hasNextPage, fetchNextPage, refreshFeed } =
     usePaginatedFeed();
 
@@ -47,8 +56,7 @@ export const Feed = ({ onRefreshComplete, displayName }: FeedProps) => {
     handleReportToChange,
     isModServiceChecked,
     onClose,
-    isMod,
-  } = useModeration({ displayName, feed });
+  } = useModeration({ displayName, feed, services });
 
   useEffect(() => {
     if (error) {
@@ -120,7 +128,8 @@ export const Feed = ({ onRefreshComplete, displayName }: FeedProps) => {
                       }
                       rootPost={rootPost as PostView}
                       onModAction={handleModAction}
-                      showModMenu={isMod}
+                      showModMenu={hasModServices}
+                      isSignedIn={isSignedIn}
                     />
                   </li>
                 );
@@ -152,22 +161,28 @@ export const Feed = ({ onRefreshComplete, displayName }: FeedProps) => {
         uri={viewedPostUri}
         onClose={() => setViewedPostUri(null)}
         onModAction={handleModAction}
-        showModMenu={isMod}
+        showModMenu={hasModServices}
+        isSignedIn={isSignedIn}
       />
-      <ModMenuModal
-        onClose={onClose}
-        handleSelectReportReason={handleSelectReportReason}
-      />
-      <ReportPostModal
-        onClose={onClose}
-        onReport={handleReportPost}
-        reason={reportData.reason}
-        isReportSubmitting={isReportSubmitting}
-        handleReportToChange={handleReportToChange}
-        isModServiceChecked={isModServiceChecked}
-        isDisabled={reportData.toServices.length === 0}
-        handleAddtlInfoChange={handleAddtlInfoChange}
-      />
+      {hasModServices ? (
+        <>
+          <ModMenuModal
+            onClose={onClose}
+            handleSelectReportReason={handleSelectReportReason}
+          />
+          <ReportPostModal
+            onClose={onClose}
+            onReport={handleReportPost}
+            reason={reportData.reason}
+            isReportSubmitting={isReportSubmitting}
+            handleReportToChange={handleReportToChange}
+            isModServiceChecked={isModServiceChecked}
+            isDisabled={reportData.toServices.length === 0}
+            handleAddtlInfoChange={handleAddtlInfoChange}
+            services={services}
+          />
+        </>
+      ) : null}
     </>
   );
 };

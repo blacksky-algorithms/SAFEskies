@@ -11,4 +11,5 @@ export type ModalProps = {
   noContentPadding?: boolean;
   fullWidthMobile?: boolean;
   showBackButton?: boolean;
+  footer?: ReactNode;
 };

@@ -7,9 +7,8 @@ import { PermissionPill } from '@/components/permission-pill';
 interface SideDrawerLinkProps {
   label: string;
   href?: string;
-  nestedLinks?: { label: string; href: string }[];
+  nestedLinks?: { label: string; href: string; permission?: UserRole }[];
   onClick?: (path: string) => void;
-  permission?: UserRole;
 }
 
 export const SideDrawerLink = ({
@@ -17,7 +16,6 @@ export const SideDrawerLink = ({
   href,
   nestedLinks,
   onClick,
-  permission,
 }: SideDrawerLinkProps) => {
   const pathname = usePathname();
   const params = useSearchParams();
@@ -75,9 +73,11 @@ export const SideDrawerLink = ({
                   },
                 ])}
               >
-                <span className='flex gap-4'>
-                  {permission && <PermissionPill type={permission} />}
+                <span className='flex justify-between'>
                   {link.label}
+                  {link.permission && label === 'Feeds' ? (
+                    <PermissionPill type={link.permission} />
+                  ) : null}
                 </span>
               </a>
             );

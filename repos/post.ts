@@ -7,8 +7,7 @@ export const getPostThread = async (uri: string) => {
     });
 
     return response;
-  } catch (error) {
-    console.error('Error fetching post thread:', error);
+  } catch (error: unknown) {
     return null;
   }
 };

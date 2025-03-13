@@ -1,24 +1,13 @@
-import { ReasonType } from '@atproto/api/dist/client/types/com/atproto/moderation/defs';
-
-export const reportModerationEvent = async (payload: {
-  targetedPostUri: string;
-  reason: ReasonType;
-  toServices: { label: string; value: string }[];
-  targetedUserDid: string;
-  uri: string;
-  feedName: string | undefined;
-  additionalInfo: string | undefined;
-}) => {
+export const fetchReportOptions = async () => {
   try {
-    await fetch('/api/permissions/mod-event', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-  } catch (error) {
-    console.error('Error logging moderation event:', error);
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_SAFE_SKIES_API}/api/moderation/report-options`
+    );
+    if (!response.ok) {
+      throw new Error('Failed to fetch report options');
+    }
+    return response.json();
+  } catch (error: unknown) {
     throw error;
   }
 };

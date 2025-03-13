@@ -1,10 +1,4 @@
-import {
-  useState,
-  useReducer,
-  useCallback,
-  useEffect,
-  ChangeEvent,
-} from 'react';
+import { useState, useReducer, useCallback, ChangeEvent } from 'react';
 import {
   FeedViewPost,
   PostView,
@@ -13,14 +7,8 @@ import { ReportOption } from '@/lib/types/moderation';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
 import { useToast } from '@/contexts/toast-context';
-import {
-  MODERATION_SERVICES,
-  ModerationService,
-} from '@/lib/constants/moderation';
-import { reportModerationEvent } from '@/repos/moderation';
+import { ModerationService } from '@/lib/types/moderation';
 import { VisualIntent } from '@/enums/styles';
-import { canPerformAction } from '@/repos/permission';
-import { useProfileData } from './useProfileData';
 import { useSearchParams } from 'next/navigation';
 
 interface ReportDataState {
@@ -72,7 +60,7 @@ const reportDataReducer = (
       return {
         post: null,
         reason: null,
-        toServices: [MODERATION_SERVICES[0] as ModerationService],
+        toServices: [],
         moderatedPostUri: null,
         additionalInfo: '',
       };
@@ -84,11 +72,15 @@ const reportDataReducer = (
 interface UseModerationOptions {
   displayName?: string;
   feed: FeedViewPost[];
+  services: ModerationService[] | [];
 }
 
-export function useModeration({ displayName, feed }: UseModerationOptions) {
+export function useModeration({
+  displayName,
+  feed,
+  services,
+}: UseModerationOptions) {
   const { openModalInstance, closeModalInstance } = useModal();
-  const { profile, isLoading } = useProfileData();
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const uri = searchParams.get('uri');
@@ -97,11 +89,10 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
   const [reportData, dispatch] = useReducer(reportDataReducer, {
     post: null,
     reason: null,
-    toServices: [MODERATION_SERVICES[0]],
+    toServices: services,
     moderatedPostUri: null,
     additionalInfo: '',
   } as ReportDataState);
-  const [isMod, setIsMod] = useState(false);
 
   const handleModAction = useCallback(
     (post: PostView) => {
@@ -133,13 +124,13 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
   const onClose = useCallback(() => {
     dispatch({ type: 'RESET' });
   }, []);
-
   const handleReportPost = useCallback(async () => {
     if (
       !reportData.post ||
       !reportData.moderatedPostUri ||
       !reportData.reason ||
-      feed.length === 0
+      feed.length === 0 ||
+      reportData.toServices.length === 0
     ) {
       toast({
         title: 'Error',
@@ -149,17 +140,34 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
       return;
     }
     setIsReportSubmitting(true);
+
     try {
-      const payload = {
-        targetedPostUri: reportData.moderatedPostUri,
-        reason: reportData.reason.reason,
-        toServices: reportData.toServices,
-        targetedUserDid: reportData.post.author.did,
-        uri: reportData.post.uri,
-        feedName: displayName || 'Unnamed Feed',
-        additionalInfo: reportData.additionalInfo,
-      };
-      await reportModerationEvent(payload);
+      const payload = [
+        {
+          targetedPostUri: reportData.moderatedPostUri,
+          reason: reportData.reason.reason,
+          toServices: reportData.toServices,
+          targetedUserDid: reportData.post.author.did,
+          uri,
+          feedName: displayName || 'Unnamed Feed',
+          additionalInfo: reportData.additionalInfo,
+          action: 'post_delete',
+          metadata: { post: reportData.post },
+        },
+      ];
+
+      const response = await fetch('/api/moderation/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to report post');
+      }
+      await response.json();
+
       closeModalInstance(MODAL_INSTANCE_IDS.REPORT_POST);
       closeModalInstance(MODAL_INSTANCE_IDS.MOD_MENU);
       dispatch({ type: 'RESET' });
@@ -168,44 +176,25 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
         message: 'Post reported successfully',
         intent: VisualIntent.Success,
       });
-    } catch (error) {
-      console.error('Error reporting post:', error);
+    } catch (error: unknown) {
       toast({
         title: 'Error',
-        message: 'Unable to report post. Please try again later.',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Unable to report post. Please try again later.',
         intent: VisualIntent.Error,
       });
     } finally {
       setIsReportSubmitting(false);
     }
-  }, [reportData, feed, displayName, closeModalInstance, toast]);
+  }, [reportData, feed]);
 
   const isModServiceChecked = useCallback(
     (service: ModerationService) =>
       reportData.toServices.some((item) => item.value === service.value),
     [reportData.toServices]
   );
-
-  useEffect(() => {
-    const checkRole = async () => {
-      if (!profile || isLoading) {
-        setIsMod(false);
-        return;
-      }
-      try {
-        const hasModPermissions = await canPerformAction(
-          profile.did,
-          'post_delete',
-          uri
-        );
-        setIsMod(hasModPermissions);
-      } catch (err) {
-        console.error('Error checking permissions:', err);
-        setIsMod(false);
-      }
-    };
-    checkRole();
-  }, [uri, profile, isLoading]);
 
   return {
     reportData,
@@ -217,6 +206,5 @@ export function useModeration({ displayName, feed }: UseModerationOptions) {
     handleAddtlInfoChange,
     isModServiceChecked,
     onClose,
-    isMod,
   };
 }

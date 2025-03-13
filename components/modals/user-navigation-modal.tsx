@@ -10,7 +10,7 @@ interface Props {
   highestRole: UserRole | null;
 }
 
-export const SideDrawer = ({ user, highestRole }: Props) => {
+export const UserNavigationModal = ({ user, highestRole }: Props) => {
   return (
     <Modal
       id={MODAL_INSTANCE_IDS.SIDE_DRAWER}
@@ -20,14 +20,13 @@ export const SideDrawer = ({ user, highestRole }: Props) => {
         </span>
       }
       size='full'
-      noContentPadding
-    >
-      <div>
-        <SideDrawerContent user={user} highestRole={highestRole} />
+      footer={
         <div className='mt-auto border-t border-app-border pt-4'>
           <LogoutButton />
         </div>
-      </div>
+      }
+    >
+      <SideDrawerContent user={user} highestRole={highestRole} />
     </Modal>
   );
 };

@@ -23,10 +23,14 @@ export async function GET(request: Request) {
     } else {
       return NextResponse.json(null);
     }
-  } catch (error) {
-    console.error('Error fetching post thread:', error);
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: 'Failed to fetch post thread' },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to fetch post thread',
+      },
       { status: 500 }
     );
   }

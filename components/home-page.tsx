@@ -7,6 +7,8 @@ import cc from 'classcat';
 import { useEffect } from 'react';
 import { PermissionPill } from '@/components/permission-pill';
 import { UserRole } from '@/lib/types/permission';
+import Cookies from 'js-cookie';
+import { ModerationService } from '@/lib/types/moderation';
 
 interface Props {
   feeds: {
@@ -15,9 +17,11 @@ interface Props {
     type: UserRole;
     uri: string;
   }[];
+  services: ModerationService[] | [];
+  isSignedIn: boolean;
 }
 
-export const HomePage = ({ feeds }: Props) => {
+export const HomePage = ({ feeds, services, isSignedIn }: Props) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const uri = searchParams.get('uri');
@@ -27,11 +31,20 @@ export const HomePage = ({ feeds }: Props) => {
     if (!uri) {
       const params = new URLSearchParams(searchParams.toString());
       params.set('uri', feeds[0].uri);
-      params.delete('redirected');
       router.push(`?${params.toString()}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uri]);
+
+  useEffect(() => {
+    const needsRefresh = Cookies.get('needsRefresh');
+
+    if (needsRefresh) {
+      Cookies.remove('needsRefresh');
+
+      window.location.reload();
+    }
+  }, []);
 
   const tabHeaders = feeds.map((feed) => (
     <div
@@ -59,11 +72,17 @@ export const HomePage = ({ feeds }: Props) => {
         activeTab={activeTab}
         onTabChange={handleTabChange}
       >
-        {tabHeaders.map((_, index) => (
-          <TabPanel key={`feed-${index}`}>
-            <Feed displayName={feeds?.[activeTab]?.displayName} />
-          </TabPanel>
-        ))}
+        {tabHeaders.map((_, index) => {
+          return (
+            <TabPanel key={`feed-${index}`}>
+              <Feed
+                displayName={feeds?.[activeTab]?.displayName}
+                services={services}
+                isSignedIn={isSignedIn}
+              />
+            </TabPanel>
+          );
+        })}
       </TabGroup>
     </div>
   );

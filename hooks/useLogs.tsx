@@ -3,9 +3,7 @@ import { Log, LogFilters } from '@/lib/types/logs';
 import { ModAction } from '@/lib/types/moderation';
 import { fetchLogs } from '@/repos/logs';
 import { useSearchParams } from 'next/navigation';
-import { userCanViewAdminActions } from '@/lib/utils/permission';
 import { useProfileData } from '@/hooks/useProfileData';
-import { User } from '@/lib/types/user';
 
 export function useLogs() {
   const searchParams = useSearchParams();
@@ -15,12 +13,10 @@ export function useLogs() {
     logs: Log[];
     isLoading: boolean;
     error: string | null;
-    userCanViewAdminActions: boolean;
   }>({
     logs: [],
     isLoading: true,
     error: null,
-    userCanViewAdminActions: false,
   });
 
   useEffect(() => {
@@ -28,7 +24,7 @@ export function useLogs() {
       const params = Object.fromEntries(searchParams.entries());
 
       return {
-        action: (params.action as ModAction) || null,
+        action: (params.action as ModAction) || undefined,
         performedBy: params.performedBy,
         targetUser: params.targetUser,
         targetPost: params.targetPost,
@@ -44,7 +40,7 @@ export function useLogs() {
       if (!profile) {
         return;
       }
-      const canViewAdminActions = userCanViewAdminActions(profile as User);
+
       try {
         setState((prev) => ({ ...prev, isLoading: true }));
 
@@ -55,15 +51,13 @@ export function useLogs() {
           logs,
           isLoading: false,
           error: null,
-          userCanViewAdminActions: canViewAdminActions,
         });
-      } catch (err) {
-        console.error('Error fetching logs:', err);
+      } catch (error: unknown) {
         setState({
           logs: [],
           isLoading: false,
-          error: 'Failed to fetch logs',
-          userCanViewAdminActions: false,
+          error:
+            error instanceof Error ? error.message : 'Failed to fetch logs',
         });
       }
     };

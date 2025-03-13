@@ -19,34 +19,35 @@ export const AdminSideDrawerContent = ({
 
   return (
     <nav>
-      <ul className='space-y-2'>
-        {feedLinks.length > 0 ? (
+      <div className='space-y-2'>
+        <h2 className='text-app-secondary font-semibold px-4'>
+          Hi {(user.display_name as string) || `@${user.handle}`}
+        </h2>
+        <ul className='space-y-2'>
+          {feedLinks.length > 0 ? (
+            <SideDrawerLink
+              label='Feeds'
+              onClick={handleLinkClick}
+              nestedLinks={feedLinks}
+            />
+          ) : null}
           <SideDrawerLink
-            label='Feeds'
+            label='Moderators'
+            nestedLinks={[
+              { label: 'Promote User', href: '/admin/mods/promote' },
+              { label: 'Manage Moderators', href: '/admin/mods/manage' },
+            ]}
             onClick={handleLinkClick}
-            nestedLinks={feedLinks}
-            permission='admin'
           />
-        ) : null}
-        <SideDrawerLink
-          label='Moderators'
-          permission='admin'
-          nestedLinks={[
-            { label: 'Promote User', href: '/admin/mods/promote' },
-            { label: 'Manage Moderators', href: '/admin/mods/manage' },
-          ]}
-          onClick={handleLinkClick}
-        />
-        {logsLinks.length > 0 ? (
-          <SideDrawerLink
-            label='Logs'
-            href='/logs'
-            onClick={handleLinkClick}
-            nestedLinks={logsLinks}
-            permission='admin'
-          />
-        ) : null}
-      </ul>
+          {logsLinks.length > 0 ? (
+            <SideDrawerLink
+              label='Logs'
+              onClick={handleLinkClick}
+              nestedLinks={logsLinks}
+            />
+          ) : null}
+        </ul>
+      </div>
     </nav>
   );
 };

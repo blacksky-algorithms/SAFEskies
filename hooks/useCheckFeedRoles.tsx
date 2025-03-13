@@ -2,12 +2,12 @@
 import { useState } from 'react';
 import { UserRole } from '@/lib/types/permission';
 
-export const useFeedRoles = () => {
+export const useCheckFeedRoles = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const checkFeedRole = async (
-    userDid: string,
+    targetDid: string,
     uri: string
   ): Promise<UserRole> => {
     setIsLoading(true);
@@ -16,7 +16,7 @@ export const useFeedRoles = () => {
     try {
       const response = await fetch(
         `/api/permissions/role-check?${new URLSearchParams({
-          userDid,
+          targetDid,
           uri,
         })}`
       );
@@ -28,7 +28,7 @@ export const useFeedRoles = () => {
 
       const data = await response.json();
       return data.role as UserRole;
-    } catch (error) {
+    } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to check role';
       setError(message);

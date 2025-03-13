@@ -8,5 +8,7 @@ interface Props {
 }
 
 export const UserDrawerContent = ({ user }: Props) => {
-  return <p>Hey {`@${user.handle}` || user.displayName || 'you'}</p>;
+  return (
+    <p>Hey {(user.display_name as string) || `@${user.handle}` || 'you'}</p>
+  );
 };
