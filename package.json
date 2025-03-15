@@ -9,7 +9,6 @@
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
-    "postinstall": "echo 'Supabase setup complete'",
     "test": "jest",
     "test:watch": "TZ=UTC jest --watch",
     "prepare": "husky && husky install"
