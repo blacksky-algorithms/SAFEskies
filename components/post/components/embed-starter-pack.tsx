@@ -31,7 +31,7 @@ export const StarterPackEmbed = ({
   return (
     <>
       <Info>
-        You will leave Only Feeds as we have not yet implemented this feature,
+        You will leave SAFEskies as we have not yet implemented this feature,
         this link will take you to Blue Sky
       </Info>
       <Link
