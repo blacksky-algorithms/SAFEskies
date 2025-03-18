@@ -21,6 +21,7 @@ interface ReportDataState {
 
 type ReportDataAction =
   | { type: 'SET_POST'; payload: PostView }
+  | { type: 'PREPARE_REMOVE_POST'; payload: PostView }
   | { type: 'SET_REASON'; payload: ReportOption }
   | { type: 'SET_ADDITIONAL_INFO'; payload: string }
   | { type: 'TOGGLE_SERVICE'; payload: ModerationService }
@@ -32,6 +33,12 @@ const reportDataReducer = (
 ): ReportDataState => {
   switch (action.type) {
     case 'SET_POST':
+      return {
+        ...state,
+        post: action.payload,
+        moderatedPostUri: action.payload.uri,
+      };
+    case 'PREPARE_REMOVE_POST':
       return {
         ...state,
         post: action.payload,
@@ -102,6 +109,14 @@ export function useModeration({
     [openModalInstance]
   );
 
+  const handleDirectRemove = useCallback(
+    (post: PostView) => {
+      dispatch({ type: 'PREPARE_REMOVE_POST', payload: post });
+      openModalInstance(MODAL_INSTANCE_IDS.CONFIRM_REMOVE, true);
+    },
+    [openModalInstance]
+  );
+
   const handleSelectReportReason = useCallback(
     (reason: ReportOption) => {
       dispatch({ type: 'SET_REASON', payload: reason });
@@ -124,6 +139,7 @@ export function useModeration({
   const onClose = useCallback(() => {
     dispatch({ type: 'RESET' });
   }, []);
+
   const handleReportPost = useCallback(async () => {
     if (
       !reportData.post ||
@@ -188,7 +204,71 @@ export function useModeration({
     } finally {
       setIsReportSubmitting(false);
     }
-  }, [reportData, feed]);
+  }, [reportData, feed, uri, displayName, closeModalInstance, toast]);
+
+  const handleRemovePost = useCallback(async () => {
+    if (
+      !reportData.post ||
+      !reportData.moderatedPostUri ||
+      feed.length === 0 ||
+      reportData.toServices.length === 0
+    ) {
+      toast({
+        title: 'Error',
+        message: 'No Post Selected.',
+        intent: VisualIntent.Error,
+      });
+      return;
+    }
+    setIsReportSubmitting(true);
+
+    try {
+      const payload = [
+        {
+          targetedPostUri: reportData.moderatedPostUri,
+          toServices: reportData.toServices,
+          targetedUserDid: reportData.post.author.did,
+          uri,
+          feedName: displayName || 'Unnamed Feed',
+          additionalInfo: reportData.additionalInfo,
+          action: 'post_delete',
+          metadata: { post: reportData.post },
+        },
+      ];
+
+      const response = await fetch('/api/moderation/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to remove post');
+      }
+      await response.json();
+
+      closeModalInstance(MODAL_INSTANCE_IDS.CONFIRM_REMOVE);
+      closeModalInstance(MODAL_INSTANCE_IDS.MOD_MENU);
+      dispatch({ type: 'RESET' });
+      toast({
+        title: 'Success',
+        message: 'Post removed successfully',
+        intent: VisualIntent.Success,
+      });
+    } catch (error: unknown) {
+      toast({
+        title: 'Error',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Unable to remove post. Please try again later.',
+        intent: VisualIntent.Error,
+      });
+    } finally {
+      setIsReportSubmitting(false);
+    }
+  }, [reportData, feed, uri, displayName, closeModalInstance, toast]);
 
   const isModServiceChecked = useCallback(
     (service: ModerationService) =>
@@ -200,8 +280,10 @@ export function useModeration({
     reportData,
     isReportSubmitting,
     handleModAction,
+    handleDirectRemove,
     handleSelectReportReason,
     handleReportPost,
+    handleRemovePost,
     handleReportToChange,
     handleAddtlInfoChange,
     isModServiceChecked,
