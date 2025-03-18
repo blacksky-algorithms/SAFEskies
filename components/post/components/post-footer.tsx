@@ -3,8 +3,6 @@ import * as HeroIcons from '@heroicons/react/24/outline';
 import { Icon } from '@/components/icon';
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { IconButton } from '@/components/button/icon-button';
-import { useModal } from '@/contexts/modal-context';
-import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 
 interface Props {
   showModMenu: boolean;
@@ -15,9 +13,7 @@ interface Props {
 // Post Footer Component
 export const PostFooter = (props: Props) => {
   const { showModMenu, post, onModAction } = props;
-  const { openModalInstance } = useModal();
 
-  // create a function that calculates the number of reposts and quotes. Once the number reaches the thoushads it should be displayed as 1k, 2.3k, 3k, etc.
   const formatCount = (count: number) => {
     if (count < 1000) {
       return count;
@@ -47,15 +43,14 @@ export const PostFooter = (props: Props) => {
         />
         {showModMenu ? (
           <IconButton
-            icon='EllipsisHorizontalIcon'
+            icon='TrashIcon'
             aria-label='Post actions'
             onClick={(e) => {
               e.stopPropagation();
               onModAction(post);
-              openModalInstance(MODAL_INSTANCE_IDS.MOD_MENU, true);
             }}
             size='sm'
-            className='h-5 w-5'
+            className='h-5 w-5 text-app-error'
             noPadding
           />
         ) : null}

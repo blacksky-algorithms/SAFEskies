@@ -21,53 +21,62 @@ interface ReportDataState {
 
 type ReportDataAction =
   | { type: 'SET_POST'; payload: PostView }
+  | { type: 'PREPARE_REMOVE_POST'; payload: PostView }
   | { type: 'SET_REASON'; payload: ReportOption }
   | { type: 'SET_ADDITIONAL_INFO'; payload: string }
   | { type: 'TOGGLE_SERVICE'; payload: ModerationService }
   | { type: 'RESET' };
-
-const reportDataReducer = (
-  state: ReportDataState,
-  action: ReportDataAction
-): ReportDataState => {
-  switch (action.type) {
-    case 'SET_POST':
-      return {
-        ...state,
-        post: action.payload,
-        moderatedPostUri: action.payload.uri,
-      };
-    case 'SET_REASON':
-      return { ...state, reason: action.payload };
-    case 'SET_ADDITIONAL_INFO':
-      return { ...state, additionalInfo: action.payload };
-    case 'TOGGLE_SERVICE': {
-      const exists = state.toServices.find(
-        (item) => item.value === action.payload.value
-      );
-      if (exists) {
+const createReportDataReducer =
+  (services: ModerationService[]) =>
+  (state: ReportDataState, action: ReportDataAction): ReportDataState => {
+    switch (action.type) {
+      case 'SET_POST':
         return {
           ...state,
-          toServices: state.toServices.filter(
-            (item) => item.value !== action.payload.value
-          ),
+          post: action.payload,
+          moderatedPostUri: action.payload.uri,
         };
-      } else {
-        return { ...state, toServices: [...state.toServices, action.payload] };
+      case 'PREPARE_REMOVE_POST':
+        return {
+          ...state,
+          post: action.payload,
+          moderatedPostUri: action.payload.uri,
+          toServices: services,
+        };
+      case 'SET_REASON':
+        return { ...state, reason: action.payload };
+      case 'SET_ADDITIONAL_INFO':
+        return { ...state, additionalInfo: action.payload };
+      case 'TOGGLE_SERVICE': {
+        const exists = state.toServices.find(
+          (item) => item.value === action.payload.value
+        );
+        if (exists) {
+          return {
+            ...state,
+            toServices: state.toServices.filter(
+              (item) => item.value !== action.payload.value
+            ),
+          };
+        } else {
+          return {
+            ...state,
+            toServices: [...state.toServices, action.payload],
+          };
+        }
       }
+      case 'RESET':
+        return {
+          post: null,
+          reason: null,
+          toServices: [],
+          moderatedPostUri: null,
+          additionalInfo: '',
+        };
+      default:
+        return state;
     }
-    case 'RESET':
-      return {
-        post: null,
-        reason: null,
-        toServices: [],
-        moderatedPostUri: null,
-        additionalInfo: '',
-      };
-    default:
-      return state;
-  }
-};
+  };
 
 interface UseModerationOptions {
   displayName?: string;
@@ -84,7 +93,7 @@ export function useModeration({
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const uri = searchParams.get('uri');
-
+  const reportDataReducer = createReportDataReducer(services);
   const [isReportSubmitting, setIsReportSubmitting] = useState(false);
   const [reportData, dispatch] = useReducer(reportDataReducer, {
     post: null,
@@ -98,6 +107,14 @@ export function useModeration({
     (post: PostView) => {
       dispatch({ type: 'SET_POST', payload: post });
       openModalInstance(MODAL_INSTANCE_IDS.MOD_MENU, true);
+    },
+    [openModalInstance]
+  );
+
+  const handlePrepareDirectRemove = useCallback(
+    (post: PostView) => {
+      dispatch({ type: 'PREPARE_REMOVE_POST', payload: post });
+      openModalInstance(MODAL_INSTANCE_IDS.CONFIRM_REMOVE, true);
     },
     [openModalInstance]
   );
@@ -124,6 +141,7 @@ export function useModeration({
   const onClose = useCallback(() => {
     dispatch({ type: 'RESET' });
   }, []);
+
   const handleReportPost = useCallback(async () => {
     if (
       !reportData.post ||
@@ -188,7 +206,71 @@ export function useModeration({
     } finally {
       setIsReportSubmitting(false);
     }
-  }, [reportData, feed]);
+  }, [reportData, feed, uri, displayName, closeModalInstance, toast]);
+
+  const handleDirectRemove = useCallback(async () => {
+    if (
+      !reportData.post ||
+      !reportData.moderatedPostUri ||
+      feed.length === 0 ||
+      reportData.toServices.length === 0
+    ) {
+      toast({
+        title: 'Error',
+        message: 'No Post Selected.',
+        intent: VisualIntent.Error,
+      });
+      return;
+    }
+    setIsReportSubmitting(true);
+
+    try {
+      const payload = [
+        {
+          targetedPostUri: reportData.moderatedPostUri,
+          toServices: reportData.toServices,
+          targetedUserDid: reportData.post.author.did,
+          uri,
+          feedName: displayName || 'Unnamed Feed',
+          additionalInfo: reportData.additionalInfo,
+          action: 'post_delete',
+          metadata: { post: reportData.post },
+        },
+      ];
+
+      const response = await fetch('/api/moderation/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to remove post');
+      }
+      await response.json();
+
+      closeModalInstance(MODAL_INSTANCE_IDS.CONFIRM_REMOVE);
+      closeModalInstance(MODAL_INSTANCE_IDS.MOD_MENU);
+      dispatch({ type: 'RESET' });
+      toast({
+        title: 'Success',
+        message: 'Post removed successfully',
+        intent: VisualIntent.Success,
+      });
+    } catch (error: unknown) {
+      toast({
+        title: 'Error',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Unable to remove post. Please try again later.',
+        intent: VisualIntent.Error,
+      });
+    } finally {
+      setIsReportSubmitting(false);
+    }
+  }, [reportData, feed, uri, displayName, closeModalInstance, toast]);
 
   const isModServiceChecked = useCallback(
     (service: ModerationService) =>
@@ -200,8 +282,10 @@ export function useModeration({
     reportData,
     isReportSubmitting,
     handleModAction,
+    handlePrepareDirectRemove,
     handleSelectReportReason,
     handleReportPost,
+    handleDirectRemove,
     handleReportToChange,
     handleAddtlInfoChange,
     isModServiceChecked,

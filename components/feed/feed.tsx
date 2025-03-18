@@ -17,6 +17,7 @@ import { ReportPostModal } from '../modals/report-post';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useModeration } from '@/hooks/useModeration';
 import { ModerationService } from '@/lib/types/moderation';
+import { ConfirmRemovePostModal } from '../modals/remove-post-modal';
 
 interface FeedProps {
   onRefreshComplete?: () => void;
@@ -49,13 +50,14 @@ export const Feed = ({
   const {
     reportData,
     isReportSubmitting,
-    handleModAction,
     handleSelectReportReason,
     handleReportPost,
     handleAddtlInfoChange,
     handleReportToChange,
     isModServiceChecked,
     onClose,
+    handleDirectRemove,
+    handlePrepareDirectRemove,
   } = useModeration({ displayName, feed, services });
 
   useEffect(() => {
@@ -127,7 +129,7 @@ export const Feed = ({
                         shouldRenderParentPost ? (parentPost as PostView) : null
                       }
                       rootPost={rootPost as PostView}
-                      onModAction={handleModAction}
+                      onModAction={handlePrepareDirectRemove}
                       showModMenu={hasModServices}
                       isSignedIn={isSignedIn}
                     />
@@ -160,7 +162,7 @@ export const Feed = ({
       <HydratedPostModal
         uri={viewedPostUri}
         onClose={() => setViewedPostUri(null)}
-        onModAction={handleModAction}
+        onModAction={handlePrepareDirectRemove}
         showModMenu={hasModServices}
         isSignedIn={isSignedIn}
       />
@@ -180,6 +182,15 @@ export const Feed = ({
             isDisabled={reportData.toServices.length === 0}
             handleAddtlInfoChange={handleAddtlInfoChange}
             services={services}
+          />
+          <ConfirmRemovePostModal
+            post={reportData.post}
+            onClose={() =>
+              closeModalInstance(MODAL_INSTANCE_IDS.CONFIRM_REMOVE)
+            }
+            handleDirectRemove={handleDirectRemove}
+            isSubmitting={isReportSubmitting}
+            feedName={displayName}
           />
         </>
       ) : null}
