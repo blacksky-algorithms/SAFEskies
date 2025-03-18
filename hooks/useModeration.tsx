@@ -26,55 +26,57 @@ type ReportDataAction =
   | { type: 'SET_ADDITIONAL_INFO'; payload: string }
   | { type: 'TOGGLE_SERVICE'; payload: ModerationService }
   | { type: 'RESET' };
-
-const reportDataReducer = (
-  state: ReportDataState,
-  action: ReportDataAction
-): ReportDataState => {
-  switch (action.type) {
-    case 'SET_POST':
-      return {
-        ...state,
-        post: action.payload,
-        moderatedPostUri: action.payload.uri,
-      };
-    case 'PREPARE_REMOVE_POST':
-      return {
-        ...state,
-        post: action.payload,
-        moderatedPostUri: action.payload.uri,
-      };
-    case 'SET_REASON':
-      return { ...state, reason: action.payload };
-    case 'SET_ADDITIONAL_INFO':
-      return { ...state, additionalInfo: action.payload };
-    case 'TOGGLE_SERVICE': {
-      const exists = state.toServices.find(
-        (item) => item.value === action.payload.value
-      );
-      if (exists) {
+const createReportDataReducer =
+  (services: ModerationService[]) =>
+  (state: ReportDataState, action: ReportDataAction): ReportDataState => {
+    switch (action.type) {
+      case 'SET_POST':
         return {
           ...state,
-          toServices: state.toServices.filter(
-            (item) => item.value !== action.payload.value
-          ),
+          post: action.payload,
+          moderatedPostUri: action.payload.uri,
         };
-      } else {
-        return { ...state, toServices: [...state.toServices, action.payload] };
+      case 'PREPARE_REMOVE_POST':
+        return {
+          ...state,
+          post: action.payload,
+          moderatedPostUri: action.payload.uri,
+          toServices: services,
+        };
+      case 'SET_REASON':
+        return { ...state, reason: action.payload };
+      case 'SET_ADDITIONAL_INFO':
+        return { ...state, additionalInfo: action.payload };
+      case 'TOGGLE_SERVICE': {
+        const exists = state.toServices.find(
+          (item) => item.value === action.payload.value
+        );
+        if (exists) {
+          return {
+            ...state,
+            toServices: state.toServices.filter(
+              (item) => item.value !== action.payload.value
+            ),
+          };
+        } else {
+          return {
+            ...state,
+            toServices: [...state.toServices, action.payload],
+          };
+        }
       }
+      case 'RESET':
+        return {
+          post: null,
+          reason: null,
+          toServices: [],
+          moderatedPostUri: null,
+          additionalInfo: '',
+        };
+      default:
+        return state;
     }
-    case 'RESET':
-      return {
-        post: null,
-        reason: null,
-        toServices: [],
-        moderatedPostUri: null,
-        additionalInfo: '',
-      };
-    default:
-      return state;
-  }
-};
+  };
 
 interface UseModerationOptions {
   displayName?: string;
@@ -91,7 +93,7 @@ export function useModeration({
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const uri = searchParams.get('uri');
-
+  const reportDataReducer = createReportDataReducer(services);
   const [isReportSubmitting, setIsReportSubmitting] = useState(false);
   const [reportData, dispatch] = useReducer(reportDataReducer, {
     post: null,
@@ -109,7 +111,7 @@ export function useModeration({
     [openModalInstance]
   );
 
-  const handleDirectRemove = useCallback(
+  const handlePrepareDirectRemove = useCallback(
     (post: PostView) => {
       dispatch({ type: 'PREPARE_REMOVE_POST', payload: post });
       openModalInstance(MODAL_INSTANCE_IDS.CONFIRM_REMOVE, true);
@@ -206,7 +208,7 @@ export function useModeration({
     }
   }, [reportData, feed, uri, displayName, closeModalInstance, toast]);
 
-  const handleRemovePost = useCallback(async () => {
+  const handleDirectRemove = useCallback(async () => {
     if (
       !reportData.post ||
       !reportData.moderatedPostUri ||
@@ -280,10 +282,10 @@ export function useModeration({
     reportData,
     isReportSubmitting,
     handleModAction,
-    handleDirectRemove,
+    handlePrepareDirectRemove,
     handleSelectReportReason,
     handleReportPost,
-    handleRemovePost,
+    handleDirectRemove,
     handleReportToChange,
     handleAddtlInfoChange,
     isModServiceChecked,
