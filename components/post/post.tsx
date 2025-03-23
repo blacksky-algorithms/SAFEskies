@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { AppBskyRichtextFacet } from '@atproto/api';
-import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import {
+  isBlockedAuthor,
+  isBlockedPost,
+  PostView,
+} from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 import { PostFooter } from './components/post-footer';
 import { PostHeader } from './components/post-header';
@@ -8,6 +12,7 @@ import { PostText } from './components/post-text';
 import { EmbedRenderer } from './components/embed-renderer';
 import { Icon } from '@/components/icon';
 import cc from 'classcat';
+import { VisualIntent } from '@/enums/styles';
 
 interface TextRecord {
   text: string;
@@ -32,7 +37,21 @@ export const Post = ({
   isSignedIn,
 }: PostProps) => {
   const renderThreadPost = (postData: PostView | null, id: string) => {
-    if (!postData) return <div>Post Deleted</div>;
+    if (!postData?.author)
+      // Todo: refine this check to differentiate between deleted post and deleted account
+      return (
+        <div className='w-full align-items-center border border-gray-800 p-4 flex-row flex gap-2'>
+          <Icon icon='InformationCircleIcon' intent={VisualIntent.Secondary} />
+          <p>PostDeleted</p>
+        </div>
+      );
+    if (isBlockedAuthor(postData) || isBlockedPost(postData))
+      return (
+        <div className='w-full align-items-center border border-gray-800 p-4 flex-row flex gap-2'>
+          <Icon icon='InformationCircleIcon' intent={VisualIntent.Secondary} />
+          <p>{isBlockedAuthor(postData) ? 'Blocked Author' : 'Blocked Post'}</p>
+        </div>
+      );
     const { author, embed, indexedAt, record } = postData;
     const textRecord = record as TextRecord;
 
@@ -63,13 +82,23 @@ export const Post = ({
   };
   const parentOrRootPost = parentPost || rootPost;
 
+  const getReplyToText = useCallback(
+    (data: PostView) => {
+      let result = data.author
+        ? `@${data.author.displayName || data.author.handle}`
+        : 'Deleted Post';
+      if (data.blocked) {
+        result = isBlockedAuthor(data) ? 'Blocked Author' : 'Blocked Post';
+      }
+      return result;
+    },
+    [parentOrRootPost]
+  );
+
   return (
     <div className='w-full flex flex-col'>
-      {/* Render root and parent posts */}
-      {rootPost && renderThreadPost(rootPost, 'root-post')}
-      {parentPost &&
-        parentPost.uri !== rootPost?.uri &&
-        renderThreadPost(parentPost, 'parent-post')}
+      {parentOrRootPost &&
+        renderThreadPost(parentOrRootPost, 'parent-or-root-post')}
 
       {/* Replying to message before the current post */}
       <article
@@ -79,7 +108,7 @@ export const Post = ({
           'border-l border-r border-b border-gray-800 shadow-sm w-full mx-auto max-w-screen',
 
           {
-            'px-3': !parentPost && !rootPost,
+            'px-3': !parentOrRootPost,
             'px-10': parentOrRootPost,
             'border-b-none': parentOrRootPost,
           },
@@ -93,12 +122,7 @@ export const Post = ({
               <span id='reply-info' className='text-gray-400'>
                 Reply to{' '}
                 <span className='text-gray-200 semi-bold'>
-                  {parentOrRootPost.author
-                    ? `@${
-                        parentOrRootPost.author.displayName ||
-                        parentOrRootPost.author.handle
-                      }`
-                    : 'Deleted Post'}
+                  {getReplyToText(parentOrRootPost)}
                 </span>
               </span>
             </div>
