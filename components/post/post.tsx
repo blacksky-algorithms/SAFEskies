@@ -32,7 +32,7 @@ export const Post = ({
   isSignedIn,
 }: PostProps) => {
   const renderThreadPost = (postData: PostView | null, id: string) => {
-    if (!postData) return null;
+    if (!postData) return <div>Post Deleted</div>;
     const { author, embed, indexedAt, record } = postData;
     const textRecord = record as TextRecord;
 
@@ -62,6 +62,7 @@ export const Post = ({
     );
   };
   const parentOrRootPost = parentPost || rootPost;
+
   return (
     <div className='w-full flex flex-col'>
       {/* Render root and parent posts */}
@@ -92,10 +93,12 @@ export const Post = ({
               <span id='reply-info' className='text-gray-400'>
                 Reply to{' '}
                 <span className='text-gray-200 semi-bold'>
-                  {`@${
-                    parentOrRootPost.author?.displayName ||
-                    parentOrRootPost.author.handle
-                  }`}
+                  {parentOrRootPost.author
+                    ? `@${
+                        parentOrRootPost.author.displayName ||
+                        parentOrRootPost.author.handle
+                      }`
+                    : 'Deleted Post'}
                 </span>
               </span>
             </div>
