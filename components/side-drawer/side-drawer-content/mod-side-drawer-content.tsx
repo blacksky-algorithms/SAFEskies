@@ -19,9 +19,6 @@ export const ModSideDrawerContent = ({
   return (
     <nav className='p-4 space-y-4'>
       <div className='space-y-2'>
-        <h2 className='text-app-secondary font-semibold px-4'>
-          Hi {(user.display_name as string) || `@${user.handle}`}
-        </h2>
         <ul className='space-y-1'>
           <SideDrawerLink label='Home' href='/' onClick={handleLinkClick} />
           {feedLinks.length > 0 ? (

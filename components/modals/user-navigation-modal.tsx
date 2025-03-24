@@ -16,7 +16,7 @@ export const UserNavigationModal = ({ user, highestRole }: Props) => {
       id={MODAL_INSTANCE_IDS.SIDE_DRAWER}
       title={
         <span className='flex items-center space-x-4'>
-          {user?.displayName || user?.handle || 'Hey there!'}
+          Hey {(user?.display_name as string) || `@${user?.handle}` || 'there!'}
         </span>
       }
       size='full'
