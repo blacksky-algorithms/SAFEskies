@@ -20,9 +20,6 @@ export const AdminSideDrawerContent = ({
   return (
     <nav>
       <div className='space-y-2'>
-        <h2 className='text-app-secondary font-semibold px-4'>
-          Hi {(user.display_name as string) || `@${user.handle}`}
-        </h2>
         <ul className='space-y-2'>
           {feedLinks.length > 0 ? (
             <SideDrawerLink

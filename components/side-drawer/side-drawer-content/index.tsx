@@ -35,7 +35,7 @@ export const SideDrawerContent = ({ user, highestRole }: Props) => {
       <AdminSideDrawerContent user={user} handleLinkClick={handleLinkClick} />
     ),
     mod: <ModSideDrawerContent user={user} handleLinkClick={handleLinkClick} />,
-    user: <UserDrawerContent user={user} />,
+    user: <UserDrawerContent />,
   };
 
   if (!highestRole) {
