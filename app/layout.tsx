@@ -20,6 +20,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: 'SAFEskies',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon-16x16.png',
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default async function RootLayout({
