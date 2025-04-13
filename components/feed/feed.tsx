@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { usePaginatedFeed } from '@/hooks/usePaginatedFeed';
+import { useHasNewPosts, usePaginatedFeed } from '@/hooks/usePaginatedFeed';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
 import { GenericErrorModal } from '@/components/modals/generic-error-modal';
@@ -18,6 +18,7 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useModeration } from '@/hooks/useModeration';
 import { ModerationService } from '@/lib/types/moderation';
 import { ConfirmRemovePostModal } from '../modals/remove-post-modal';
+import cc from 'classcat';
 
 interface FeedProps {
   onRefreshComplete?: () => void;
@@ -33,8 +34,19 @@ export const Feed = ({
   isSignedIn,
 }: FeedProps) => {
   const hasModServices = services.length > 0;
-  const { feed, error, isFetching, hasNextPage, fetchNextPage, refreshFeed } =
-    usePaginatedFeed();
+  const {
+    feed,
+    error,
+    isFetching,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refreshFeed,
+  } = usePaginatedFeed();
+  const hasNewPosts = useHasNewPosts({
+    currentFeed: feed,
+    isFetching,
+  });
 
   const { containerRef, isRefreshing, handleTouchStart, handleTouchMove } =
     usePullToRefresh({
@@ -145,19 +157,34 @@ export const Feed = ({
             <div ref={sentinelRef} className='h-10 w-full' />
           </div>
           <GenericErrorModal onClose={handleErrorModalClose}>
-            <p>{error || 'Feed unavailable'}</p>
+            <p>
+              {error instanceof Error
+                ? error.message
+                : 'An unknown error occurred'}
+            </p>
           </GenericErrorModal>
+          <IconButton
+            intent={VisualIntent.Info}
+            icon={
+              isFetching && !isFetchingNextPage
+                ? 'RocketLaunchIcon'
+                : 'ArrowUpCircleIcon'
+            }
+            aria-label='Return to Top'
+            onClick={() => {
+              refreshFeed();
+              containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={cc([
+              'absolute bottom-4 left-4 h-14 w-14 ',
+              {
+                'bg-app-secondary-hover': !hasNewPosts,
+                'bg-app-primary': hasNewPosts,
+              },
+            ])}
+            iconType='solid'
+          />
         </section>
-        <IconButton
-          intent={VisualIntent.Info}
-          icon='ArrowUpCircleIcon'
-          aria-label='Return to Top'
-          onClick={() =>
-            containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-          }
-          className='fixed bottom-4 left-4 h-14 w-14 bg-app-secondary-hover'
-          iconType='solid'
-        />
       </div>
       <HydratedPostModal
         uri={viewedPostUri}
