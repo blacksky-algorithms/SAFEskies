@@ -50,6 +50,7 @@ export function usePaginatedFeed(
     getNextPageParam: (lastPage) => lastPage.cursor,
     initialPageParam: '',
     enabled: !!uri,
+    refetchOnWindowFocus: false,
   });
 
   // Flatten and deduplicate posts using post.uri; memoized to avoid unnecessary recomputations.
@@ -103,16 +104,14 @@ export function usePaginatedFeed(
  * @returns Boolean indicating if new posts are available.
  */
 export function useHasNewPosts(options: {
-  uri?: string;
+  uri: string | null;
   limit?: number;
   pollingInterval?: number;
   currentFeed: FeedViewPost[];
   isFetching: boolean;
 }): boolean {
-  const { currentFeed, isFetching } = options;
-  const searchParams = useSearchParams();
+  const { currentFeed, isFetching, uri } = options;
   const limit = options.limit || 10;
-  const uri = options.uri ?? searchParams.get('uri');
   const pollingInterval = options.pollingInterval || 10000;
 
   const [hasNewPosts, setHasNewPosts] = useState(false);

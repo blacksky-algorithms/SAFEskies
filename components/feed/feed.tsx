@@ -19,6 +19,7 @@ import { useModeration } from '@/hooks/useModeration';
 import { ModerationService } from '@/lib/types/moderation';
 import { ConfirmRemovePostModal } from '../modals/remove-post-modal';
 import cc from 'classcat';
+import { useSearchParams } from 'next/navigation';
 
 interface FeedProps {
   onRefreshComplete?: () => void;
@@ -43,9 +44,12 @@ export const Feed = ({
     fetchNextPage,
     refreshFeed,
   } = usePaginatedFeed();
+  const searchParams = useSearchParams();
+  const uri = searchParams.get('uri');
   const hasNewPosts = useHasNewPosts({
     currentFeed: feed,
     isFetching,
+    uri,
   });
 
   const { containerRef, isRefreshing, handleTouchStart, handleTouchMove } =
