@@ -1,150 +1,157 @@
-import { useReducer, useEffect, useRef, useCallback } from 'react';
-import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { fetchFeed } from '@/repos/feeds';
+import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
-type FeedState = {
-  feed: FeedViewPost[];
-  cursor?: string;
-  isFetching: boolean;
-  hasNextPage: boolean;
-  error: string | null;
-  uri: string | null;
-};
-
-type FeedAction =
-  | { type: 'URI_CHANGE'; payload: string | null }
-  | { type: 'FETCH_START' }
-  | {
-      type: 'FETCH_SUCCESS';
-      payload: { feed: FeedViewPost[]; cursor?: string };
-    }
-  | { type: 'FETCH_ERROR'; payload: string }
-  | { type: 'REFRESH_FEED' }
-  | { type: 'RESET_ERROR' };
-
-const initialState: FeedState = {
-  feed: [],
-  cursor: undefined,
-  isFetching: false,
-  hasNextPage: true,
-  error: null,
-  uri: null,
-};
-
-// Move reducer to a separate function for clarity
-function feedReducer(state: FeedState, action: FeedAction): FeedState {
-  switch (action.type) {
-    case 'URI_CHANGE':
-      return { ...state, uri: action.payload };
-    case 'FETCH_START':
-      return { ...state, isFetching: true, error: null };
-    case 'FETCH_SUCCESS':
-      // Deduplicate posts using a Map
-      return {
-        ...state,
-        feed: Array.from(
-          new Map(
-            [...state.feed, ...action.payload.feed].map((item) => [
-              item.post.cid,
-              item,
-            ])
-          ).values()
-        ),
-        cursor: action.payload.cursor,
-        hasNextPage: !!action.payload.cursor,
-        isFetching: false,
-        error: null,
-      };
-    case 'FETCH_ERROR':
-      return { ...state, isFetching: false, error: action.payload };
-    case 'REFRESH_FEED':
-      return { ...state, feed: [], cursor: undefined, hasNextPage: true };
-    case 'RESET_ERROR':
-      return { ...state, error: null };
-    default:
-      return state;
-  }
-}
-
-interface UsePaginatedFeedParams {
-  limit?: number;
-  uri?: string;
-}
-
+/**
+ * usePaginatedFeed hook
+ *
+ * Fetches and manages an infinite/paginated feed using cursor-based pagination.
+ * It uses a refresh counter in the query key to force a reinitialization of the query when refreshed.
+ * The hook deduplicates posts based on their URI.
+ *
+ * @param options - Configuration options:
+ *  - limit: Number of posts per page (default: 10)
+ *  - uri: Feed URI; if not provided, the URI is obtained from the URL search parameters.
+ * @returns An object with:
+ *  - feed: Array of deduplicated feed posts.
+ *  - isFetching: Whether the feed is currently fetching data.
+ *  - isFetchingNextPage: Whether the next page is being fetched.
+ *  - hasNextPage: Boolean indicating if more pages are available.
+ *  - error: Any error encountered during fetching.
+ *  - refreshFeed: Function to refresh the feed.
+ *  - fetchNextPage: Function to load the next page.
+ */
 export function usePaginatedFeed(
-  options: UsePaginatedFeedParams | undefined = {}
+  options: { limit?: number; uri?: string } = {}
 ) {
-  const limit = options.limit || 10;
-  const [state, dispatch] = useReducer(feedReducer, initialState);
-  const cursorRef = useRef(state.cursor);
-
   const searchParams = useSearchParams();
+  const limit = options.limit || 10;
   const uri = options.uri ?? searchParams.get('uri');
-  // Keep cursor reference updated
-  useEffect(() => {
-    cursorRef.current = state.cursor;
-  }, [state.cursor]);
 
-  useEffect(() => {
-    dispatch({ type: 'URI_CHANGE', payload: uri });
-  }, [uri]);
+  // Refresh counter forces reinitialization of the query
+  const [refreshCount, setRefreshCount] = useState(0);
 
-  const fetchFeedData = useCallback(
-    async (refresh = false) => {
-      if (!uri) return;
-      if (refresh) dispatch({ type: 'REFRESH_FEED' });
-      dispatch({ type: 'FETCH_START' });
-
-      try {
-        const params = new URLSearchParams({
-          uri,
-          limit: limit.toString(),
-        });
-
-        if (!refresh && cursorRef.current) {
-          params.set('cursor', cursorRef.current);
-        }
-
-        const response = await fetch(`/api/feed?${params}`);
-
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || 'Failed to fetch feed');
-        }
-
-        const data = await response.json();
-        dispatch({
-          type: 'FETCH_SUCCESS',
-          payload: { feed: data.feed, cursor: data.cursor },
-        });
-      } catch (error: unknown) {
-        dispatch({
-          type: 'FETCH_ERROR',
-          payload:
-            error instanceof Error ? error.message : 'Failed to fetch feed',
-        });
+  const infiniteQuery = useInfiniteQuery({
+    queryKey: ['feed', uri, limit, refreshCount],
+    queryFn: async ({ pageParam }) => {
+      if (!uri) throw new Error('URI is required');
+      const result = await fetchFeed({
+        uri,
+        limit,
+        cursor: pageParam as string | undefined,
+      });
+      if ('error' in result) {
+        throw new Error(result.error);
       }
+      return result;
     },
-    [limit, uri]
-  );
+    getNextPageParam: (lastPage) => lastPage.cursor,
+    initialPageParam: '',
+    enabled: !!uri,
+    refetchOnWindowFocus: false,
+  });
 
-  // Reset and fetch when uri changes
-  useEffect(() => {
-    fetchFeedData(true);
-  }, [uri, fetchFeedData]);
+  // Flatten and deduplicate posts using post.uri; memoized to avoid unnecessary recomputations.
+  const flattenedFeed = useMemo(() => {
+    if (!infiniteQuery.data) return [];
+    const seenUris = new Set<string>();
+    return infiniteQuery.data.pages.flatMap((page) =>
+      page.feed.filter((item) => {
+        if (seenUris.has(item.post.uri)) {
+          return false;
+        }
+        seenUris.add(item.post.uri);
+        return true;
+      })
+    );
+  }, [infiniteQuery.data]);
+
+  // Refresh by incrementing the refresh counter.
+  const refreshFeed = useCallback(async () => {
+    setRefreshCount((prev) => prev + 1);
+  }, []);
 
   const fetchNextPage = useCallback(() => {
-    if (!state.hasNextPage || state.isFetching) return;
-    fetchFeedData();
-  }, [fetchFeedData, state.hasNextPage, state.isFetching]);
-
-  const refreshFeed = useCallback(() => {
-    fetchFeedData(true);
-  }, [fetchFeedData]);
+    if (infiniteQuery.hasNextPage && !infiniteQuery.isFetchingNextPage) {
+      infiniteQuery.fetchNextPage();
+    }
+  }, [
+    infiniteQuery.hasNextPage,
+    infiniteQuery.isFetchingNextPage,
+    infiniteQuery.fetchNextPage,
+  ]);
 
   return {
-    ...state,
-    fetchNextPage,
+    feed: flattenedFeed,
+    isFetching: infiniteQuery.isFetching,
+    isFetchingNextPage: infiniteQuery.isFetchingNextPage,
+    hasNextPage: !!infiniteQuery.hasNextPage,
+    error: infiniteQuery.error,
     refreshFeed,
+    fetchNextPage,
   };
+}
+
+/**
+ * useHasNewPosts: Monitors for posts that are newer than those in your current feed.
+ *
+ * It polls the feed (typically the first page) and compares the post URIs with your current feed.
+ * Polling is disabled while fetching is in progress to reduce performance overhead.
+ *
+ * @param options - Configuration options including uri, limit, pollingInterval, currentFeed, and isFetching.
+ * @returns Boolean indicating if new posts are available.
+ */
+export function useHasNewPosts(options: {
+  uri: string | null;
+  limit?: number;
+  pollingInterval?: number;
+  currentFeed: FeedViewPost[];
+  isFetching: boolean;
+}): boolean {
+  const { currentFeed, isFetching, uri } = options;
+  const limit = options.limit || 10;
+  const pollingInterval = options.pollingInterval || 10000;
+
+  const [hasNewPosts, setHasNewPosts] = useState(false);
+
+  // Polling query: will be disabled when the main feed is fetching
+  const pollQuery = useQuery({
+    queryKey: ['feed-poll', uri],
+    queryFn: () => {
+      if (!uri) throw new Error('URI is required');
+      return fetchFeed({ uri, limit });
+    },
+    refetchInterval: pollingInterval,
+    enabled: !!uri && !isFetching, // disable polling while fetching
+    select: (data) => ('feed' in data ? data.feed : []),
+  });
+
+  useEffect(() => {
+    if (
+      !currentFeed ||
+      currentFeed.length === 0 ||
+      !pollQuery.data ||
+      pollQuery.data.length === 0
+    ) {
+      return;
+    }
+    // Use post.uri for deduplication/ comparison.
+    const currentUris = new Set(currentFeed.map((item) => item.post.uri));
+    const newPostsDetected = pollQuery.data.some(
+      (item) => !currentUris.has(item.post.uri)
+    );
+    setHasNewPosts((prev) =>
+      prev !== newPostsDetected ? newPostsDetected : prev
+    );
+  }, [currentFeed, pollQuery.data]);
+
+  // Reset the flag when the first post in the current feed changes,
+  // which generally indicates that a refresh has occurred.
+  useEffect(() => {
+    setHasNewPosts(false);
+  }, [currentFeed[0]?.post.uri]);
+
+  return hasNewPosts;
 }

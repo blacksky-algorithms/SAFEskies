@@ -25,6 +25,8 @@
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
+    "@tanstack/react-query": "^5.73.3",
+    "@tanstack/react-query-devtools": "^5.73.3",
     "autoprefixer": "^10.4.20",
     "classcat": "^5.0.5",
     "date-fns": "^4.1.0",
@@ -38,9 +40,11 @@
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.0.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/react-hooks": "^7.0.2",
     "@types/jest-axe": "^3.5.9",
     "@types/js-cookie": "^3.0.6",
+    "@types/lodash": "^4.17.16",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "eslint": "^8",
@@ -50,6 +54,7 @@
     "jest-axe": "^9.0.0",
     "lint-staged": "^15.2.11",
     "tailwindcss": "^3.4.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }

@@ -82,18 +82,15 @@ export const Post = ({
   };
   const parentOrRootPost = parentPost || rootPost;
 
-  const getReplyToText = useCallback(
-    (data: PostView) => {
-      let result = data.author
-        ? `@${data.author.displayName || data.author.handle}`
-        : 'Deleted Post';
-      if (data.blocked) {
-        result = isBlockedAuthor(data) ? 'Blocked Author' : 'Blocked Post';
-      }
-      return result;
-    },
-    [parentOrRootPost]
-  );
+  const getReplyToText = useCallback((data: PostView) => {
+    let result = data.author
+      ? `@${data.author.displayName || data.author.handle}`
+      : 'Deleted Post';
+    if (data.blocked) {
+      result = isBlockedAuthor(data) ? 'Blocked Author' : 'Blocked Post';
+    }
+    return result;
+  }, []);
 
   return (
     <div className='w-full flex flex-col'>
