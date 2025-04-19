@@ -77,6 +77,7 @@ export function usePaginatedFeed(
     if (infiniteQuery.hasNextPage && !infiniteQuery.isFetchingNextPage) {
       infiniteQuery.fetchNextPage();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     infiniteQuery.hasNextPage,
     infiniteQuery.isFetchingNextPage,
