@@ -2,6 +2,11 @@ import { ViewPostPage } from '@/components/view-post-page';
 import { fetchWithAuth } from '@/lib/api';
 import { getPostThread } from '@/repos/post';
 import { getProfile } from '@/repos/profile';
+import {
+  ThreadViewPost,
+  NotFoundPost,
+  BlockedPost,
+} from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 export default async function Page({
   params,
@@ -25,10 +30,22 @@ export default async function Page({
   );
   const { services } = await servicesResponse?.json();
 
+  // TODO: Figure out a better solution than this one
+  function serializeData(
+    data:
+      | ThreadViewPost
+      | NotFoundPost
+      | BlockedPost
+      | { [k: string]: unknown; $type: string }
+      | undefined
+  ) {
+    return JSON.parse(JSON.stringify(data));
+  }
+
   return (
     <ViewPostPage
       isSignedIn={!!user?.did}
-      data={threadResponse?.data?.thread || []}
+      data={serializeData(threadResponse?.data?.thread) || []}
       services={services}
       feedDisplayName={feed}
     />

@@ -79,7 +79,7 @@ export const Post = ({
         />
         <PostFooter
           showModMenu={showModMenu}
-          post={post}
+          post={postData}
           onModAction={onModAction}
         />
       </article>
@@ -137,12 +137,12 @@ export const Post = ({
             labels={post.labels}
             isSignedIn={isSignedIn}
           />
+          <PostFooter
+            showModMenu={showModMenu}
+            post={post}
+            onModAction={onModAction}
+          />
         </div>
-        <PostFooter
-          showModMenu={showModMenu}
-          post={post}
-          onModAction={onModAction}
-        />
       </article>
     </div>
   );
