@@ -8,7 +8,7 @@ import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { Modal } from '@/components/modals';
 import { User } from '@/lib/types/user';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getLinksByFeed } from '@/lib/utils/logs';
+import { getLinksByFeed } from '@/lib/utils/getLinks';
 import { LogEntry } from './components/log-entry';
 import cc from 'classcat';
 import { TabGroup, TabPanel } from '@/components/tab/tab';

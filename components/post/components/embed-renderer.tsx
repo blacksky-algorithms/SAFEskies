@@ -23,6 +23,7 @@ import { PostText } from './post-text';
 import { CONTENT_LABELS } from '@/lib/constants';
 import { IconButton } from '@/components/button/icon-button';
 import { VisualIntent } from '@/enums/styles';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const labelsToInfo = (
   labels?: AppBskyFeedDefs.PostView['labels']
@@ -58,6 +59,25 @@ export const EmbedRenderer = ({
   const toggleLabelVisiblity = (e: React.SyntheticEvent) => {
     e.stopPropagation();
     setIsLabelVisible((prev) => !prev);
+  };
+  const router = useRouter();
+  const params = useSearchParams();
+
+  const navigateToPost = (
+    event: React.SyntheticEvent,
+    postData: AppBskyEmbedRecord.ViewRecord
+  ) => {
+    event.stopPropagation();
+    const uri = params.get('uri');
+    const feed = params.get('feed') || 'unknown feed name';
+
+    if (uri) {
+      router.push(
+        `/post/${encodeURIComponent(postData.uri)}?feed=${encodeURIComponent(
+          feed
+        )}&uri=${encodeURIComponent(uri)}`
+      );
+    }
   };
 
   if (!content) return null;
@@ -115,7 +135,10 @@ export const EmbedRenderer = ({
         );
 
         return (
-          <div className='transition-colors border-gray-800 rounded-lg p-4 gap-1.5 max-w-full overflow-hidden flex flex-col'>
+          <button
+            onClick={(e) => navigateToPost(e, record)}
+            className='transition-colors border-gray-800 rounded-lg p-4 gap-1.5 max-w-full overflow-hidden flex flex-col text-left'
+          >
             <PostHeader
               author={record.author}
               isAuthorLabeled={isAuthorLabeled}
@@ -130,7 +153,7 @@ export const EmbedRenderer = ({
                 isSignedIn={isSignedIn}
               />
             ))}
-          </div>
+          </button>
         );
       }
 

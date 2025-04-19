@@ -99,7 +99,10 @@ export const Feed = ({
     threshold: 0.1,
   });
   const router = useRouter();
-  const handlePostClick = async (post: PostView) => {
+  const handlePostClick = async (
+    event: React.SyntheticEvent,
+    post: PostView
+  ) => {
     if (uri) {
       setViewedPostUri(post.uri);
       router.push(
@@ -107,7 +110,6 @@ export const Feed = ({
           displayName
         )}&uri=${encodeURIComponent(uri)}`
       );
-      // openModalInstance(MODAL_INSTANCE_IDS.HYDRATED_POST, true);
     }
   };
 
@@ -146,7 +148,7 @@ export const Feed = ({
                   <li
                     key={post.cid}
                     className='w-full tablet:max-w-screen'
-                    onClick={() => handlePostClick(post)}
+                    onClick={(event) => handlePostClick(event, post)}
                   >
                     <Post
                       post={post}

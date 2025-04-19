@@ -58,7 +58,7 @@ export const ViewPostPage = ({
   });
 
   const { closeModalInstance } = useModal();
-  console.log({ data });
+
   const {
     reportData,
     isReportSubmitting,
