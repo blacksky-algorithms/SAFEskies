@@ -19,10 +19,8 @@ import { useModeration } from '@/hooks/useModeration';
 import { ModerationService } from '@/lib/types/moderation';
 import { ConfirmRemovePostModal } from '../modals/remove-post-modal';
 import cc from 'classcat';
-import {
-  // useRouter,
-  useSearchParams,
-} from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { handleHasModServices } from '@/lib/utils/handleHasModServices';
 
 interface FeedProps {
   onRefreshComplete?: () => void;
@@ -33,11 +31,11 @@ interface FeedProps {
 
 export const Feed = ({
   onRefreshComplete,
-  displayName,
+  displayName = 'Unknown Feed Name',
   services,
   isSignedIn,
 }: FeedProps) => {
-  const hasModServices = (services?.length > 0 && isSignedIn) || false;
+  const hasModServices = handleHasModServices(isSignedIn, services);
   const {
     feed,
     error,
@@ -64,6 +62,7 @@ export const Feed = ({
     });
 
   const { openModalInstance, closeModalInstance } = useModal();
+
   const [viewedPostUri, setViewedPostUri] = useState<string | null>(null);
 
   const {
@@ -77,7 +76,7 @@ export const Feed = ({
     onClose,
     handleDirectRemove,
     handlePrepareDirectRemove,
-  } = useModeration({ displayName, feed, services });
+  } = useModeration({ displayName, services });
 
   useEffect(() => {
     if (error) {
@@ -99,11 +98,17 @@ export const Feed = ({
     rootMargin: '150px',
     threshold: 0.1,
   });
-  // const router = useRouter();
+  const router = useRouter();
   const handlePostClick = async (post: PostView) => {
-    setViewedPostUri(post.uri);
-    // router.push(`/post/${encodeURIComponent(post.uri)}`);
-    openModalInstance(MODAL_INSTANCE_IDS.HYDRATED_POST, true);
+    if (uri) {
+      setViewedPostUri(post.uri);
+      router.push(
+        `/post/${encodeURIComponent(post.uri)}?feed=${encodeURIComponent(
+          displayName
+        )}&uri=${encodeURIComponent(uri)}`
+      );
+      // openModalInstance(MODAL_INSTANCE_IDS.HYDRATED_POST, true);
+    }
   };
 
   const handleErrorModalClose = () => {

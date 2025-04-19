@@ -13,24 +13,43 @@ import { useState } from 'react';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { Button } from '@/components/button';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { ModerationService } from '@/lib/types/moderation';
 import { VisualIntent } from '@/enums/styles';
 import cc from 'classcat';
+import { useModeration } from '@/hooks/useModeration';
+import { ModMenuModal } from '../modals/mod-menu';
+import { ReportPostModal } from '../modals/report-post';
+import { ConfirmRemovePostModal } from '../modals/remove-post-modal';
+import { useModal } from '@/contexts/modal-context';
+import { MODAL_INSTANCE_IDS } from '@/enums/modals';
+import { handleHasModServices } from '@/lib/utils/handleHasModServices';
 
 interface ViewPostPageProps {
-  data: NotFoundPost | BlockedPost | ThreadViewPost | [];
-  onClose?: () => void;
-
+  data:
+    | NotFoundPost
+    | BlockedPost
+    | ThreadViewPost
+    | { [k: string]: unknown; $type: string }
+    | [];
+  services: ModerationService[] | [];
   isSignedIn: boolean;
+  feedDisplayName: string;
 }
 
 interface ViewPostPageState {
-  thread: NotFoundPost | BlockedPost | ThreadViewPost | [];
+  thread: ViewPostPageProps['data'];
   isLoading: boolean;
   error: string | null;
   showReplies: Record<string, boolean>;
+  postUri?: string | null;
 }
 
-export const ViewPostPage = ({ data, isSignedIn }: ViewPostPageProps) => {
+export const ViewPostPage = ({
+  data,
+  isSignedIn,
+  feedDisplayName,
+  services,
+}: ViewPostPageProps) => {
   const [state, setState] = useState<ViewPostPageState>({
     thread: data,
     isLoading: false,
@@ -38,13 +57,22 @@ export const ViewPostPage = ({ data, isSignedIn }: ViewPostPageProps) => {
     showReplies: {},
   });
 
-  console.log('ViewPostPage data', data);
-  // console.log('isThreadViewPost', isThreadViewPost(data?.thread));
+  const { closeModalInstance } = useModal();
 
-  const onModAction = (post: PostView) => {
-    console.log('onModAction', post);
-  };
-  const showModMenu = true;
+  const {
+    reportData,
+    isReportSubmitting,
+    handleSelectReportReason,
+    handleReportPost,
+    handleAddtlInfoChange,
+    handleReportToChange,
+    isModServiceChecked,
+    onClose,
+    handleDirectRemove,
+    handlePrepareDirectRemove,
+  } = useModeration({ displayName: feedDisplayName, services });
+
+  const hasModServices = handleHasModServices(isSignedIn, services);
 
   const handleReplyToggle = (replyUri: string) => {
     setState((prev) => ({
@@ -67,8 +95,8 @@ export const ViewPostPage = ({ data, isSignedIn }: ViewPostPageProps) => {
               post={reply.post}
               parentPost={(reply.parent?.post as PostView) || null}
               rootPost={(reply.parent?.post as PostView) || null}
-              onModAction={onModAction}
-              showModMenu={showModMenu}
+              onModAction={handlePrepareDirectRemove}
+              showModMenu={hasModServices}
               isSignedIn={isSignedIn}
             />
             {reply.replies && reply.replies.length > 0 && (
@@ -123,31 +151,61 @@ export const ViewPostPage = ({ data, isSignedIn }: ViewPostPageProps) => {
 
   if (isThreadViewPost(state.thread)) {
     return (
-      <div className='flex flex-col h-full pb-20 overflow-auto w-full bg-app-background'>
-        {state.isLoading && (
-          <div className='flex justify-center p-4'>
-            <LoadingSpinner />
-          </div>
-        )}
-
-        {state.thread && (
-          <div className='max-w-2xl mx-auto w-full'>
-            <div className='flex-1 overflow-auto'>
-              <Post
-                post={state.thread.post}
-                parentPost={(state.thread.parent?.post as PostView) || null}
-                rootPost={(state.thread.parent?.post as PostView) || null}
-                onModAction={onModAction}
-                showModMenu={showModMenu}
-                isSignedIn={isSignedIn}
-              />
-              {state.thread.replies?.map((reply) =>
-                renderReply(reply as ThreadViewPost)
-              )}
+      <>
+        <div className='flex flex-col h-full pb-20 overflow-auto w-full bg-app-background'>
+          {state.isLoading && (
+            <div className='flex justify-center p-4'>
+              <LoadingSpinner />
             </div>
-          </div>
-        )}
-      </div>
+          )}
+
+          {state.thread && (
+            <div className='max-w-2xl mx-auto w-full'>
+              <div className='flex-1 overflow-auto'>
+                <Post
+                  post={state.thread.post}
+                  parentPost={(state.thread.parent?.post as PostView) || null}
+                  rootPost={(state.thread.parent?.post as PostView) || null}
+                  onModAction={handlePrepareDirectRemove}
+                  showModMenu={hasModServices}
+                  isSignedIn={isSignedIn}
+                />
+                {state.thread.replies?.map((reply) =>
+                  renderReply(reply as ThreadViewPost)
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        {hasModServices ? (
+          <>
+            <ModMenuModal
+              onClose={onClose}
+              handleSelectReportReason={handleSelectReportReason}
+            />
+            <ReportPostModal
+              onClose={onClose}
+              onReport={handleReportPost}
+              reason={reportData.reason}
+              isReportSubmitting={isReportSubmitting}
+              handleReportToChange={handleReportToChange}
+              isModServiceChecked={isModServiceChecked}
+              isDisabled={reportData.toServices.length === 0}
+              handleAddtlInfoChange={handleAddtlInfoChange}
+              services={services}
+            />
+            <ConfirmRemovePostModal
+              post={reportData.post}
+              onClose={() =>
+                closeModalInstance(MODAL_INSTANCE_IDS.CONFIRM_REMOVE)
+              }
+              handleDirectRemove={handleDirectRemove}
+              isSubmitting={isReportSubmitting}
+              feedName={feedDisplayName}
+            />
+          </>
+        ) : null}
+      </>
     );
   }
 };
