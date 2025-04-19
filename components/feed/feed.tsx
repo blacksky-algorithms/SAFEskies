@@ -19,7 +19,10 @@ import { useModeration } from '@/hooks/useModeration';
 import { ModerationService } from '@/lib/types/moderation';
 import { ConfirmRemovePostModal } from '../modals/remove-post-modal';
 import cc from 'classcat';
-import { useRouter, useSearchParams } from 'next/navigation';
+import {
+  // useRouter,
+  useSearchParams,
+} from 'next/navigation';
 
 interface FeedProps {
   onRefreshComplete?: () => void;
@@ -34,7 +37,7 @@ export const Feed = ({
   services,
   isSignedIn,
 }: FeedProps) => {
-  const hasModServices = services.length > 0;
+  const hasModServices = (services?.length > 0 && isSignedIn) || false;
   const {
     feed,
     error,
@@ -96,7 +99,7 @@ export const Feed = ({
     rootMargin: '150px',
     threshold: 0.1,
   });
-  const router = useRouter();
+  // const router = useRouter();
   const handlePostClick = async (post: PostView) => {
     setViewedPostUri(post.uri);
     // router.push(`/post/${encodeURIComponent(post.uri)}`);
