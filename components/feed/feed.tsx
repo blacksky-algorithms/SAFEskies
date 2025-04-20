@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useHasNewPosts, usePaginatedFeed } from '@/hooks/usePaginatedFeed';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
@@ -10,7 +10,6 @@ import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { IconButton } from '@/components/button/icon-button';
 import { Post } from '@/components/post';
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { HydratedPostModal } from '../modals/hydrated-post';
 import { VisualIntent } from '@/enums/styles';
 import { ModMenuModal } from '../modals/mod-menu';
 import { ReportPostModal } from '../modals/report-post';
@@ -63,8 +62,6 @@ export const Feed = ({
 
   const { openModalInstance, closeModalInstance } = useModal();
 
-  const [viewedPostUri, setViewedPostUri] = useState<string | null>(null);
-
   const {
     reportData,
     isReportSubmitting,
@@ -104,7 +101,6 @@ export const Feed = ({
     post: PostView
   ) => {
     if (uri) {
-      setViewedPostUri(post.uri);
       router.push(
         `/post/${encodeURIComponent(post.uri)}?feed=${encodeURIComponent(
           displayName
@@ -201,13 +197,6 @@ export const Feed = ({
           />
         </section>
       </div>
-      <HydratedPostModal
-        uri={viewedPostUri}
-        onClose={() => setViewedPostUri(null)}
-        onModAction={handlePrepareDirectRemove}
-        showModMenu={hasModServices}
-        isSignedIn={isSignedIn}
-      />
       {hasModServices ? (
         <>
           <ModMenuModal
