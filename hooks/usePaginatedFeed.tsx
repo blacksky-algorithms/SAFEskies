@@ -125,7 +125,7 @@ export function useHasNewPosts(options: {
       return fetchFeed({ uri, limit });
     },
     refetchInterval: pollingInterval,
-    enabled: !!uri && !isFetching, // disable polling while fetching
+    enabled: !!uri && !isFetching && !hasNewPosts, // disable polling while fetching
     select: (data) => ('feed' in data ? data.feed : []),
   });
 
