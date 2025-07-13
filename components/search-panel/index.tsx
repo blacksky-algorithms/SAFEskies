@@ -45,11 +45,11 @@ export const SearchPanel = ({
   const [state, setState] = useState({
     searchType: 'posts' as SearchType,
     search: '',
-    results: { 
-      users: [], 
-      posts: [], 
-      cursors: {}, 
-      hasMore: { users: false, posts: false } 
+    results: {
+      users: [],
+      posts: [],
+      cursors: {},
+      hasMore: { users: false, posts: false },
     } as SearchResult,
     loading: false,
     error: null as string | null,
@@ -98,11 +98,12 @@ export const SearchPanel = ({
       }
 
       const data = await response.json();
-      
+
       // ATProto searchPosts API has a known bug where it returns invalid numeric cursors
       // that cause 403 errors. Filter these out to prevent pagination issues.
-      const validCursor = data.cursor && !(/^\d+$/.test(data.cursor)) ? data.cursor : null;
-      
+      const validCursor =
+        data.cursor && !/^\d+$/.test(data.cursor) ? data.cursor : null;
+
       return {
         posts: data.posts || [],
         cursor: validCursor,
@@ -290,7 +291,7 @@ export const SearchPanel = ({
             }
             options={[
               { value: 'posts', label: 'Posts' },
-              { value: 'users', label: 'Users' },
+              //   { value: 'users', label: 'Users' },
             ]}
             orientation='horizontal'
           />
