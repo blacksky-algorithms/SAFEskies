@@ -1,8 +1,5 @@
 import { useState, useReducer, useCallback, ChangeEvent } from 'react';
-import {
-  FeedViewPost,
-  PostView,
-} from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { ReportOption } from '@/lib/types/moderation';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
@@ -80,15 +77,10 @@ const createReportDataReducer =
 
 interface UseModerationOptions {
   displayName?: string;
-  feed: FeedViewPost[];
   services: ModerationService[] | [];
 }
 
-export function useModeration({
-  displayName,
-  feed,
-  services,
-}: UseModerationOptions) {
+export function useModeration({ displayName, services }: UseModerationOptions) {
   const { openModalInstance, closeModalInstance } = useModal();
   const { toast } = useToast();
   const searchParams = useSearchParams();
@@ -101,6 +93,8 @@ export function useModeration({
     toServices: services,
     moderatedPostUri: null,
     additionalInfo: '',
+    feedUri: null,
+    feedName: displayName || 'Unnamed Feed',
   } as ReportDataState);
 
   const handleModAction = useCallback(
@@ -147,7 +141,6 @@ export function useModeration({
       !reportData.post ||
       !reportData.moderatedPostUri ||
       !reportData.reason ||
-      feed.length === 0 ||
       reportData.toServices.length === 0
     ) {
       toast({
@@ -206,13 +199,12 @@ export function useModeration({
     } finally {
       setIsReportSubmitting(false);
     }
-  }, [reportData, feed, uri, displayName, closeModalInstance, toast]);
+  }, [reportData, uri, displayName, closeModalInstance, toast]);
 
   const handleDirectRemove = useCallback(async () => {
     if (
       !reportData.post ||
       !reportData.moderatedPostUri ||
-      feed.length === 0 ||
       reportData.toServices.length === 0
     ) {
       toast({
@@ -270,7 +262,7 @@ export function useModeration({
     } finally {
       setIsReportSubmitting(false);
     }
-  }, [reportData, feed, uri, displayName, closeModalInstance, toast]);
+  }, [reportData, uri, displayName, closeModalInstance, toast]);
 
   const isModServiceChecked = useCallback(
     (service: ModerationService) =>

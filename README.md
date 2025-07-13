@@ -156,9 +156,27 @@ SAFEskies provides a user-friendly interface for managing and moderating BlueSky
 ### Core Functions
 
 - **View Feeds**: See all feeds you have permission to moderate
+- **Search**: Search for users or posts using the right-side search panel (desktop only)
 - **Moderation**: Remove posts that violate feed guidelines
 - **User Management**: Admins can promote users to moderator status or remove their privileges
 - **Audit Logs**: Review all moderation actions taken on your feeds
+
+### Search Functionality
+
+SAFEskies includes a search panel (desktop layouts only) that allows you to search for both users and posts:
+
+- **User Search**: Search across all BlueSky users by handle or display name
+- **Post Search**: Search for posts with moderation context included
+
+#### Important Note on Post Search
+
+For performance reasons, post search always uses **BlackSky** as the moderation context, regardless of which feed you're currently viewing. This design decision was made because:
+
+1. **Performance**: Checking actual feed membership for each search result would be too slow
+2. **BlackSky API Compatibility**: The BlackSky moderation service is forgiving and works well with posts from any feed
+3. **User Experience**: Provides immediate search results without delays
+
+This means that when you click on a post from search results, you'll always navigate to that post within the BlackSky feed context, even if the post might not actually be a member of BlackSky. This tradeoff prioritizes search speed and usability over perfect feed context accuracy.
 
 ### Admin vs. Moderator Capabilities
 

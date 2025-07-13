@@ -35,7 +35,7 @@ export const UserButton = ({ user }: { user: User }) => {
           <div className='w-8 h-8 bg-gray-700 rounded-full'></div>
         </>
       )}
-      <span className='hidden sm:block text-sm font-medium'>
+      <span className='hidden desktop:block text-sm font-medium'>
         {(user.displayName as string) || `@${user.handle}` || 'User'}
       </span>
     </Button>

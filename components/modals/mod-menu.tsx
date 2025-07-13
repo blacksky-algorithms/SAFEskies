@@ -7,7 +7,6 @@ import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { IconButton } from '../button/icon-button';
 import { ModReasonButton } from '../button/mod-reason-button';
 import { ReportOption } from '@/lib/types/moderation';
-import { useModal } from '@/contexts/modal-context';
 import { fetchReportOptions } from '@/repos/moderation';
 import { useProfileData } from '@/hooks/useProfileData';
 
@@ -20,7 +19,6 @@ export const ModMenuModal = ({
   onClose,
   handleSelectReportReason,
 }: ModMenuProps) => {
-  const { isOpen } = useModal();
   const [state, setState] = React.useState<{
     isLoading: boolean;
     options: ReportOption[];
@@ -60,7 +58,6 @@ export const ModMenuModal = ({
         onClose={onClose}
         size='large'
         fullWidthMobile
-        showBackButton={isOpen(MODAL_INSTANCE_IDS.HYDRATED_POST)}
       >
         <div className='flex flex-col overflow-y-auto space-y-4 '>
           {state.options.map((option) => (

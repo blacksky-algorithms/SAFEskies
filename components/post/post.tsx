@@ -77,6 +77,11 @@ export const Post = ({
           labels={postData.labels}
           isSignedIn={isSignedIn}
         />
+        <PostFooter
+          showModMenu={showModMenu}
+          post={postData}
+          onModAction={onModAction}
+        />
       </article>
     );
   };
@@ -105,13 +110,13 @@ export const Post = ({
           'border-l border-r border-b border-gray-800 shadow-sm w-full mx-auto max-w-screen',
 
           {
-            'px-3': !parentOrRootPost,
+            'px-3 ': !parentOrRootPost,
             'px-10': parentOrRootPost,
-            'border-b-none': parentOrRootPost,
+            'border-b-none ': parentOrRootPost,
           },
         ])}
       >
-        <div className='py-3 shadow'>
+        <div className='py-3 shadow '>
           <PostHeader author={post.author} postIndexedAt={post.indexedAt} />
           {parentOrRootPost && (
             <div className='flex items-center space-x-2 justify-start text-gray-400 text-sm'>
@@ -132,12 +137,12 @@ export const Post = ({
             labels={post.labels}
             isSignedIn={isSignedIn}
           />
+          <PostFooter
+            showModMenu={showModMenu}
+            post={post}
+            onModAction={onModAction}
+          />
         </div>
-        <PostFooter
-          showModMenu={showModMenu}
-          post={post}
-          onModAction={onModAction}
-        />
       </article>
     </div>
   );

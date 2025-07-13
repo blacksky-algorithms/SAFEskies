@@ -26,11 +26,12 @@ export const HomePage = ({ feeds, services, isSignedIn }: Props) => {
   const searchParams = useSearchParams();
   const uri = searchParams.get('uri');
   const activeTab = feeds.findIndex((feed) => feed.uri === uri) || 0;
-
+  console.log({ uri });
   useEffect(() => {
     if (!uri) {
       const params = new URLSearchParams(searchParams.toString());
       params.set('uri', feeds[0].uri);
+      params.set('feed', feeds[0].displayName || 'unknown feed');
       router.push(`?${params.toString()}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,6 +63,7 @@ export const HomePage = ({ feeds, services, isSignedIn }: Props) => {
   const handleTabChange = (index: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('uri', feeds[index].uri);
+    params.set('feed', feeds[index].displayName || 'unknown feed');
     router.push(`?${params.toString()}`);
   };
 

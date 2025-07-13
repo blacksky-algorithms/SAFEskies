@@ -4,6 +4,7 @@ import { Providers } from '@/contexts';
 import { preferredLanguages } from '@/lib/constants';
 import { BaseLayout } from '@/components/layouts/base-layout';
 import { SideDrawerContent } from '@/components/side-drawer/side-drawer-content';
+import { ConditionalSearchPanel } from '@/components/conditional-search-panel';
 import { getProfile } from '@/repos/profile';
 
 import type { Metadata, Viewport } from 'next';
@@ -46,6 +47,7 @@ export default async function RootLayout({
             sideContent={
               <SideDrawerContent user={user} highestRole={highestRole} />
             }
+            rightContent={<ConditionalSearchPanel user={user} />}
           >
             {children}
           </BaseLayout>

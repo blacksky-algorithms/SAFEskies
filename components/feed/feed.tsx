@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useHasNewPosts, usePaginatedFeed } from '@/hooks/usePaginatedFeed';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { useModal } from '@/contexts/modal-context';
@@ -10,7 +10,6 @@ import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { IconButton } from '@/components/button/icon-button';
 import { Post } from '@/components/post';
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { HydratedPostModal } from '../modals/hydrated-post';
 import { VisualIntent } from '@/enums/styles';
 import { ModMenuModal } from '../modals/mod-menu';
 import { ReportPostModal } from '../modals/report-post';
@@ -19,7 +18,9 @@ import { useModeration } from '@/hooks/useModeration';
 import { ModerationService } from '@/lib/types/moderation';
 import { ConfirmRemovePostModal } from '../modals/remove-post-modal';
 import cc from 'classcat';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { handleHasModServices } from '@/lib/utils/handleHasModServices';
+import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 
 interface FeedProps {
   onRefreshComplete?: () => void;
@@ -30,11 +31,11 @@ interface FeedProps {
 
 export const Feed = ({
   onRefreshComplete,
-  displayName,
+  displayName = 'Unknown Feed Name',
   services,
   isSignedIn,
 }: FeedProps) => {
-  const hasModServices = services.length > 0;
+  const hasModServices = handleHasModServices(isSignedIn, services);
   const {
     feed,
     error,
@@ -61,7 +62,6 @@ export const Feed = ({
     });
 
   const { openModalInstance, closeModalInstance } = useModal();
-  const [viewedPostUri, setViewedPostUri] = useState<string | null>(null);
 
   const {
     reportData,
@@ -74,7 +74,26 @@ export const Feed = ({
     onClose,
     handleDirectRemove,
     handlePrepareDirectRemove,
-  } = useModeration({ displayName, feed, services });
+  } = useModeration({ displayName, services });
+
+  // Simplified scroll restoration hook
+  const { containerRef: scrollContainerRef } = useScrollRestoration({
+    key: displayName,
+    shouldRestore: !!uri, // Restore when coming back from a post
+    shouldClear: !uri,    // Clear when switching feeds or refreshing
+  });
+
+  // Simplified: Just use the scroll restoration ref directly
+  const setContainerRef = useCallback((element: HTMLDivElement | null) => {
+    // Assign to pull-to-refresh ref
+    if (containerRef && 'current' in containerRef) {
+      (containerRef.current as HTMLDivElement | null) = element;
+    }
+    // Assign to scroll restoration ref  
+    if (scrollContainerRef && 'current' in scrollContainerRef) {
+      (scrollContainerRef.current as HTMLElement | null) = element;
+    }
+  }, [containerRef, scrollContainerRef]);
 
   useEffect(() => {
     if (error) {
@@ -96,10 +115,18 @@ export const Feed = ({
     rootMargin: '150px',
     threshold: 0.1,
   });
-
-  const handlePostClick = async (post: PostView) => {
-    setViewedPostUri(post.uri);
-    openModalInstance(MODAL_INSTANCE_IDS.HYDRATED_POST, true);
+  const router = useRouter();
+  const handlePostClick = async (
+    event: React.SyntheticEvent,
+    post: PostView
+  ) => {
+    if (uri) {
+      router.push(
+        `/post/${encodeURIComponent(post.uri)}?feed=${encodeURIComponent(
+          displayName
+        )}&uri=${encodeURIComponent(uri)}`
+      );
+    }
   };
 
   const handleErrorModalClose = () => {
@@ -112,7 +139,7 @@ export const Feed = ({
       <div className='max-h-page'>
         <section className='flex flex-col items-center mx-auto tablet:px-10'>
           <div
-            ref={containerRef}
+            ref={setContainerRef}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             className='overflow-y-auto h-screen flex flex-col items-center'
@@ -137,7 +164,7 @@ export const Feed = ({
                   <li
                     key={post.cid}
                     className='w-full tablet:max-w-screen'
-                    onClick={() => handlePostClick(post)}
+                    onClick={(event) => handlePostClick(event, post)}
                   >
                     <Post
                       post={post}
@@ -190,13 +217,6 @@ export const Feed = ({
           />
         </section>
       </div>
-      <HydratedPostModal
-        uri={viewedPostUri}
-        onClose={() => setViewedPostUri(null)}
-        onModAction={handlePrepareDirectRemove}
-        showModMenu={hasModServices}
-        isSignedIn={isSignedIn}
-      />
       {hasModServices ? (
         <>
           <ModMenuModal

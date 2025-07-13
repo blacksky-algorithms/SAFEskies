@@ -4,7 +4,6 @@ import { HomePage } from '@/components/home-page';
 import { getProfile } from '@/repos/profile';
 import { getUserFeeds } from '@/repos/feeds';
 import { fetchWithAuth } from '@/lib/api';
-import { ModerationService } from '@/lib/types/moderation';
 
 export default async function Page({
   searchParams,
@@ -25,15 +24,11 @@ export default async function Page({
     }
   );
   const { services } = await response?.json();
-  const filteredServices =
-    services?.filter(
-      (service: ModerationService) => service.value !== 'ozone'
-    ) || [];
 
   return (
     <HomePage
       feeds={allFeeds}
-      services={filteredServices}
+      services={services || []}
       isSignedIn={!!profile?.did}
     />
   );

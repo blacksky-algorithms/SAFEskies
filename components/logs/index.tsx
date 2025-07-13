@@ -8,7 +8,7 @@ import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { Modal } from '@/components/modals';
 import { User } from '@/lib/types/user';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getLinksByFeed } from '@/lib/utils/logs';
+import { getLinksByFeed } from '@/lib/utils/getLinks';
 import { LogEntry } from './components/log-entry';
 import cc from 'classcat';
 import { TabGroup, TabPanel } from '@/components/tab/tab';
@@ -60,36 +60,31 @@ export const Logs = ({ user }: { user: User }) => {
 
   return (
     <>
-      <div className='grid grid-cols-1 gap-4 md:grid-cols-3 h-full'>
-        <div className='col-span-2'>
-          <LogsWrapper />
-          <TabGroup
-            data={tabsHeaders}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-          >
-            {tabsHeaders.map((_, index) => (
-              <TabPanel key={`log-panel-${index}`}>
-                <div className='px-4 h-full overflow-auto max-h-page pt-4 pb-56'>
-                  {isLoading ? (
-                    <div className='flex items-center justify-center p-20 h-full'>
-                      <LoadingSpinner size='lg' />
-                    </div>
-                  ) : error ? (
-                    <div className='text-app-error text-center py-4'>
-                      <p>Error loading logs: {error}</p>
-                    </div>
-                  ) : (
-                    logs.map((log) => <LogEntry key={log.id} log={log} />)
-                  )}
-                </div>
-              </TabPanel>
-            ))}
-          </TabGroup>
-        </div>
-        <div className='hidden tablet:flex flex-col space-y-4 p-4 border-l border-l-app-border'>
-          <LogFilters />
-        </div>
+      <div className='h-full'>
+        <LogsWrapper />
+        <TabGroup
+          data={tabsHeaders}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        >
+          {tabsHeaders.map((_, index) => (
+            <TabPanel key={`log-panel-${index}`}>
+              <div className='px-4 h-full overflow-auto max-h-page pt-4 pb-56'>
+                {isLoading ? (
+                  <div className='flex items-center justify-center p-20 h-full'>
+                    <LoadingSpinner size='lg' />
+                  </div>
+                ) : error ? (
+                  <div className='text-app-error text-center py-4'>
+                    <p>Error loading logs: {error}</p>
+                  </div>
+                ) : (
+                  logs.map((log) => <LogEntry key={log.id} log={log} />)
+                )}
+              </div>
+            </TabPanel>
+          ))}
+        </TabGroup>
       </div>
       <Modal
         id={MODAL_INSTANCE_IDS.LOG_FILTERS}

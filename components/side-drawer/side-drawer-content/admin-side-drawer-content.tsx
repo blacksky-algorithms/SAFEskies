@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { User } from '@/lib/types/user';
 import { SideDrawerLink } from '../components/side-drawer-link';
-import { getLinksByFeed } from '@/lib/utils/logs';
+import { getLinksByFeed } from '@/lib/utils/getLinks';
 
 interface AdminSideDrawerContentProps {
   user: User | null;

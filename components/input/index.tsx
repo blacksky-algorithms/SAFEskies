@@ -63,3 +63,5 @@ export const Input = ({
     </div>
   );
 };
+
+export { RadioGroup } from './radio';

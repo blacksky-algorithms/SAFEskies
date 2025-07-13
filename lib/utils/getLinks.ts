@@ -15,7 +15,7 @@ export function getLinksByFeed(user: User | null, linkType: 'logs' | 'feed') {
           href:
             linkType === 'logs'
               ? `/${linkType}?uri=${encodeURIComponent(uri)}`
-              : `/?uri=${encodeURIComponent(uri)}`,
+              : `/?uri=${encodeURIComponent(uri)}&feed=${displayName}`,
           permission: type,
         });
       }
