@@ -43,11 +43,14 @@ export default async function Page({
   }
 
   return (
-    <ViewPostPage
-      isSignedIn={!!user?.did}
-      data={serializeData(threadResponse?.data?.thread) || []}
-      services={services}
-      feedDisplayName={feed}
-    />
+    <div className='flex flex-col items-center justify-center gap-4 p-4'>
+      <p className='text-2xl font-semibold sticky'>Post</p>
+      <ViewPostPage
+        isSignedIn={!!user?.did}
+        data={serializeData(threadResponse?.data?.thread) || []}
+        services={services}
+        feedDisplayName={feed}
+      />
+    </div>
   );
 }

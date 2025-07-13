@@ -152,7 +152,7 @@ export const ViewPostPage = ({
   if (isThreadViewPost(state.thread)) {
     return (
       <>
-        <div className='flex flex-col h-full pb-20 overflow-auto w-full bg-app-background'>
+        <div className='h-full w-full bg-app-background overflow-y-auto overflow-x-hidden' style={{ WebkitOverflowScrolling: 'touch' }}>
           {state.isLoading && (
             <div className='flex justify-center p-4'>
               <LoadingSpinner />
@@ -160,8 +160,8 @@ export const ViewPostPage = ({
           )}
 
           {state.thread && (
-            <div className='max-w-2xl mx-auto w-full'>
-              <div className='flex-1 overflow-auto'>
+            <div className='pb-20'>
+              <div className='max-w-2xl mx-auto w-full p-4'>
                 <Post
                   post={state.thread.post}
                   parentPost={(state.thread.parent?.post as PostView) || null}

@@ -11,6 +11,8 @@ import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import cc from 'classcat';
 import { useRouter } from 'next/navigation';
 import { DEFAULT_FEED } from '@/lib/constants';
+import { useModal } from '@/contexts/modal-context';
+import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 
 type SearchType = 'users' | 'posts';
 
@@ -21,10 +23,15 @@ interface SearchResult {
 
 interface SearchPanelProps {
   className?: string;
+  isModal?: boolean;
 }
 
-export const SearchPanel = ({ className = '' }: SearchPanelProps) => {
+export const SearchPanel = ({
+  className = '',
+  isModal = false,
+}: SearchPanelProps) => {
   const router = useRouter();
+  const { closeModalInstance } = useModal();
   const [state, setState] = useState({
     searchType: 'posts' as SearchType,
     search: '',
@@ -128,6 +135,10 @@ export const SearchPanel = ({ className = '' }: SearchPanelProps) => {
         DEFAULT_FEED.displayName
       )}&uri=${encodeURIComponent(DEFAULT_FEED.uri)}`
     );
+
+    if (isModal) {
+      closeModalInstance(MODAL_INSTANCE_IDS.SEARCH);
+    }
   };
 
   const currentResults =
@@ -136,18 +147,21 @@ export const SearchPanel = ({ className = '' }: SearchPanelProps) => {
   return (
     <div
       className={cc([
-        'bg-app-background border-l border-app-border p-4 h-full overflow-y-auto',
+        'bg-app-background p-4 h-full overflow-y-auto',
+        { 'border-l border-app-border': !isModal },
         className,
       ])}
     >
       <div className='space-y-4 h-full'>
-        <div className='flex items-center gap-2'>
-          <Icon
-            icon='MagnifyingGlassIcon'
-            className='h-5 w-5 text-app-secondary'
-          />
-          <h2 className='text-lg font-semibold text-app'>Search</h2>
-        </div>
+        {isModal ? null : (
+          <div className='flex items-center gap-2'>
+            <Icon
+              icon='MagnifyingGlassIcon'
+              className='h-5 w-5 text-app-secondary'
+            />
+            <h2 className='text-lg font-semibold text-app'>Search</h2>
+          </div>
+        )}
 
         <div className='space-y-3'>
           <RadioGroup

@@ -1,5 +1,6 @@
 import { Header } from '@/components/header';
 import { UserNavigationModal } from '@/components/modals/user-navigation-modal';
+import { SearchModal } from '@/components/modals/search-modal';
 import { UserRole } from '@/lib/types/permission';
 import { User } from '@/lib/types/user';
 import { PropsWithChildren } from 'react';
@@ -36,7 +37,7 @@ export const BaseLayout = ({
         </aside>
         <main
           className={cc([
-            'col-span-full tablet:col-span-9 bg-app-background overflow-hidden h-full max-h-page relative',
+            'col-span-full tablet:col-span-9 bg-app-background h-full max-h-page relative',
             {
               'desktop:col-span-6': hasRightContent,
               'desktop:col-span-9': !hasRightContent,
@@ -52,6 +53,7 @@ export const BaseLayout = ({
         ) : null}
       </div>
       <UserNavigationModal user={user} highestRole={highestRole} />
+      <SearchModal />
     </div>
   );
 };
