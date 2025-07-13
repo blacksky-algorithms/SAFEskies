@@ -150,9 +150,10 @@ export function useHasNewPosts(options: {
 
   // Reset the flag when the first post in the current feed changes,
   // which generally indicates that a refresh has occurred.
+  const firstPostUri = currentFeed[0]?.post.uri;
   useEffect(() => {
     setHasNewPosts(false);
-  }, [currentFeed[0]?.post.uri]);
+  }, [firstPostUri]);
 
   return hasNewPosts;
 }
