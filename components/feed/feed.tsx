@@ -20,6 +20,7 @@ import { ConfirmRemovePostModal } from '../modals/remove-post-modal';
 import cc from 'classcat';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { handleHasModServices } from '@/lib/utils/handleHasModServices';
+import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 
 interface FeedProps {
   onRefreshComplete?: () => void;
@@ -75,6 +76,25 @@ export const Feed = ({
     handlePrepareDirectRemove,
   } = useModeration({ displayName, services });
 
+  // Simplified scroll restoration hook
+  const { containerRef: scrollContainerRef } = useScrollRestoration({
+    key: displayName,
+    shouldRestore: !!uri, // Restore when coming back from a post
+    shouldClear: !uri,    // Clear when switching feeds or refreshing
+  });
+
+  // Simplified: Just use the scroll restoration ref directly
+  const setContainerRef = useCallback((element: HTMLDivElement | null) => {
+    // Assign to pull-to-refresh ref
+    if (containerRef && 'current' in containerRef) {
+      (containerRef.current as HTMLDivElement | null) = element;
+    }
+    // Assign to scroll restoration ref  
+    if (scrollContainerRef && 'current' in scrollContainerRef) {
+      (scrollContainerRef.current as HTMLElement | null) = element;
+    }
+  }, [containerRef, scrollContainerRef]);
+
   useEffect(() => {
     if (error) {
       openModalInstance(MODAL_INSTANCE_IDS.GENERIC_ERROR, true);
@@ -119,7 +139,7 @@ export const Feed = ({
       <div className='max-h-page'>
         <section className='flex flex-col items-center mx-auto tablet:px-10'>
           <div
-            ref={containerRef}
+            ref={setContainerRef}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             className='overflow-y-auto h-screen flex flex-col items-center'

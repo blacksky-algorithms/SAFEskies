@@ -67,6 +67,7 @@ SAFEskies (Software Against a Fearful Environment) is a BlueSky feed management 
 - Tailwind CSS styling
 - Jest testing suite
 - Husky pre-commit hooks
+- **Scroll restoration**: Preserves feed position during post navigation
 
 ---
 
