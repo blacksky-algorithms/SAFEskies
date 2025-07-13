@@ -6,11 +6,13 @@ import { Input, RadioGroup } from '@/components/input';
 import { LoadingSpinner } from '@/components/loading-spinner';
 import { OptimizedImage } from '@/components/optimized-image';
 import { Icon } from '@/components/icon';
+import { Button } from '@/components/button';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import cc from 'classcat';
 import { useRouter } from 'next/navigation';
 import { DEFAULT_FEED } from '@/lib/constants';
+import { VisualIntent } from '@/enums/styles';
 import { useModal } from '@/contexts/modal-context';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 
@@ -19,6 +21,14 @@ type SearchType = 'users' | 'posts';
 interface SearchResult {
   users: ProfileViewBasic[];
   posts: PostView[];
+  cursors: {
+    users?: string;
+    posts?: string;
+  };
+  hasMore: {
+    users: boolean;
+    posts: boolean;
+  };
 }
 
 interface SearchPanelProps {
@@ -35,16 +45,23 @@ export const SearchPanel = ({
   const [state, setState] = useState({
     searchType: 'posts' as SearchType,
     search: '',
-    results: { users: [], posts: [] } as SearchResult,
+    results: { 
+      users: [], 
+      posts: [], 
+      cursors: {}, 
+      hasMore: { users: false, posts: false } 
+    } as SearchResult,
     loading: false,
     error: null as string | null,
   });
 
   const debouncedSearch = useDebounce(state.search, 300);
 
-  const fetchUsers = useCallback(async (query: string) => {
+  const fetchUsers = useCallback(async (query: string, cursor?: string) => {
     try {
-      const params = new URLSearchParams({ q: query, limit: '10' });
+      const params = new URLSearchParams({ q: query, limit: '50' });
+      if (cursor) params.set('cursor', cursor);
+
       const response = await fetch(`/api/atproto/search/users?${params}`);
 
       if (!response.ok) {
@@ -53,19 +70,26 @@ export const SearchPanel = ({
       }
 
       const data = await response.json();
-      return data.actors || [];
+      return {
+        users: data.actors || [],
+        cursor: data.cursor || null,
+      };
     } catch (error) {
       console.error('Error fetching users:', error);
       throw error;
     }
   }, []);
 
-  const fetchPosts = useCallback(async (query: string) => {
+  const fetchPosts = useCallback(async (query: string, cursor?: string) => {
     try {
       const params = new URLSearchParams({
         q: query,
-        limit: '10',
+        limit: '50',
       });
+      if (cursor) {
+        params.set('cursor', cursor);
+      }
+
       const response = await fetch(`/api/atproto/search/posts?${params}`);
 
       if (!response.ok) {
@@ -74,7 +98,15 @@ export const SearchPanel = ({
       }
 
       const data = await response.json();
-      return data.posts || [];
+      
+      // ATProto searchPosts API has a known bug where it returns invalid numeric cursors
+      // that cause 403 errors. Filter these out to prevent pagination issues.
+      const validCursor = data.cursor && !(/^\d+$/.test(data.cursor)) ? data.cursor : null;
+      
+      return {
+        posts: data.posts || [],
+        cursor: validCursor,
+      };
     } catch (error) {
       console.error('Error fetching posts:', error);
       throw error;
@@ -85,7 +117,12 @@ export const SearchPanel = ({
     if (!debouncedSearch.trim()) {
       setState((prev) => ({
         ...prev,
-        results: { users: [], posts: [] },
+        results: {
+          users: [],
+          posts: [],
+          cursors: {},
+          hasMore: { users: false, posts: false },
+        },
         error: null,
       }));
       return;
@@ -95,17 +132,27 @@ export const SearchPanel = ({
 
     try {
       if (state.searchType === 'users') {
-        const users = await fetchUsers(debouncedSearch);
+        const { users, cursor } = await fetchUsers(debouncedSearch);
         setState((prev) => ({
           ...prev,
-          results: { ...prev.results, users },
+          results: {
+            ...prev.results,
+            users,
+            cursors: { ...prev.results.cursors, users: cursor },
+            hasMore: { ...prev.results.hasMore, users: !!cursor },
+          },
           loading: false,
         }));
       } else {
-        const posts = await fetchPosts(debouncedSearch);
+        const { posts, cursor } = await fetchPosts(debouncedSearch);
         setState((prev) => ({
           ...prev,
-          results: { ...prev.results, posts },
+          results: {
+            ...prev.results,
+            posts,
+            cursors: { ...prev.results.cursors, posts: cursor },
+            hasMore: { ...prev.results.hasMore, posts: !!cursor },
+          },
           loading: false,
         }));
       }
@@ -141,6 +188,67 @@ export const SearchPanel = ({
     }
   };
 
+  const loadMore = useCallback(async () => {
+    if (!debouncedSearch.trim() || state.loading) return;
+
+    const currentCursor =
+      state.searchType === 'users'
+        ? state.results.cursors.users
+        : state.results.cursors.posts;
+
+    if (!currentCursor) return;
+
+    setState((prev) => ({ ...prev, loading: true }));
+
+    try {
+      if (state.searchType === 'users') {
+        const { users, cursor } = await fetchUsers(
+          debouncedSearch,
+          currentCursor
+        );
+        setState((prev) => ({
+          ...prev,
+          results: {
+            ...prev.results,
+            users: [...prev.results.users, ...users],
+            cursors: { ...prev.results.cursors, users: cursor },
+            hasMore: { ...prev.results.hasMore, users: !!cursor },
+          },
+          loading: false,
+        }));
+      } else {
+        const { posts, cursor } = await fetchPosts(
+          debouncedSearch,
+          currentCursor
+        );
+        setState((prev) => ({
+          ...prev,
+          results: {
+            ...prev.results,
+            posts: [...prev.results.posts, ...posts],
+            cursors: { ...prev.results.cursors, posts: cursor },
+            hasMore: { ...prev.results.hasMore, posts: !!cursor },
+          },
+          loading: false,
+        }));
+      }
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: error instanceof Error ? error.message : 'Failed to load more',
+      }));
+    }
+  }, [
+    debouncedSearch,
+    state.searchType,
+    state.loading,
+    state.results.cursors.users,
+    state.results.cursors.posts,
+    fetchUsers,
+    fetchPosts,
+  ]);
+
   const currentResults =
     state.searchType === 'users' ? state.results.users : state.results.posts;
 
@@ -172,7 +280,12 @@ export const SearchPanel = ({
               setState((prev) => ({
                 ...prev,
                 searchType: value as SearchType,
-                results: { users: [], posts: [] },
+                results: {
+                  users: [],
+                  posts: [],
+                  cursors: {},
+                  hasMore: { users: false, posts: false },
+                },
               }))
             }
             options={[
@@ -210,9 +323,11 @@ export const SearchPanel = ({
 
         {currentResults.length > 0 && (
           <div className='space-y-2 '>
-            <h3 className='text-sm font-medium text-app-secondary'>
-              {state.searchType === 'users' ? 'Users' : 'Posts'}
-            </h3>
+            <div className='flex items-center justify-between'>
+              <h3 className='text-sm font-medium text-app-secondary'>
+                {state.searchType === 'users' ? 'Users' : 'Posts'}
+              </h3>
+            </div>
 
             <div className='space-y-1 overflow-y-auto'>
               {state.searchType === 'users'
@@ -279,6 +394,22 @@ export const SearchPanel = ({
                     </div>
                   ))}
             </div>
+
+            {/* Load More Button */}
+            {(state.searchType === 'users'
+              ? state.results.hasMore.users
+              : state.results.hasMore.posts) && (
+              <div className='pt-2'>
+                <Button
+                  onClick={loadMore}
+                  disabled={state.loading}
+                  className='w-full'
+                  intent={VisualIntent.Secondary}
+                >
+                  {state.loading ? 'Loading...' : 'Load More'}
+                </Button>
+              </div>
+            )}
           </div>
         )}
 

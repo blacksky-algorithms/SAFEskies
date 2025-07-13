@@ -14,6 +14,7 @@ export async function GET(request: Request) {
     const mentions = searchParams.get('mentions');
     const hashtags = searchParams.get('hashtags');
     const limit = searchParams.get('limit') || '25';
+    const cursor = searchParams.get('cursor');
     const includeModerationContext = searchParams.get('includeModerationContext');
 
     if (!q) {
@@ -34,6 +35,7 @@ export async function GET(request: Request) {
     if (hashtags) params.set('hashtags', hashtags);
     if (includeModerationContext) params.set('includeModerationContext', includeModerationContext);
     params.set('limit', limit);
+    if (cursor) params.set('cursor', cursor);
 
     const response = await fetchWithAuth(`/api/atproto/search/posts?${params.toString()}`, {
       method: 'GET',

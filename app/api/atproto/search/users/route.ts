@@ -7,6 +7,7 @@ export async function GET(request: Request) {
     
     const q = searchParams.get('q');
     const limit = searchParams.get('limit') || '25';
+    const cursor = searchParams.get('cursor');
 
     if (!q) {
       return NextResponse.json(
@@ -19,6 +20,7 @@ export async function GET(request: Request) {
     const params = new URLSearchParams();
     params.set('q', q);
     params.set('limit', limit);
+    if (cursor) params.set('cursor', cursor);
 
     const response = await fetchWithAuth(`/api/atproto/search/users?${params.toString()}`, {
       method: 'GET',
