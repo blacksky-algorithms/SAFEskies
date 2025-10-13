@@ -6,9 +6,10 @@ export function canPerformWithRole(role: UserRole, action: ModAction): boolean {
   switch (action) {
     case 'mod_promote':
     case 'mod_demote':
+      return role === 'admin';
     case 'user_unban':
     case 'user_ban':
-      return role === 'admin';
+      return role === 'mod' || role === 'admin';
     case 'post_delete':
       return role === 'mod' || role === 'admin';
     case 'post_restore':

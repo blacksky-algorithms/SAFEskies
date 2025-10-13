@@ -24,3 +24,11 @@ export function getLinksByFeed(user: User | null, linkType: 'logs' | 'feed') {
     []
   );
 }
+
+export function hasBlackskyPermission(user: User | null): boolean {
+  if (!user) return false;
+  const blackskyRole = user.rolesByFeed.find(role =>
+    role.displayName.toLowerCase().includes('blacksky')
+  );
+  return blackskyRole ? canPerformWithRole(blackskyRole.type, 'user_ban') : false;
+}

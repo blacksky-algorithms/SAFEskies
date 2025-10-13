@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { User } from '@/lib/types/user';
 import { SideDrawerLink } from '../components/side-drawer-link';
-import { getLinksByFeed } from '@/lib/utils/getLinks';
+import { getLinksByFeed, hasBlackskyPermission } from '@/lib/utils/getLinks';
 
 interface AdminSideDrawerContentProps {
   user: User | null;
@@ -36,6 +36,14 @@ export const AdminSideDrawerContent = ({
             ]}
             onClick={handleLinkClick}
           />
+          
+          {hasBlackskyPermission(user) ? (
+            <SideDrawerLink
+              label='Users'
+              href='/users'
+              onClick={handleLinkClick}
+            />
+          ) : null}
           {logsLinks.length > 0 ? (
             <SideDrawerLink
               label='Logs'
