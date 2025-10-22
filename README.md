@@ -119,7 +119,6 @@ yarn install
 NEXT_PUBLIC_BSKY_BASE_API_URL=https://api.bsky.app
 NEXT_PUBLIC_BSKY_BASE=https://bsky.social
 NEXT_PUBLIC_SAFE_SKIES_API=http://localhost:4000
-NEXT_PUBLIC_CLIENT_URL=http://localhost:3000
 ```
 
 ## Running the Application
