@@ -33,11 +33,15 @@ export const UserModerationModal = ({
   const [banStatus, setBanStatus] = useState<{
     isBanned: boolean;
     banInfo?: BannedFromTV;
+    error?: string;
   }>({
     isBanned: false,
   });
 
-  const [muteStatus, setMuteStatus] = useState({
+  const [muteStatus, setMuteStatus] = useState<{
+    isMuted: boolean;
+    error?: string;
+  }>({
     isMuted: false,
   });
 
@@ -93,11 +97,7 @@ export const UserModerationModal = ({
         })
         .catch((error) => {
           console.error('Failed to fetch moderation data:', error);
-          toastContext?.toast({
-            title: 'Warning',
-            message: 'Could not load additional moderation data',
-            intent: VisualIntent.Info,
-          });
+          setModerationData({ error: 'Failed to load moderation data. Try refreshing.' } as ProfileModerationResponse);
         })
         .finally(() => {
           setLoadingModerationData(false);
@@ -113,11 +113,7 @@ export const UserModerationModal = ({
         })
         .catch((error) => {
           console.error('Failed to check ban status:', error);
-          toastContext?.toast({
-            title: 'Error',
-            message: 'Failed to check user ban status',
-            intent: VisualIntent.Error,
-          });
+          setBanStatus({ isBanned: false, error: 'Failed to check ban status. Try refreshing.' });
         });
 
       // Check mute status
@@ -129,14 +125,10 @@ export const UserModerationModal = ({
         })
         .catch((error) => {
           console.error('Failed to check mute status:', error);
-          toastContext?.toast({
-            title: 'Error',
-            message: 'Failed to check user mute status',
-            intent: VisualIntent.Error,
-          });
+          setMuteStatus({ isMuted: false, error: 'Failed to check mute status. Try refreshing.' });
         });
     }
-  }, [user?.did, toastContext]);
+  }, [user?.did]);
 
   if (!user) {
     return null;
@@ -470,17 +462,29 @@ export const UserModerationModal = ({
           {!banForm.showForm && (
             <div className='space-y-3'>
               <h4 className='text-md font-semibold text-app'>Quick Actions</h4>
+              {(banStatus.error || muteStatus.error) && (
+                <div className='p-3 bg-yellow-50 border border-yellow-200 rounded-md'>
+                  {banStatus.error && (
+                    <p className='text-sm text-yellow-700'>{banStatus.error}</p>
+                  )}
+                  {muteStatus.error && (
+                    <p className='text-sm text-yellow-700'>{muteStatus.error}</p>
+                  )}
+                </div>
+              )}
               <div className='grid grid-cols-2 gap-3'>
                 <Button
                   intent={VisualIntent.Secondary}
                   className="!bg-red-400 hover:!bg-red-500 focus:!ring-red-400"
                   onClick={banStatus.isBanned ? handleBanUser : handleShowBanForm}
+                  disabled={!!banStatus.error}
                 >
                   {banStatus.isBanned ? 'Unban from TV' : 'Ban from TV'}
                 </Button>
                 <Button
                   intent={VisualIntent.Secondary}
                   onClick={handleMuteUser}
+                  disabled={!!muteStatus.error}
                 >
                   {muteStatus.isMuted ? 'Greenlist Unmute' : 'Greenlist Mute'}
                 </Button>
