@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { SearchPanel } from '@/components/search-panel';
 import { LogFilters } from '@/components/logs/components/log-filters';
 import { User } from '@/lib/types/user';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 interface ConditionalSearchPanelProps {
   user: User | null;
@@ -12,19 +12,18 @@ interface ConditionalSearchPanelProps {
 
 export const ConditionalSearchPanel = ({ user }: ConditionalSearchPanelProps) => {
   const pathname = usePathname();
-  const [panelContent, setPanelContent] = useState<'search' | 'logs' | null>(null);
-  
-  useEffect(() => {
-    // Only set the panel content on the client side to avoid hydration mismatch
+
+  // Derive panel content from props - no need for effect + state
+  const panelContent = useMemo((): 'search' | 'logs' | null => {
     const isLogsRoute = pathname?.startsWith('/logs');
     const hasUser = !!user;
-    
+
     if (!hasUser) {
-      setPanelContent(null);
+      return null;
     } else if (isLogsRoute) {
-      setPanelContent('logs');
+      return 'logs';
     } else {
-      setPanelContent('search');
+      return 'search';
     }
   }, [pathname, user]);
   

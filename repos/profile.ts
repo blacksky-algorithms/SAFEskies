@@ -9,7 +9,7 @@ export const getProfile = async (): Promise<User | null> => {
     }
     const data = await response?.json();
     return data.profile;
-  } catch (error: unknown) {
+  } catch {
     return null;
   }
 };
