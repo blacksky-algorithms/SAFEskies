@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { fetchFeed } from '@/repos/feeds';
@@ -115,7 +115,9 @@ export function useHasNewPosts(options: {
   const limit = options.limit || 10;
   const pollingInterval = options.pollingInterval || 10000;
 
-  const [hasNewPosts, setHasNewPosts] = useState(false);
+  // Track the first post URI to detect feed refreshes
+  const firstPostUri = currentFeed[0]?.post.uri;
+  const lastSeenFirstPostUri = useRef<string | undefined>(firstPostUri);
 
   // Polling query: will be disabled when the main feed is fetching
   const pollQuery = useQuery({
@@ -125,35 +127,31 @@ export function useHasNewPosts(options: {
       return fetchFeed({ uri, limit });
     },
     refetchInterval: pollingInterval,
-    enabled: !!uri && !isFetching && !hasNewPosts, // disable polling while fetching
+    enabled: !!uri && !isFetching,
     select: (data) => ('feed' in data ? data.feed : []),
   });
 
-  useEffect(() => {
+  // Derive hasNewPosts from current state - no effects needed
+  const hasNewPosts = useMemo(() => {
+    // Reset when the first post changes (feed was refreshed)
+    if (firstPostUri !== lastSeenFirstPostUri.current) {
+      lastSeenFirstPostUri.current = firstPostUri;
+      return false;
+    }
+
     if (
       !currentFeed ||
       currentFeed.length === 0 ||
       !pollQuery.data ||
       pollQuery.data.length === 0
     ) {
-      return;
+      return false;
     }
-    // Use post.uri for deduplication/ comparison.
-    const currentUris = new Set(currentFeed.map((item) => item.post.uri));
-    const newPostsDetected = pollQuery.data.some(
-      (item) => !currentUris.has(item.post.uri)
-    );
-    setHasNewPosts((prev) =>
-      prev !== newPostsDetected ? newPostsDetected : prev
-    );
-  }, [currentFeed, pollQuery.data]);
 
-  // Reset the flag when the first post in the current feed changes,
-  // which generally indicates that a refresh has occurred.
-  const firstPostUri = currentFeed[0]?.post.uri;
-  useEffect(() => {
-    setHasNewPosts(false);
-  }, [firstPostUri]);
+    // Use post.uri for deduplication/comparison
+    const currentUris = new Set(currentFeed.map((item) => item.post.uri));
+    return pollQuery.data.some((item) => !currentUris.has(item.post.uri));
+  }, [currentFeed, pollQuery.data, firstPostUri]);
 
   return hasNewPosts;
 }

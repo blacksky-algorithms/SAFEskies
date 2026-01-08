@@ -43,7 +43,7 @@ export function useProfileData(): UseProfileDataResult {
     if (!profile?.did) {
       fetchProfile();
     }
-  }, []);
+  }, [profile?.did]);
 
   return {
     profile,

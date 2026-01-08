@@ -2,11 +2,11 @@ import { NextResponse, NextRequest } from 'next/server';
 import { getProfile } from './repos/profile';
 import { getHighestRoleForUser } from './lib/utils/permission';
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const publicPaths = [
     '/oauth/login',
     '/oauth/callback',
-    '/static',
+    '/static',  
     '/favicon.ico',
     '/robots.txt',
   ];
@@ -55,7 +55,7 @@ export async function middleware(req: NextRequest) {
     }
 
     return NextResponse.next();
-  } catch (error: unknown) {
+  } catch {
     return NextResponse.redirect(new URL('/oauth/login', req.url));
   }
 }
