@@ -13,3 +13,8 @@ export const toNiceDomain = (url: string): string => {
     return url;
   }
 };
+
+export const getPostUrl = (atUri: string): string => {
+  const at = new AtUri(atUri);
+  return `https://blacksky.community/profile/${at.host}/post/${at.rkey}`;
+};
