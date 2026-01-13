@@ -10,6 +10,7 @@ import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/
 import { checkUserBanStatus, banUser, unbanUser, BannedFromTV, checkUserMuteStatus, muteUser, unmuteUser, fetchProfileModerationData, emitModerationEvent } from '@/repos/moderation';
 import { ToastContext } from '@/contexts/toast-context';
 import { ProfileModerationResponse, ModerationEventType, EscalatedItem, EscalatedPostItem } from '@/lib/types/moderation';
+import { BLACKSKY_PDS_URL } from '@/lib/constants/moderation';
 import { getPostUrl } from '@/components/post/utils';
 
 type UserLike = {
@@ -410,6 +411,70 @@ export const UserModerationModal = ({
     }
   };
 
+  // Check if user is on blacksky.app PDS (required for takedown actions)
+  const isBlackskyUser = moderationData?.pdsEndpoint === BLACKSKY_PDS_URL;
+
+  // Quick action handlers
+  const handleQuickAcknowledge = async () => {
+    setOzoneAction(prev => ({ ...prev, type: 'acknowledge', loading: true }));
+
+    try {
+      const isEscalatedPost = 'type' in user && user.type === 'post';
+      const subjectUri = isEscalatedPost ? (user as EscalatedPostItem).postUri : undefined;
+      const subjectCid = isEscalatedPost ? (user as EscalatedPostItem).postCid : undefined;
+
+      const result = await emitModerationEvent(user.did, 'acknowledge', {}, subjectUri, subjectCid);
+
+      toastContext?.toast({
+        title: 'Success',
+        message: result.message || 'Successfully acknowledged',
+        intent: VisualIntent.Success,
+      });
+
+      resetOzoneAction();
+      await refreshModerationData();
+    } catch (error) {
+      console.error('Failed to acknowledge:', error);
+      toastContext?.toast({
+        title: 'Error',
+        message: error instanceof Error ? error.message : 'Failed to acknowledge',
+        intent: VisualIntent.Error,
+      });
+    } finally {
+      setOzoneAction(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const handleQuickTakedown = async () => {
+    setOzoneAction(prev => ({ ...prev, type: 'takedown', loading: true }));
+
+    try {
+      const isEscalatedPost = 'type' in user && user.type === 'post';
+      const subjectUri = isEscalatedPost ? (user as EscalatedPostItem).postUri : undefined;
+      const subjectCid = isEscalatedPost ? (user as EscalatedPostItem).postCid : undefined;
+
+      const result = await emitModerationEvent(user.did, 'takedown', {}, subjectUri, subjectCid);
+
+      toastContext?.toast({
+        title: 'Success',
+        message: result.message || 'Successfully taken down',
+        intent: VisualIntent.Success,
+      });
+
+      resetOzoneAction();
+      await refreshModerationData();
+    } catch (error) {
+      console.error('Failed to takedown:', error);
+      toastContext?.toast({
+        title: 'Error',
+        message: error instanceof Error ? error.message : 'Failed to takedown',
+        intent: VisualIntent.Error,
+      });
+    } finally {
+      setOzoneAction(prev => ({ ...prev, loading: false }));
+    }
+  };
+
   return (
     <Modal
       id={MODAL_INSTANCE_IDS.USER_MODERATION}
@@ -441,6 +506,11 @@ export const UserModerationModal = ({
             <p className='text-sm text-app font-mono mt-1'>
               {user.did}
             </p>
+            {moderationData?.pdsEndpoint && (
+              <p className='text-sm text-app-secondary font-mono'>
+                {moderationData.pdsEndpoint}
+              </p>
+            )}
             {'type' in user && user.type === 'post' && 'postUri' in user && (
               <a
                 href={getPostUrl(user.postUri as string)}
@@ -486,7 +556,7 @@ export const UserModerationModal = ({
                   onClick={handleMuteUser}
                   disabled={!!muteStatus.error}
                 >
-                  {muteStatus.isMuted ? 'Greenlist Unmute' : 'Greenlist Mute'}
+                  {muteStatus.isMuted ? 'Ungreenlist' : 'Greenlist'}
                 </Button>
               </div>
             </div>
@@ -576,7 +646,24 @@ export const UserModerationModal = ({
           {/* Ozone Actions Section */}
           <h4 className='text-md font-semibold text-app'>Ozone Actions</h4>
           <div className='space-y-3'>
-
+            <div className='grid grid-cols-2 gap-3'>
+              <Button
+                intent={VisualIntent.Primary}
+                onClick={handleQuickAcknowledge}
+                disabled={ozoneAction.loading}
+              >
+                {ozoneAction.loading && ozoneAction.type === 'acknowledge' ? 'Acknowledging...' : 'Acknowledge'}
+              </Button>
+              <Button
+                intent={VisualIntent.Secondary}
+                className="!bg-red-600 hover:!bg-red-700 focus:!ring-red-600 disabled:!bg-red-300"
+                onClick={handleQuickTakedown}
+                disabled={!isBlackskyUser || ozoneAction.loading}
+                title={!isBlackskyUser ? 'Takedown only available for blacksky.app users' : undefined}
+              >
+                {ozoneAction.loading && ozoneAction.type === 'takedown' ? 'Taking down...' : 'Takedown'}
+              </Button>
+            </div>
               <div className='space-y-4 pt-2'>
                 <div>
                   <select
@@ -588,8 +675,12 @@ export const UserModerationModal = ({
                     <option value="acknowledge">Acknowledge</option>
                     <option value="escalate">Escalate</option>
                     <option value="comment">Add Comment</option>
-                    <option value="takedown">Takedown</option>
-                    <option value="reverseTakedown">Reverse Takedown</option>
+                    <option value="takedown" disabled={!isBlackskyUser}>
+                      Takedown{!isBlackskyUser ? ' (blacksky.app only)' : ''}
+                    </option>
+                    <option value="reverseTakedown" disabled={!isBlackskyUser}>
+                      Reverse Takedown{!isBlackskyUser ? ' (blacksky.app only)' : ''}
+                    </option>
                     <option value="label">Add Labels</option>
                     <option value="tag">Add Tags</option>
                   </select>

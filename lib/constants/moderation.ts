@@ -6,3 +6,5 @@ export const ADMIN_ACTIONS: Partial<ModAction>[] = [
   'user_unban',
   'user_ban',
 ];
+
+export const BLACKSKY_PDS_URL = 'https://blacksky.app';
