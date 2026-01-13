@@ -42,6 +42,8 @@ jobs:
           target: prodrunner
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+          build-args: |
+            NEXT_PUBLIC_SAFE_SKIES_API=http://safe-skies-api:4000
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
