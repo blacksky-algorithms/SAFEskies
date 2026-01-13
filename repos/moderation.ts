@@ -1,8 +1,8 @@
+import { ModerationEventType, EmitEventResponse, ModerationEventParams } from '@/lib/types/moderation';
+
 export const fetchReportOptions = async () => {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SAFE_SKIES_API}/api/moderation/report-options`
-    );
+    const response = await fetch('/api/moderation/report-options');
     if (!response.ok) {
       throw new Error('Failed to fetch report options');
     }
@@ -120,6 +120,71 @@ export const unmuteUser = async (actor: string): Promise<void> => {
     }
   } catch (error: unknown) {
     console.error('Error unmuting user:', error);
+    throw error;
+  }
+};
+
+export const fetchEscalatedUsers = async (limit = 20, cursor?: string) => {
+  try {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (cursor) params.append('cursor', cursor);
+    const response = await fetch(`/api/moderation/escalated-users?${params}`);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch escalated users');
+    }
+    return response.json();
+  } catch (error: unknown) {
+    console.error('Error fetching escalated users:', error);
+    throw error;
+  }
+};
+
+export const fetchProfileModerationData = async (did: string) => {
+  try {
+    const response = await fetch(`/api/moderation/profile/${encodeURIComponent(did)}`);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch profile moderation data');
+    }
+    return response.json();
+  } catch (error: unknown) {
+    console.error('Error fetching profile moderation data:', error);
+    throw error;
+  }
+};
+
+export const emitModerationEvent = async (
+  did: string,
+  eventType: ModerationEventType,
+  eventParams?: ModerationEventParams,
+  subjectUri?: string,
+  subjectCid?: string
+): Promise<EmitEventResponse> => {
+  try {
+    const body: Record<string, unknown> = { did, eventType, eventParams };
+    if (subjectUri) {
+      body.subjectUri = subjectUri;
+    }
+    if (subjectCid) {
+      body.subjectCid = subjectCid;
+    }
+    const response = await fetch('/api/moderation/emit-event', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to emit moderation event');
+    }
+
+    return response.json();
+  } catch (error: unknown) {
+    console.error('Error emitting moderation event:', error);
     throw error;
   }
 };

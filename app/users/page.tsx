@@ -25,19 +25,9 @@ export default async function Page() {
     );
   }
 
-  // For now, we only support Blacksky feed
-  const blackskyRole = profile.rolesByFeed.find(role =>
-    role.displayName.toLowerCase().includes('blacksky')
-  )!
-
   return (
     <section className='flex flex-col items-center h-full p-4 w-full'>
-      <header className='p-4'>
-        <h2 className='text-2xl font-bold'>User Management</h2>
-      </header>
-      <UserManagementPanel
-        feed={blackskyRole}
-      />
+      <UserManagementPanel />
     </section>
   );
 }

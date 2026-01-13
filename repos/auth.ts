@@ -12,9 +12,7 @@ export const logIn = async (
 }> => {
   try {
     const response = await fetch(
-      `${
-        process.env.NEXT_PUBLIC_SAFE_SKIES_API
-      }/auth/signin?handle=${encodeURIComponent(handle)}`,
+      `${process.env.NEXT_PUBLIC_SAFE_SKIES_API}/auth/signin?handle=${encodeURIComponent(handle)}`,
       {
         method: 'GET',
         credentials: 'include',
