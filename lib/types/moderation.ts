@@ -78,6 +78,8 @@ export interface ProfileModerationResponse {
     displayName?: string;
     avatar?: string;
   };
+  pdsEndpoint?: string;
+  pdsError?: string;
   error?: string;
 }
 
