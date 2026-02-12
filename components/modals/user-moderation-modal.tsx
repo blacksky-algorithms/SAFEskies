@@ -12,6 +12,11 @@ import { ToastContext } from '@/contexts/toast-context';
 import { ProfileModerationResponse, ModerationEventType, EscalatedItem, EscalatedPostItem } from '@/lib/types/moderation';
 import { BLACKSKY_PDS_URL } from '@/lib/constants/moderation';
 import { getPostUrl } from '@/components/post/utils';
+import { PostHeader } from '@/components/post/components/post-header';
+import { PostText } from '@/components/post/components/post-text';
+import { EmbedRenderer } from '@/components/post/components/embed-renderer';
+import { AppBskyFeedPost } from '@atproto/api';
+import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 type UserLike = {
   did: string;
@@ -23,11 +28,13 @@ type UserLike = {
 interface UserModerationModalProps {
   user: ProfileViewBasic | EscalatedItem | UserLike | null;
   onClose: () => void;
+  onEscalationHandled?: () => void;
 }
 
 export const UserModerationModal = ({
   user,
   onClose,
+  onEscalationHandled,
 }: UserModerationModalProps) => {
   const toastContext = useContext(ToastContext);
 
@@ -48,6 +55,10 @@ export const UserModerationModal = ({
 
   const [moderationData, setModerationData] = useState<ProfileModerationResponse | null>(null);
   const [loadingModerationData, setLoadingModerationData] = useState(false);
+
+  const [postData, setPostData] = useState<ThreadViewPost | null>(null);
+  const [loadingPost, setLoadingPost] = useState(false);
+  const [postError, setPostError] = useState<string | null>(null);
 
   const [banForm, setBanForm] = useState({
     showForm: false,
@@ -128,6 +139,31 @@ export const UserModerationModal = ({
           console.error('Failed to check mute status:', error);
           setMuteStatus({ isMuted: false, error: 'Failed to check mute status. Try refreshing.' });
         });
+
+      // Fetch post data for escalated posts
+      if (user && 'type' in user && user.type === 'post' && 'postUri' in user) {
+        setLoadingPost(true);
+        setPostError(null);
+        setPostData(null);
+        fetch(`/api/post?uri=${encodeURIComponent((user as EscalatedPostItem).postUri)}`)
+          .then((res) => {
+            if (!res.ok) throw new Error('Failed to fetch post');
+            return res.json();
+          })
+          .then((data) => {
+            setPostData(data);
+          })
+          .catch((error) => {
+            console.error('Failed to fetch post:', error);
+            setPostError(error instanceof Error ? error.message : 'Failed to load post');
+          })
+          .finally(() => {
+            setLoadingPost(false);
+          });
+      } else {
+        setPostData(null);
+        setPostError(null);
+      }
     }
   }, [user?.did]);
 
@@ -369,8 +405,12 @@ export const UserModerationModal = ({
         intent: VisualIntent.Success,
       });
 
+      const actionType = ozoneAction.type;
       resetOzoneAction();
       await refreshModerationData();
+      if (actionType === 'acknowledge' || actionType === 'takedown') {
+        onEscalationHandled?.();
+      }
     } catch (error) {
       console.error('Failed to emit moderation event:', error);
       toastContext?.toast({
@@ -433,6 +473,7 @@ export const UserModerationModal = ({
 
       resetOzoneAction();
       await refreshModerationData();
+      onEscalationHandled?.();
     } catch (error) {
       console.error('Failed to acknowledge:', error);
       toastContext?.toast({
@@ -463,6 +504,7 @@ export const UserModerationModal = ({
 
       resetOzoneAction();
       await refreshModerationData();
+      onEscalationHandled?.();
     } catch (error) {
       console.error('Failed to takedown:', error);
       toastContext?.toast({
@@ -523,6 +565,47 @@ export const UserModerationModal = ({
             )}
           </div>
         </div>
+
+        {/* Inline Post Preview for Escalated Posts */}
+        {'type' in user && user.type === 'post' && (
+          <div className='mt-4 border border-app-border rounded-lg overflow-hidden'>
+            {loadingPost && (
+              <div className='flex items-center space-x-2 p-4'>
+                <div className='animate-spin h-4 w-4 border-2 border-blue-500 rounded-full border-t-transparent'></div>
+                <span className='text-sm text-app-secondary'>Loading post content...</span>
+              </div>
+            )}
+            {postError && (
+              <div className='p-4 bg-yellow-50 border-b border-yellow-200'>
+                <p className='text-sm text-yellow-700'>Could not load post preview: {postError}</p>
+              </div>
+            )}
+            {postData?.post && (
+              <div className='p-4'>
+                <PostHeader
+                  author={postData.post.author}
+                  isAuthorLabeled={postData.post.author?.labels?.some((l: { val: string }) =>
+                    ['porn', 'sexual', 'nudity', 'graphic-media'].includes(l.val)
+                  )}
+                  postIndexedAt={postData.post.indexedAt}
+                />
+                {AppBskyFeedPost.isRecord(postData.post.record) && (
+                  <PostText
+                    text={postData.post.record.text}
+                    facets={postData.post.record.facets}
+                  />
+                )}
+                {postData.post.embed && (
+                  <EmbedRenderer
+                    content={postData.post.embed}
+                    labels={postData.post.labels}
+                    isSignedIn={true}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Two Column Layout */}
         <div className='flex flex-row gap-6 flex-1 min-h-0 mt-6 overflow-hidden'>

@@ -10,9 +10,10 @@ import { EscalatedItem } from '@/lib/types/moderation';
 
 interface EscalatedUsersListProps {
   onUserSelect: (item: EscalatedItem) => void;
+  dismissedKeys?: Set<string>;
 }
 
-export const EscalatedUsersList = ({ onUserSelect }: EscalatedUsersListProps) => {
+export const EscalatedUsersList = ({ onUserSelect, dismissedKeys }: EscalatedUsersListProps) => {
   const [state, setState] = useState({
     items: [] as EscalatedItem[],
     loading: true,
@@ -92,7 +93,14 @@ export const EscalatedUsersList = ({ onUserSelect }: EscalatedUsersListProps) =>
     );
   }
 
-  if (state.items.length === 0) {
+  const visibleItems = dismissedKeys && dismissedKeys.size > 0
+    ? state.items.filter((item) => {
+        const key = item.type === 'post' ? item.postUri : item.did;
+        return !dismissedKeys.has(key);
+      })
+    : state.items;
+
+  if (visibleItems.length === 0) {
     return (
       <div className='bg-app-background border border-app-border rounded-lg p-6'>
         <h3 className='text-lg font-semibold text-app mb-4'>
@@ -108,10 +116,10 @@ export const EscalatedUsersList = ({ onUserSelect }: EscalatedUsersListProps) =>
   return (
     <div className='bg-app-background border border-app-border rounded-lg p-6'>
       <h3 className='text-lg font-semibold text-app mb-4'>
-        Escalated Reports ({state.items.length})
+        Escalated Reports ({visibleItems.length})
       </h3>
       <div className='space-y-3'>
-        {state.items.map((item) => (
+        {visibleItems.map((item) => (
           <UserCard
             key={item.type === 'post' ? item.postUri : item.did}
             user={item}

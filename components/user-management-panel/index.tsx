@@ -1,16 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { BSUserSearch } from '@/components/bs-user-search/bs-user-search';
 import { useModal } from '@/contexts/modal-context';
 import { MODAL_INSTANCE_IDS } from '@/enums/modals';
 import { ProfileViewBasic } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { UserModerationModal } from '@/components/modals/user-moderation-modal';
 import { EscalatedUsersList } from '@/components/escalated-users-list';
-import { EscalatedItem } from '@/lib/types/moderation';
+import { EscalatedItem, EscalatedPostItem } from '@/lib/types/moderation';
 
 export const UserManagementPanel = () => {
   const [selectedUser, setSelectedUser] = useState<ProfileViewBasic | EscalatedItem | null>(null);
+  const [dismissedKeys, setDismissedKeys] = useState<Set<string>>(new Set());
   const { openModalInstance, closeModalInstance } = useModal();
 
   const handleUserSelect = (user: ProfileViewBasic | EscalatedItem) => {
@@ -21,6 +22,14 @@ export const UserManagementPanel = () => {
   const handleCloseModal = () => {
     closeModalInstance(MODAL_INSTANCE_IDS.USER_MODERATION);
   };
+
+  const handleEscalationHandled = useCallback(() => {
+    if (!selectedUser || !('type' in selectedUser)) return;
+    const key = selectedUser.type === 'post'
+      ? (selectedUser as EscalatedPostItem).postUri
+      : selectedUser.did;
+    setDismissedKeys(prev => new Set(prev).add(key));
+  }, [selectedUser]);
 
   return (
     <div className='w-full max-w-4xl space-y-6'>
@@ -36,12 +45,13 @@ export const UserManagementPanel = () => {
       </div>
 
       {/* Escalated Reports */}
-      <EscalatedUsersList onUserSelect={handleUserSelect} />
+      <EscalatedUsersList onUserSelect={handleUserSelect} dismissedKeys={dismissedKeys} />
 
       {/* User Moderation Modal */}
       <UserModerationModal
         user={selectedUser}
         onClose={handleCloseModal}
+        onEscalationHandled={handleEscalationHandled}
       />
     </div>
   );
